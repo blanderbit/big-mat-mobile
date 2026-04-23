@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Unbounded-Bold.ttf",
+      "sha1": "bf03723b1ce82b02271ad9994bc55614541cc4da"
+    },
+    {
+      "path": "assets/fonts/Unbounded-Regular.ttf",
+      "sha1": "6149891af7e7dbd207323315fcd25a08bd364a8c"
+    },
+    {
+      "path": "assets/fonts/Unbounded-SemiBold.ttf",
+      "sha1": "c3adb4281bb42ed8aab996e8a4224538a447828e"
+    }
+  ]
+}

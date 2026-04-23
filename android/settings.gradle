@@ -1,0 +1,17 @@
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+
+dependencyResolutionManagement {
+  repositories {
+    google()
+    mavenCentral()
+
+    // AsyncStorage ships `org.asyncstorage.shared_storage:storage-android:1.0.0` as a local Maven repo.
+    maven { url(file("../node_modules/@react-native-async-storage/async-storage/android/local_repo")) }
+  }
+}
+
+rootProject.name = 'BigMat'
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
