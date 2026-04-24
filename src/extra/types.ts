@@ -13,3 +13,22 @@ export type User = {
     updatedAt: string;
   };
 };
+
+export type Topic = {
+  id: string;
+  locked: boolean;
+  order: number;
+  title: string;
+  routes: {
+    id: string;
+    locked: boolean;
+    order: number;
+    subtitle: string;
+    title: string;
+    progress: {
+      completedAt: null | string;
+      lastSlideOrder: number;
+      status: 'not_started';
+    };
+  }[];
+};

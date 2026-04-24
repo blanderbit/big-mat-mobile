@@ -10,13 +10,18 @@ type Props = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
+  marginTop?: number;
 };
 
-export const Button = ({ title, onPress, disabled }: Props) => {
+export const Button = ({ title, onPress, disabled, marginTop }: Props) => {
   const opacity = disabled ? DEFAULT_OPACITY : 1;
 
   return (
-    <RNPressable disabled={disabled} style={{ opacity }} onPress={onPress}>
+    <RNPressable
+      disabled={disabled}
+      style={{ opacity, marginTop }}
+      onPress={onPress}
+    >
       {({ pressed }) => (
         <View style={[styles.shadowWrap, pressed && styles.shadowWrapPressed]}>
           <View style={styles.clipWrap}>
