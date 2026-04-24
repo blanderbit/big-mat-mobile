@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "675435048875",
+    "project_id": "bigmat-bdd63",
+    "storage_bucket": "bigmat-bdd63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675435048875:android:586b229e261f5d8a392cee",
+        "android_client_info": {
+          "package_name": "edera.bigmat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "675435048875-im8thqp74f23qejmniv0js3mj7l5qbc8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edera.bigmat",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "675435048875-bcgnk3fs16ud2g2h4sit5ubf27ufnecd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzOeNg2VkpIGDJPjfcmx4TwJWd24iibrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "675435048875-bcgnk3fs16ud2g2h4sit5ubf27ufnecd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "675435048875-miesutavc27jkgbd8jvu8i3q7r9vktr7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "edera.bigmat"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

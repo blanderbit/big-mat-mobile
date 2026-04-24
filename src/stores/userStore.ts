@@ -16,8 +16,8 @@ export const useUserStore = create<UserStore>(set => ({
   getUser: async () => {
     const accessToken = await keychain.getItem(ACCESS_TOKEN);
     if (accessToken) {
-      // const userResponse = await API.get(endpoints.PROFILE);
-      // set({ user: userResponse.data });
+      const userResponse = await API.get('/v1/auth/me');
+      set({ user: userResponse.data });
     }
   },
   logout: async () => {

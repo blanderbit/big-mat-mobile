@@ -14,8 +14,9 @@ import { useUserStore } from '@stores/userStore';
 // import { initCalendarLocales } from '@extra/initCalendarLocales';
 // import { initializeI18nLocalization } from '@localization/index';
 // import 'dayjs/locale/uk';
-// import '@API/extra/interceptors';
+import '@API/extra/interceptors';
 import '@extra/hideLogs';
+import '@extra/firebaseInitialize';
 
 const App = () => (
   <SafeAreaProvider>
@@ -28,15 +29,6 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const { top, bottom } = useSafeAreaInsets();
   const [isAppReadyToBeRendered, setIsAppReadyToBeRendered] = useState(false);
-  // const user = useUserStore(s => s.user);
-
-  // console.log('user', user);
-
-  // const logout = useUserStore(s => s.logout);
-
-  // useEffect(() => {
-  //   logout();
-  // }, [logout]);
 
   useEffect(() => {
     const getUserProfile = async () => {

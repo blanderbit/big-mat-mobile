@@ -4,15 +4,19 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
+import { DEFAULT_OPACITY } from '@extra/constants';
 
 type Props = {
   title: string;
   onPress: () => void;
+  disabled?: boolean;
 };
 
-export const Button = ({ title, onPress }: Props) => {
+export const Button = ({ title, onPress, disabled }: Props) => {
+  const opacity = disabled ? DEFAULT_OPACITY : 1;
+
   return (
-    <RNPressable onPress={onPress}>
+    <RNPressable disabled={disabled} style={{ opacity }} onPress={onPress}>
       {({ pressed }) => (
         <View style={[styles.shadowWrap, pressed && styles.shadowWrapPressed]}>
           <View style={styles.clipWrap}>
