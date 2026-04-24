@@ -4,5 +4,6 @@ export const routes = {
   },
   home: {
     HOME: 'Home',
+    TOPIC: 'Topic',
   },
 } as const;

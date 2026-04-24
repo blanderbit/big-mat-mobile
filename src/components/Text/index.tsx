@@ -1,8 +1,10 @@
 import { PropsWithChildren } from 'react';
 import {
   GestureResponderEvent,
+  StyleProp,
   StyleSheet,
   Text as RNText,
+  TextStyle,
 } from 'react-native';
 
 import { colors } from '@extra/colors';
@@ -19,6 +21,7 @@ type Props = PropsWithChildren<{
   onPress?: ((event: GestureResponderEvent) => void) | undefined;
   uppercase?: boolean;
   onLongPress?: ((event: GestureResponderEvent) => void) | undefined;
+  style?: StyleProp<TextStyle>;
 }>;
 
 export const Text = ({
@@ -33,6 +36,7 @@ export const Text = ({
   onPress,
   uppercase,
   onLongPress,
+  style,
 }: Props) => {
   // TODO: add real font from design
   const fontFamily = semiBold
@@ -59,6 +63,7 @@ export const Text = ({
           textDecorationLine,
           textTransform,
         },
+        style,
       ]}
       onLongPress={onLongPress}
       onPress={onPress}

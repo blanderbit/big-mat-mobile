@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
 import {
+  LayoutChangeEvent,
   RefreshControl,
   ScrollView as RNScrollView,
   StyleProp,
@@ -14,6 +15,7 @@ type Props = PropsWithChildren<{
   onRefresh?: () => void;
   scrollViewStyle?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }>;
 
 export const ScrollView = ({
@@ -22,6 +24,7 @@ export const ScrollView = ({
   onRefresh,
   scrollViewStyle,
   contentContainerStyle,
+  onLayout,
 }: Props) => (
   <RNScrollView
     nestedScrollEnabled
@@ -43,6 +46,7 @@ export const ScrollView = ({
         />
       ) : undefined
     }
+    onLayout={onLayout}
   >
     {children}
   </RNScrollView>

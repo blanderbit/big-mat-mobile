@@ -19,7 +19,7 @@ export const Button = ({ title, onPress, disabled, marginTop }: Props) => {
   return (
     <RNPressable
       disabled={disabled}
-      style={{ opacity, marginTop }}
+      style={[styles.pressable, { opacity, marginTop }]}
       onPress={onPress}
     >
       {({ pressed }) => (
@@ -52,15 +52,21 @@ export const Button = ({ title, onPress, disabled, marginTop }: Props) => {
   );
 };
 
-const baseColors = ['#F8FB86', '#F1F458', '#DADA40'] as const;
-const pressedBaseColors = ['#D6D647', '#E6E63A', '#BDBD2D'] as const;
-const glossColors = ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)'] as const;
+const baseColors: string[] = ['#F8FB86', '#F1F458', '#DADA40'];
+const pressedBaseColors: string[] = ['#D6D647', '#E6E63A', '#BDBD2D'];
+const glossColors: string[] = [
+  'rgba(255,255,255,0.55)',
+  'rgba(255,255,255,0)',
+];
 const pressedGlossColors = [
   'rgba(255,255,255,0.18)',
   'rgba(255,255,255,0)',
-] as const;
+] satisfies string[];
 
 const styles = StyleSheet.create({
+  pressable: {
+    width: '100%',
+  },
   shadowWrap: {
     alignItems: 'center',
     justifyContent: 'center',

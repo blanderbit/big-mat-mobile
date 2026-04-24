@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Home } from '@screens/Home';
+import { Topic } from '@screens/Topic';
 import { HomeHeader } from '@navigation/components/HomeStack/components/HomeHeader';
 import { routes } from '@navigation/extra/routes';
 
@@ -20,6 +21,15 @@ export const HomeStack = () => (
         headerShown: true,
         header: HomeHeader,
         contentStyle: { backgroundColor: colors.pink },
+      }}
+    />
+    <Stack.Screen
+      component={Topic}
+      name={routes.home.TOPIC}
+      options={{
+        headerShown: true,
+        header: HomeHeader,
+        contentStyle: { backgroundColor: colors.brightPurple },
       }}
     />
   </Stack.Navigator>

@@ -1,0 +1,13 @@
+<svg width="56" height="32" viewBox="0 0 56 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M28 31.5L0.5 0.5H55.5L28 31.5Z"
+    fill="#F4B7EA"
+  />
+  <path
+    d="M28 31.5L0.5 0.5M28 31.5L55.5 0.5"
+    stroke="black"
+    stroke-width="1"
+    vector-effect="non-scaling-stroke"
+    shape-rendering="crispEdges"
+  />
+</svg>

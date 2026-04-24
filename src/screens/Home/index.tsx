@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FlatList, Image, StyleSheet, View } from 'react-native';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,6 +8,8 @@ import { Button } from '@components/Button';
 import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
 import { Trapezoid } from '@screens/Home/components/Trapezoid';
+import { routes } from '@navigation/extra/routes';
+import { HomeStackNavigationProp } from '@navigation/extra/types';
 
 import { API } from '@API/index';
 import { colors } from '@extra/colors';
@@ -27,6 +29,7 @@ export const Home = () => {
   const { bottom } = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(false);
   const isFocused = useIsFocused();
+  const navigation = useNavigation<HomeStackNavigationProp>();
 
   const getTopics = async () => {
     setIsLoading(true);
@@ -58,7 +61,7 @@ export const Home = () => {
         {t('whatWillWeLearnToday')}
       </Text>
 
-      <Text marginTop={DEFAULT_SPACE * 2} size={14}>
+      <Text marginTop={DEFAULT_SPACE * 2 + 30} size={14}>
         {t(
           'allSectionsHereWillHelpYouMasterMathematicalGaps.OurTeamWorksDayAndNightSoThatTheyBecomeAvailableAsEarlyAsPossible',
         )}
@@ -93,7 +96,7 @@ export const Home = () => {
         onPress={() => {}}
       />
 
-      <View style={[styles.promoContainer, { marginBottom: bottom + 20 }]}>
+      <View style={[styles.promoContainer, { marginBottom: bottom + 50 }]}>
         <Image
           resizeMode="contain"
           source={background8}
@@ -123,11 +126,17 @@ export const Home = () => {
     </>
   );
 
-  const renderItem = ({ item, index }: { item: Topic; index: number }) => (
-    <Pressable onPress={() => {}}>
-      <Trapezoid {...item} isLast={index === topics.length - 1} />
-    </Pressable>
-  );
+  const renderItem = ({ item, index }: { item: Topic; index: number }) => {
+    const navigateToTopic = () => {
+      navigation.navigate(routes.home.TOPIC, { lessons: item.routes });
+    };
+
+    return (
+      <Pressable onPress={item.locked ? undefined : navigateToTopic}>
+        <Trapezoid {...item} isLast={index === topics.length - 1} />
+      </Pressable>
+    );
+  };
 
   return (
     <FlatList
@@ -138,6 +147,7 @@ export const Home = () => {
       ListHeaderComponent={ListHeader}
       refreshing={isLoading}
       renderItem={renderItem}
+      showsVerticalScrollIndicator={false}
       onRefresh={getTopics}
     />
   );
@@ -174,7 +184,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brightPurple,
     borderRadius: 70,
     marginHorizontal: -DEFAULT_SPACE,
-    paddingVertical: DEFAULT_SPACE * 2,
+    paddingTop: DEFAULT_SPACE * 2,
+    paddingBottom: DEFAULT_SPACE,
     marginTop: DEFAULT_SPACE * 2,
     alignItems: 'center',
     justifyContent: 'center',

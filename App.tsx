@@ -29,6 +29,11 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const { top, bottom } = useSafeAreaInsets();
   const [isAppReadyToBeRendered, setIsAppReadyToBeRendered] = useState(false);
+  // const logOut = useUserStore(s => s.logout);
+
+  // useEffect(() => {
+  //   logOut();
+  // }, []);
 
   useEffect(() => {
     const getUserProfile = async () => {
