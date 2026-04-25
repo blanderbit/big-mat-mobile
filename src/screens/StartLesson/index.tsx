@@ -1,12 +1,15 @@
 import { Image, StyleSheet, View } from 'react-native';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
-import { HomeStackParamList } from '@navigation/extra/types';
+import {
+  HomeStackNavigationProp,
+  HomeStackParamList,
+} from '@navigation/extra/types';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
@@ -22,6 +25,13 @@ export const StartLesson = ({ route }: Props) => {
   const { lesson } = route.params;
   const { top, bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { navigate } = useNavigation<HomeStackNavigationProp>();
+
+  const navigateToLesson = () => {
+    navigate(routes.home.LESSON, {
+      lessonId: lesson.id,
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -42,8 +52,10 @@ export const StartLesson = ({ route }: Props) => {
         </Text>
       )}
 
-      <View style={[styles.startButtonWrap, { bottom: bottom + DEFAULT_SPACE }]}>
-        <Button title={t('letsStart')} onPress={() => {}} />
+      <View
+        style={[styles.startButtonWrap, { bottom: bottom + DEFAULT_SPACE }]}
+      >
+        <Button title={t('letsStart')} onPress={navigateToLesson} />
       </View>
 
       <Image

@@ -16,9 +16,9 @@ import Svg, { Line } from 'react-native-svg';
 
 import { Button } from '@components/Button';
 import { Pressable } from '@components/Pressable';
-import { RoundSlider } from '@components/RoundSlider';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';
+import { RoundSlider } from '@screens/Topic/components/RoundSlider';
 import { routes } from '@navigation/extra/routes';
 import {
   HomeStackNavigationProp,

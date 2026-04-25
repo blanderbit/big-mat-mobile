@@ -1,0 +1,77 @@
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { RouteProp } from '@react-navigation/native';
+
+import { ScrollView } from '@components/ScrollView';
+import { Story } from '@screens/Lesson/components/Story';
+import { routes } from '@navigation/extra/routes';
+import { HomeStackParamList } from '@navigation/extra/types';
+
+import { API } from '@API/index';
+import { DEFAULT_SPACE } from '@extra/constants';
+import { Slide, SlideType } from '@extra/types';
+import { useLessonsStore } from '@stores/lessonsStore';
+
+type Props = {
+  route: RouteProp<HomeStackParamList, typeof routes.home.LESSON>;
+};
+
+export const Lesson = ({ route }: Props) => {
+  const { lessonId } = route.params;
+  const [isLoading, setIsLoading] = useState(false);
+  const slides = useLessonsStore(state => state.slides);
+  const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
+  const setSlides = useLessonsStore(state => state.setSlides);
+
+  const currentSlide = slides[currentSlideIndex];
+
+  useEffect(() => {
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        const response = await API.get(`/v1/content/routes/${lessonId}/slides`);
+        setSlides(response.data.data.slides);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [lessonId, setSlides]);
+
+  const getSlideComponent = () => {
+    switch (currentSlide?.type) {
+      case SlideType.STORY:
+        return <Story slide={currentSlide as Slide<SlideType.STORY>} />;
+      default:
+        return null;
+    }
+  };
+
+  const SlideComponent = getSlideComponent();
+
+  return (
+    <ScrollView contentContainerStyle={styles.contentContainer}>
+      {isLoading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <View style={styles.slide}>{SlideComponent}</View>
+      )}
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  contentContainer: {
+    paddingTop: DEFAULT_SPACE,
+    flexGrow: 1,
+  },
+  loading: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  slide: {
+    flex: 1,
+  },
+});
