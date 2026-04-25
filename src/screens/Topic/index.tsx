@@ -21,7 +21,6 @@ import ActiveLessonButton from '@assets/images/activeLessonButton.svg';
 import Background10 from '@assets/images/background10.svg';
 import InactiveLessonButton from '@assets/images/inactiveLessonButton.svg';
 import lock2 from '@assets/images/lock2.png';
-import Tooltip1 from '@assets/images/tooltip1.svg';
 import Tooltip1Notch from '@assets/images/tooltip1Notch.svg';
 
 type Props = {
@@ -70,8 +69,7 @@ export const Topic = ({ route }: Props) => {
         {sortedLessons.map((lesson, index) => {
           const isLeft = (index + 1) % 2 === 1;
           const isLast = index === sortedLessons.length - 1;
-          const firstLocked =
-            sortedLessons.findIndex(lesson => lesson.locked) === index;
+          const firstLocked = sortedLessons.findIndex(l => l.locked) === index;
 
           return (
             <View key={lesson.id} style={styles.lessonItem}>
@@ -80,15 +78,16 @@ export const Topic = ({ route }: Props) => {
                   pointerEvents="box-none"
                   style={styles.firstLockedTooltip}
                 >
-                  <Tooltip1 />
-
-                  <View
-                    pointerEvents="auto"
-                    style={styles.firstLockedTooltipContent}
-                  >
+                  <View style={styles.tooltip}>
                     <Text bold size={20}>
                       {index + 1}. {lesson.title}
                     </Text>
+
+                    <Text center semiBold size={14}>
+                      {lesson.subtitle}
+                    </Text>
+
+                    <Button title={t('close')} onPress={() => {}} />
 
                     <Button title={t('start')} onPress={() => {}} />
                   </View>
@@ -104,11 +103,10 @@ export const Topic = ({ route }: Props) => {
               >
                 <Pressable onPress={() => {}}>
                   {firstLocked && (
-                    <View
-                      pointerEvents="none"
-                      style={styles.firstLockedTooltipNotch}
-                    >
+                    <View style={styles.notchWrapper}>
                       <Tooltip1Notch />
+
+                      <View style={styles.notchBorderMask} />
                     </View>
                   )}
 
@@ -261,37 +259,33 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   lessonButtonWrapperOnTop: {
-    zIndex: 3,
-    elevation: 3,
+    zIndex: 4,
   },
   firstLockedTooltip: {
     position: 'absolute',
-    bottom: 93,
+    top: 90,
     left: 0,
     width: '100%',
     alignItems: 'center',
-    zIndex: 2,
-    elevation: 2,
+    zIndex: 3,
+    elevation: 10,
   },
-  firstLockedTooltipNotch: {
+  notchWrapper: {
     position: 'absolute',
-    top: -10.2,
+    bottom: -6,
     left: 0,
     width: '100%',
     alignItems: 'center',
+    transform: [{ rotate: '180deg' }],
+    zIndex: 3,
+  },
+  notchBorderMask: {
+    height: 2,
+    width: 54,
+    backgroundColor: colors.pink,
+    position: 'absolute',
     zIndex: 4,
-    elevation: 4,
-  },
-  firstLockedTooltipContent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: DEFAULT_SPACE / 2,
-    paddingHorizontal: DEFAULT_SPACE,
+    top: -1.5,
   },
   lessonButtonLeft: {
     alignSelf: 'flex-start',
@@ -387,5 +381,18 @@ const styles = StyleSheet.create({
     top: -150,
     left: -DEFAULT_SPACE,
     zIndex: -1,
+  },
+  tooltip: {
+    width: '100%',
+    backgroundColor: colors.pink,
+    borderColor: colors.black,
+    borderWidth: 1,
+    borderRadius: 34,
+    backfaceVisibility: 'hidden',
+    transform: [{ perspective: 900 }, { rotateX: '-10deg' }],
+    padding: DEFAULT_SPACE,
+    gap: DEFAULT_SPACE,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

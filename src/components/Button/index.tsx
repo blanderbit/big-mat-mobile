@@ -54,10 +54,7 @@ export const Button = ({ title, onPress, disabled, marginTop }: Props) => {
 
 const baseColors: string[] = ['#F8FB86', '#F1F458', '#DADA40'];
 const pressedBaseColors: string[] = ['#D6D647', '#E6E63A', '#BDBD2D'];
-const glossColors: string[] = [
-  'rgba(255,255,255,0.55)',
-  'rgba(255,255,255,0)',
-];
+const glossColors: string[] = ['rgba(255,255,255,0.55)', 'rgba(255,255,255,0)'];
 const pressedGlossColors = [
   'rgba(255,255,255,0.18)',
   'rgba(255,255,255,0)',
@@ -71,12 +68,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 40,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
+    backgroundColor: colors.white,
   },
   shadowWrapPressed: {
     shadowOpacity: 0.08,
