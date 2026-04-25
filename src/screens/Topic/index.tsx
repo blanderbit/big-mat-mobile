@@ -1,6 +1,14 @@
-import { useState } from 'react';
-import { Image, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import {
+  findNodeHandle,
+  Image,
+  LayoutChangeEvent,
+  StyleSheet,
+  UIManager,
+  View,
+} from 'react-native';
 import { useWindowDimensions } from 'react-native';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,10 +39,14 @@ export const Topic = ({ route }: Props) => {
   const { t } = useTranslation();
   const { lessons } = route.params;
   const { bottom } = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [containerWidth, setContainerWidth] = useState(0);
+  const [firstLockedTooltipBelow, setFirstLockedTooltipBelow] = useState(false);
+  const firstLockedButtonWrapperRef = useRef<View | null>(null);
+  const [tooltipIndex, setTooltipIndex] = useState(0);
 
   const sortedLessons = lessons.slice().sort((a, b) => {
     const aLocked = a.locked === true;
@@ -52,6 +64,34 @@ export const Topic = ({ route }: Props) => {
   };
 
   const contentWidth = containerWidth || screenWidth;
+  const TOOLTIP_HEIGHT_ESTIMATE = 230;
+  const TOOLTIP_OFFSET_FROM_BUTTON = 90;
+
+  const updateFirstLockedTooltipSide = useCallback(() => {
+    const node =
+      firstLockedButtonWrapperRef.current != null
+        ? findNodeHandle(firstLockedButtonWrapperRef.current)
+        : null;
+
+    if (!node) return;
+
+    UIManager.measureInWindow(node, (_x, buttonY) => {
+      // Пытаемся рисовать СВЕРХУ. Если верх тултипа попадает под header — переключаем на СНИЗУ
+      const tooltipTopIfAbove =
+        buttonY - TOOLTIP_OFFSET_FROM_BUTTON - TOOLTIP_HEIGHT_ESTIMATE;
+      const shouldBeBelow = tooltipTopIfAbove < headerHeight;
+      setFirstLockedTooltipBelow(prev =>
+        prev === shouldBeBelow ? prev : shouldBeBelow,
+      );
+    });
+  }, [headerHeight]);
+
+  const handleCloseTooltip = useCallback(() => {
+    setTooltipIndex(prev => {
+      if (prev >= sortedLessons.length - 1) return sortedLessons.length;
+      return prev + 1;
+    });
+  }, [sortedLessons.length]);
 
   return (
     <ScrollView
@@ -69,25 +109,32 @@ export const Topic = ({ route }: Props) => {
         {sortedLessons.map((lesson, index) => {
           const isLeft = (index + 1) % 2 === 1;
           const isLast = index === sortedLessons.length - 1;
-          const firstLocked = sortedLessons.findIndex(l => l.locked) === index;
+          const isShowTooltip = index === tooltipIndex;
 
           return (
             <View key={lesson.id} style={styles.lessonItem}>
-              {firstLocked && (
+              {isShowTooltip && (
                 <View
                   pointerEvents="box-none"
-                  style={styles.firstLockedTooltip}
+                  style={[
+                    styles.firstLockedTooltip,
+                    firstLockedTooltipBelow
+                      ? styles.firstLockedTooltipBelow
+                      : styles.firstLockedTooltipAbove,
+                  ]}
                 >
                   <View style={styles.tooltip}>
                     <Text bold size={20}>
                       {index + 1}. {lesson.title}
                     </Text>
 
-                    <Text center semiBold size={14}>
-                      {lesson.subtitle}
-                    </Text>
+                    {lesson.subtitle && (
+                      <Text center semiBold size={14}>
+                        {lesson.subtitle}
+                      </Text>
+                    )}
 
-                    <Button title={t('close')} onPress={() => {}} />
+                    <Button title={t('close')} onPress={handleCloseTooltip} />
 
                     <Button title={t('start')} onPress={() => {}} />
                   </View>
@@ -95,15 +142,26 @@ export const Topic = ({ route }: Props) => {
               )}
 
               <View
+                ref={isShowTooltip ? firstLockedButtonWrapperRef : undefined}
                 style={[
                   styles.lessonButtonWrapper,
                   isLeft ? styles.lessonButtonLeft : styles.lessonButtonRight,
-                  firstLocked ? styles.lessonButtonWrapperOnTop : null,
+                  isShowTooltip ? styles.lessonButtonWrapperOnTop : null,
                 ]}
+                onLayout={
+                  isShowTooltip ? updateFirstLockedTooltipSide : undefined
+                }
               >
                 <Pressable onPress={() => {}}>
-                  {firstLocked && (
-                    <View style={styles.notchWrapper}>
+                  {isShowTooltip && (
+                    <View
+                      style={[
+                        styles.notchWrapper,
+                        firstLockedTooltipBelow
+                          ? styles.notchWrapperBelow
+                          : styles.notchWrapperAbove,
+                      ]}
+                    >
                       <Tooltip1Notch />
 
                       <View style={styles.notchBorderMask} />
@@ -263,21 +321,31 @@ const styles = StyleSheet.create({
   },
   firstLockedTooltip: {
     position: 'absolute',
-    top: 90,
     left: 0,
     width: '100%',
     alignItems: 'center',
     zIndex: 3,
     elevation: 10,
   },
+  firstLockedTooltipAbove: {
+    bottom: 90,
+  },
+  firstLockedTooltipBelow: {
+    top: 90,
+  },
   notchWrapper: {
     position: 'absolute',
-    bottom: -6,
     left: 0,
     width: '100%',
     alignItems: 'center',
-    transform: [{ rotate: '180deg' }],
     zIndex: 3,
+  },
+  notchWrapperAbove: {
+    top: -12,
+  },
+  notchWrapperBelow: {
+    bottom: -6,
+    transform: [{ rotate: '180deg' }],
   },
   notchBorderMask: {
     height: 2,
