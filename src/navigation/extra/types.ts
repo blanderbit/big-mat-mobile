@@ -7,6 +7,7 @@ import { Topic } from '@extra/types';
 export type HomeStackParamList = {
   [routes.home.HOME]: undefined;
   [routes.home.TOPIC]: { lessons: Topic['routes'] };
+  [routes.home.START_LESSON]: { lesson: Topic['routes'][number] };
 };
 
 export type AuthStackParamList = {

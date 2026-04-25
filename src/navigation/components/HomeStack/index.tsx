@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Home } from '@screens/Home';
+import { StartLesson } from '@screens/StartLesson';
 import { Topic } from '@screens/Topic';
 import { HomeHeader } from '@navigation/components/HomeStack/components/HomeHeader';
 import { routes } from '@navigation/extra/routes';
@@ -29,6 +30,14 @@ export const HomeStack = () => (
       options={{
         headerShown: true,
         header: HomeHeader,
+        contentStyle: { backgroundColor: colors.brightPurple },
+      }}
+    />
+    <Stack.Screen
+      component={StartLesson}
+      name={routes.home.START_LESSON}
+      options={{
+        headerShown: false,
         contentStyle: { backgroundColor: colors.brightPurple },
       }}
     />

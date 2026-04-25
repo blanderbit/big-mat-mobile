@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { RouteProp } from '@react-navigation/native';
+import { RouteProp, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line } from 'react-native-svg';
@@ -20,7 +20,10 @@ import { RoundSlider } from '@components/RoundSlider';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
-import { HomeStackParamList } from '@navigation/extra/types';
+import {
+  HomeStackNavigationProp,
+  HomeStackParamList,
+} from '@navigation/extra/types';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
@@ -40,6 +43,7 @@ export const Topic = ({ route }: Props) => {
   const { lessons } = route.params;
   const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
+  const { navigate } = useNavigation<HomeStackNavigationProp>();
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
@@ -111,6 +115,12 @@ export const Topic = ({ route }: Props) => {
           const isLast = index === sortedLessons.length - 1;
           const isShowTooltip = index === tooltipIndex;
 
+          const navigateToStartLesson = () => {
+            navigate(routes.home.START_LESSON, {
+              lesson,
+            });
+          };
+
           return (
             <View key={lesson.id} style={styles.lessonItem}>
               {isShowTooltip && (
@@ -136,7 +146,10 @@ export const Topic = ({ route }: Props) => {
 
                     <Button title={t('close')} onPress={handleCloseTooltip} />
 
-                    <Button title={t('start')} onPress={() => {}} />
+                    <Button
+                      title={t('start')}
+                      onPress={navigateToStartLesson}
+                    />
                   </View>
                 </View>
               )}
