@@ -44,27 +44,27 @@ export enum SlideType {
 }
 
 export type SlideVariantsByType = {
-  // [SlideType.SINGLE_CHOICE]: {
-  //   buttonText: string;
-  //   correctOptionIds: string[];
-  //   explanation: {
-  //     type: 'doc';
-  //     content: { content: { text: string } }[];
-  //   };
-  //   id: string;
-  //   imageUrl: string;
-  //   options: {
-  //     id: string;
-  //     label: string;
-  //   }[];
-  //   optionsLayout: 'grid';
-  //   questionImageUrl: string;
-  //   questionText: {
-  //     content: { content: { text: string }[] }[];
-  //   };
-  //   text: { content: { content: { text: string }[] }[] };
-  //   wrongExplanation: { content: { content: { text: string }[] }[] };
-  // };
+  [SlideType.SINGLE_CHOICE]: {
+    buttonText: string;
+    correctOptionIds: string[];
+    explanation: {
+      content: { content: { text: string }[] }[];
+    };
+    id: string;
+    imageUrl: string;
+    options: {
+      id: string;
+      imageUrl?: string;
+      label: string;
+    }[];
+    optionsLayout: 'grid';
+    questionImageUrl: string;
+    questionText: {
+      content: { content: { text: string }[] }[];
+    };
+    text: { content: { content: { text: string }[] }[] };
+    wrongExplanation: { content: { content: { text: string }[] }[] };
+  };
   [SlideType.STORY]: {
     id: string;
     imageUrl?: string;
@@ -98,7 +98,9 @@ export type SlideVariantsByType = {
   // [SlideType.COMIC]: unknown;
 };
 
-export type Slide<TType extends SlideType = SlideType> = {
+export type SlideTypeWithVariants = keyof SlideVariantsByType;
+
+export type Slide<TType extends SlideTypeWithVariants = SlideTypeWithVariants> = {
   id: string;
   order: number;
   points: number;

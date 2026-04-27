@@ -7,5 +7,5 @@ type Props = {
 };
 
 export const AnswerVariant = ({ index }: Props) => {
-  return <Text bold>{getUkrLetterByIndex(index)}.</Text>;
+  return <Text bold>{getUkrLetterByIndex(index)})</Text>;
 };

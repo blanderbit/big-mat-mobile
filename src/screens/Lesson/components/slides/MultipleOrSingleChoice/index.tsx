@@ -16,12 +16,12 @@ import { Slide, SlideType } from '@extra/types';
 import { useLessonsStore } from '@stores/lessonsStore';
 
 type Props = {
-  slide: Slide<SlideType.MULTIPLE_CHOICE>;
+  slide: Slide<SlideType.MULTIPLE_CHOICE | SlideType.SINGLE_CHOICE>;
   type: 'multiple' | 'single';
 };
 
-export const MultipleChoice = ({ slide, type }: Props) => {
-  console.log('MultipleChoice slide', slide);
+export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
+  console.log('MultipleOrSingleChoice slide', slide);
   const { t } = useTranslation();
   const [chosenOptionsIds, setChosenOptionsIds] = useState<
     Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'][]
@@ -63,16 +63,14 @@ export const MultipleChoice = ({ slide, type }: Props) => {
   };
 
   const checkAnswer = () => {
-    if (type === 'multiple') {
-      const correctIds = slide.variants[0].correctOptionIds;
-      const chosenIds = chosenOptionsIds;
+    const correctIds = slide.variants[0].correctOptionIds;
+    const chosenIds = chosenOptionsIds;
 
-      setIsCorrect(
-        chosenIds.length === correctIds.length &&
-          chosenIds.every(id => correctIds.includes(id)) &&
-          correctIds.every(id => chosenIds.includes(id)),
-      );
-    }
+    setIsCorrect(
+      chosenIds.length === correctIds.length &&
+        chosenIds.every(id => correctIds.includes(id)) &&
+        correctIds.every(id => chosenIds.includes(id)),
+    );
   };
 
   const answerLesson = async () => {
@@ -101,7 +99,7 @@ export const MultipleChoice = ({ slide, type }: Props) => {
 
       <View
         style={
-          optionsLayout === 'grid' ? styles.optionsGrid : { gap: DEFAULT_SPACE }
+          optionsLayout === 'grid' ? styles.optionsGrid : styles.optionsList
         }
         onLayout={
           optionsLayout === 'grid'
@@ -118,11 +116,13 @@ export const MultipleChoice = ({ slide, type }: Props) => {
                 : undefined
             }
           >
-            <AnswerVariant index={index} />
+            <View style={styles.optionHeader}>
+              <AnswerVariant index={index} />
+
+              <Text size={14}>{option.label}</Text>
+            </View>
 
             {option.imageUrl && <FullWidthFastImage uri={option.imageUrl} />}
-
-            <Text size={14}>{option.label}</Text>
           </View>
         ))}
       </View>
@@ -174,10 +174,18 @@ export const MultipleChoice = ({ slide, type }: Props) => {
 };
 
 const styles = StyleSheet.create({
+  optionsList: {
+    gap: DEFAULT_SPACE,
+  },
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: DEFAULT_SPACE,
+  },
+  optionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   optionsGridItem: {
     flexGrow: 0,
