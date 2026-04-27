@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
 import { ScrollView } from '@components/ScrollView';
+import { FractionInput } from '@screens/Lesson/components/slides/FractionInput';
 import { FractionSlider } from '@screens/Lesson/components/slides/FractionSlider';
 import { MultipleOrSingleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
 import { Story } from '@screens/Lesson/components/slides/Story';
@@ -72,6 +73,13 @@ export const Lesson = ({ route }: Props) => {
             key={currentSlide.id}
             setScrollEnabled={setScrollEnabled}
             slide={currentSlide as Slide<SlideType.FRACTION_SLIDER>}
+          />
+        );
+      case SlideType.FRACTION_INPUT:
+        return (
+          <FractionInput
+            key={currentSlide.id}
+            slide={currentSlide as Slide<SlideType.FRACTION_INPUT>}
           />
         );
       default:

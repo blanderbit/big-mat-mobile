@@ -38,7 +38,6 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
         )
       : 80;
   const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
-  const [isLoading, setIsLoading] = useState(false);
 
   const gridItemWidth =
     optionsGridWidth > 0
@@ -62,7 +61,10 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
     setChosenOptionsIds([optionId]);
   };
 
-  const checkAnswer = () => {
+  const answer = async () => {
+    //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
+    //     answer: slide.variants[0].answer,
+    //   });
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = chosenOptionsIds;
 
@@ -71,20 +73,6 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
         chosenIds.every(id => correctIds.includes(id)) &&
         correctIds.every(id => chosenIds.includes(id)),
     );
-  };
-
-  const answerLesson = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-
-    try {
-      //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
-      //     answer: slide.variants[0].answer,
-      //   });
-      goToNetSlide();
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -154,7 +142,7 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
       <Button
         disabled={!chosenOptionsIds.length || isCorrect != null}
         title={t('check')}
-        onPress={checkAnswer}
+        onPress={answer}
       />
 
       {isCorrect != null && (
@@ -165,7 +153,7 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={answerLesson}
+          onPressNext={goToNetSlide}
         />
       )}
     </Wrapper>

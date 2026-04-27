@@ -33,19 +33,14 @@ export const Story = ({ slide }: Props) => {
   };
   const { bottom } = useSafeAreaInsets();
   const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const answerLesson = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
-
+  const answer = async () => {
     try {
       //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
       //     answer: slide.variants[0].answer,
       //   });
       goToNetSlide();
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -123,7 +118,7 @@ export const Story = ({ slide }: Props) => {
       >
         <Button
           title={slide.variants[0].buttonText || t('next')}
-          onPress={answerLesson}
+          onPress={answer}
         />
       </View>
 

@@ -108,8 +108,20 @@ export type SlideVariantsByType = {
     };
     wrongExplanation: { content: { content: { text: string }[] }[] };
   };
+  [SlideType.FRACTION_INPUT]: {
+    correctNumerator: number;
+    correctDenominator: number;
+    id: string;
+    questionImageUrl: string;
+    questionText: {
+      content: { content: { text: string }[] }[];
+    };
+    explanation: {
+      content: { content: { text: string }[] }[];
+    };
+    wrongExplanation: { content: { content: { text: string }[] }[] };
+  };
   // [SlideType.DRAG_DROP]: unknown;
-  // [SlideType.FRACTION_INPUT]: unknown;
   // [SlideType.COMIC]: unknown;
 };
 

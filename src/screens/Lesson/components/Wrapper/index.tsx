@@ -13,9 +13,7 @@ export const Wrapper = ({ children }: Props) => {
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <View
-      style={[styles.container, { paddingBottom: bottom + DEFAULT_SPACE }]}
-    >
+    <View style={[styles.container, { paddingBottom: bottom + DEFAULT_SPACE }]}>
       {children}
     </View>
   );
@@ -26,7 +24,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopLeftRadius: 70,
     borderTopRightRadius: 70,
-    paddingTop: DEFAULT_SPACE,
+    paddingTop: DEFAULT_SPACE * 2,
     paddingHorizontal: DEFAULT_SPACE,
     marginHorizontal: -DEFAULT_SPACE,
     gap: DEFAULT_SPACE,
