@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
 import { ScrollView } from '@components/ScrollView';
+import { FractionSlider } from '@screens/Lesson/components/slides/FractionSlider';
 import { MultipleOrSingleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
 import { Story } from '@screens/Lesson/components/slides/Story';
 import { routes } from '@navigation/extra/routes';
@@ -20,6 +21,7 @@ type Props = {
 export const Lesson = ({ route }: Props) => {
   const { lessonId } = route.params;
   const [isLoading, setIsLoading] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const slides = useLessonsStore(state => state.slides);
   const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
   const setSlides = useLessonsStore(state => state.setSlides);
@@ -64,6 +66,14 @@ export const Lesson = ({ route }: Props) => {
             type="single"
           />
         );
+      case SlideType.FRACTION_SLIDER:
+        return (
+          <FractionSlider
+            key={currentSlide.id}
+            setScrollEnabled={setScrollEnabled}
+            slide={currentSlide as Slide<SlideType.FRACTION_SLIDER>}
+          />
+        );
       default:
         return null;
     }
@@ -72,7 +82,10 @@ export const Lesson = ({ route }: Props) => {
   const SlideComponent = getSlideComponent();
 
   return (
-    <ScrollView contentContainerStyle={styles.contentContainer}>
+    <ScrollView
+      contentContainerStyle={styles.contentContainer}
+      scrollEnabled={scrollEnabled}
+    >
       {isLoading ? (
         <View style={styles.loading}>
           <ActivityIndicator />

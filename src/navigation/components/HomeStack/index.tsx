@@ -48,6 +48,7 @@ export const HomeStack = () => (
       component={Lesson}
       name={routes.home.LESSON}
       options={{
+        gestureEnabled: false,
         headerShown: true,
         header: LessonHeader,
         contentStyle: { backgroundColor: colors.pink },

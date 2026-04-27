@@ -14,7 +14,6 @@ type Props = {
   borderRadius?: number;
   size?: number;
   pressed?: boolean;
-  grey?: boolean;
 };
 
 export const Button = ({
@@ -25,15 +24,15 @@ export const Button = ({
   borderRadius,
   size,
   pressed: forcedPressed,
-  grey,
 }: Props) => {
   const opacity = disabled ? DEFAULT_OPACITY : 1;
   const radius = borderRadius ?? 40;
+  const isGray = disabled;
   const pressableStyle = [
     styles.pressable,
     {
       width: size ?? '100%',
-      height: size ?? 'auto',
+      ...(size ? { height: size } : null),
       opacity,
       marginTop,
     },
@@ -50,10 +49,10 @@ export const Button = ({
     <RNPressable disabled={disabled} style={pressableStyle} onPress={onPress}>
       {({ pressed }) => {
         const isPressed = forcedPressed === true || pressed;
-        const base = grey ? grayBaseColors : baseColors;
-        const pressedBase = grey ? grayPressedBaseColors : pressedBaseColors;
-        const gloss = grey ? grayGlossColors : glossColors;
-        const pressedGloss = grey ? grayPressedGlossColors : pressedGlossColors;
+        const base = isGray ? grayBaseColors : baseColors;
+        const pressedBase = isGray ? grayPressedBaseColors : pressedBaseColors;
+        const gloss = isGray ? grayGlossColors : glossColors;
+        const pressedGloss = isGray ? grayPressedGlossColors : pressedGlossColors;
 
         return (
           <View

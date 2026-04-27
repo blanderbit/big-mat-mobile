@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 70,
     borderTopRightRadius: 70,
     padding: DEFAULT_SPACE,
+    paddingTop: DEFAULT_SPACE * 2,
     position: 'absolute',
     bottom: 0,
     left: 0,

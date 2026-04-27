@@ -152,7 +152,6 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
       </View>
 
       <Button
-        grey
         disabled={!chosenOptionsIds.length || isCorrect != null}
         title={t('check')}
         onPress={checkAnswer}

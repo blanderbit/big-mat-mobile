@@ -16,6 +16,7 @@ type Props = PropsWithChildren<{
   scrollViewStyle?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   onLayout?: (event: LayoutChangeEvent) => void;
+  scrollEnabled?: boolean;
 }>;
 
 export const ScrollView = ({
@@ -25,12 +26,14 @@ export const ScrollView = ({
   scrollViewStyle,
   contentContainerStyle,
   onLayout,
+  scrollEnabled,
 }: Props) => (
   <RNScrollView
     nestedScrollEnabled
     // не добавлять keyboardDismissMode="on-drag"!
     // keyboardDismissMode="on-drag"
     keyboardShouldPersistTaps="handled"
+    scrollEnabled={scrollEnabled}
     showsHorizontalScrollIndicator={false}
     showsVerticalScrollIndicator={false}
     style={[styles.container, scrollViewStyle]}

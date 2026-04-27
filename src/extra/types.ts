@@ -92,18 +92,34 @@ export type SlideVariantsByType = {
     };
     wrongExplanation: { content: { content: { text: string }[] }[] };
   };
+  [SlideType.FRACTION_SLIDER]: {
+    correctOptionIds: string[];
+    explanation: {
+      content: { content: { text: string }[] }[];
+    };
+    id: string;
+    options: {
+      id: string;
+      label: string;
+    }[];
+    questionImageUrl: string;
+    questionText: {
+      content: { content: { text: string }[] }[];
+    };
+    wrongExplanation: { content: { content: { text: string }[] }[] };
+  };
   // [SlideType.DRAG_DROP]: unknown;
   // [SlideType.FRACTION_INPUT]: unknown;
-  // [SlideType.FRACTION_SLIDER]: unknown;
   // [SlideType.COMIC]: unknown;
 };
 
 export type SlideTypeWithVariants = keyof SlideVariantsByType;
 
-export type Slide<TType extends SlideTypeWithVariants = SlideTypeWithVariants> = {
-  id: string;
-  order: number;
-  points: number;
-  type: TType;
-  variants: SlideVariantsByType[TType][];
-};
+export type Slide<TType extends SlideTypeWithVariants = SlideTypeWithVariants> =
+  {
+    id: string;
+    order: number;
+    points: number;
+    type: TType;
+    variants: SlideVariantsByType[TType][];
+  };
