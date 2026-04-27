@@ -8,6 +8,42 @@ import { useUserStore } from '@stores/userStore';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@keychain/extra/constants';
 import { keychain } from '@keychain/index';
 
+function shellEscapeSingleQuotes(value: string) {
+  // Wrap in single-quotes and escape existing single-quotes for POSIX shells.
+  return `'${value.replace(/'/g, `'\"'\"'`)}'`;
+}
+
+function toCurl(config: AxiosRequestConfig) {
+  const method = (config.method ?? 'get').toUpperCase();
+  const baseURL = config.baseURL ?? '';
+  const url = `${baseURL}${config.url ?? ''}`;
+
+  const parts: string[] = [`curl -X ${method}`, shellEscapeSingleQuotes(url)];
+
+  const headers = (config.headers ?? {}) as Record<string, unknown>;
+  for (const [key, value] of Object.entries(headers)) {
+    if (value == null) continue;
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        if (v == null) continue;
+        parts.push('-H', shellEscapeSingleQuotes(`${key}: ${String(v)}`));
+      }
+      continue;
+    }
+    parts.push('-H', shellEscapeSingleQuotes(`${key}: ${String(value)}`));
+  }
+
+  if (config.data != null) {
+    const data =
+      typeof config.data === 'string'
+        ? config.data
+        : JSON.stringify(config.data);
+    parts.push('--data-raw', shellEscapeSingleQuotes(data));
+  }
+
+  return parts.join(' ');
+}
+
 API.interceptors.request.use(
   async config => {
     const hasInternet = await hasInternetConnection();
@@ -22,6 +58,9 @@ API.interceptors.request.use(
     if (accessToken && typeof existingAuthHeader !== 'string') {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
+
+    // Debug: log request as curl command
+    // console.log(toCurl(config));
 
     return config;
   },

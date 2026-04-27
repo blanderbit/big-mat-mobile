@@ -44,40 +44,58 @@ export enum SlideType {
 }
 
 export type SlideVariantsByType = {
-  [SlideType.SINGLE_CHOICE]: {
-    buttonText: string;
-    correctOptionIds: string[];
-    explanation: {
-      type: 'doc';
-      content: { content: { text: string } }[];
-    };
+  // [SlideType.SINGLE_CHOICE]: {
+  //   buttonText: string;
+  //   correctOptionIds: string[];
+  //   explanation: {
+  //     type: 'doc';
+  //     content: { content: { text: string } }[];
+  //   };
+  //   id: string;
+  //   imageUrl: string;
+  //   options: {
+  //     id: string;
+  //     label: string;
+  //   }[];
+  //   optionsLayout: 'grid';
+  //   questionImageUrl: string;
+  //   questionText: {
+  //     content: { content: { text: string }[] }[];
+  //   };
+  //   text: { content: { content: { text: string }[] }[] };
+  //   wrongExplanation: { content: { content: { text: string }[] }[] };
+  // };
+  [SlideType.STORY]: {
     id: string;
-    imageUrl: string;
-    options: {
-      id: string;
-      label: string;
-    }[];
-    optionsLayout: 'grid';
+    imageUrl?: string;
+    text: { content: { content: { text: string }[] }[] };
+    buttonText?: string;
+    imageWidth?: number;
+    imageHeight?: number;
+    imageFit?: 'contain' | 'cover';
+    imagePosition?: 'top' | 'inline' | 'bottom';
+  };
+  [SlideType.MULTIPLE_CHOICE]: {
+    correctOptionIds: string[];
     questionImageUrl: string;
     questionText: {
       content: { content: { text: string }[] }[];
     };
-    text: { content: { content: { text: string }[] }[] };
+    optionsLayout?: 'grid' | 'list';
+    options: {
+      id: string;
+      imageUrl?: string;
+      label: string;
+    }[];
+    explanation: {
+      content: { content: { text: string }[] }[];
+    };
     wrongExplanation: { content: { content: { text: string }[] }[] };
   };
-  [SlideType.MULTIPLE_CHOICE]: {
-    options: unknown[];
-  };
-  [SlideType.STORY]: {
-    id: string;
-    imageUrl: string;
-    text: { content: { content: { text: string }[] }[] };
-    buttonText?: string;
-  };
-  [SlideType.DRAG_DROP]: unknown;
-  [SlideType.FRACTION_INPUT]: unknown;
-  [SlideType.FRACTION_SLIDER]: unknown;
-  [SlideType.COMIC]: unknown;
+  // [SlideType.DRAG_DROP]: unknown;
+  // [SlideType.FRACTION_INPUT]: unknown;
+  // [SlideType.FRACTION_SLIDER]: unknown;
+  // [SlideType.COMIC]: unknown;
 };
 
 export type Slide<TType extends SlideType = SlideType> = {

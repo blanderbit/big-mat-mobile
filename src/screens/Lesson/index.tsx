@@ -3,7 +3,8 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
 import { ScrollView } from '@components/ScrollView';
-import { Story } from '@screens/Lesson/components/Story';
+import { MultipleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
+import { Story } from '@screens/Lesson/components/slides/Story';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackParamList } from '@navigation/extra/types';
 
@@ -42,6 +43,13 @@ export const Lesson = ({ route }: Props) => {
     switch (currentSlide?.type) {
       case SlideType.STORY:
         return <Story slide={currentSlide as Slide<SlideType.STORY>} />;
+      case SlideType.MULTIPLE_CHOICE:
+        return (
+          <MultipleChoice
+            slide={currentSlide as Slide<SlideType.MULTIPLE_CHOICE>}
+            type="multiple"
+          />
+        );
       default:
         return null;
     }

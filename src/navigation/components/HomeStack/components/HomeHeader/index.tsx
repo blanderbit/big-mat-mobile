@@ -5,12 +5,14 @@ import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
+import { useUserStore } from '@stores/userStore';
 
 import BlankAvatar from '@assets/images/blankAvatar.svg';
 import Home from '@assets/images/home.svg';
 
 export const HomeHeader = () => {
   const { top } = useSafeAreaInsets();
+  const totalScore = useUserStore(s => s.totalScore);
 
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
@@ -21,7 +23,7 @@ export const HomeHeader = () => {
 
         <View style={styles.scorePill}>
           <Text bold color={colors.brightPurple} size={20}>
-            90
+            {totalScore}
           </Text>
         </View>
       </View>

@@ -96,7 +96,7 @@ export const Home = () => {
         onPress={() => {}}
       />
 
-      <View style={[styles.promoContainer, { marginBottom: bottom + 50 }]}>
+      <View style={[styles.promoContainer, { marginBottom: bottom + 100 }]}>
         <Image
           resizeMode="contain"
           source={background8}

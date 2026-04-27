@@ -4,50 +4,90 @@ import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
-import { DEFAULT_OPACITY } from '@extra/constants';
+import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
 
 type Props = {
   title: string;
   onPress: () => void;
   disabled?: boolean;
   marginTop?: number;
+  borderRadius?: number;
+  size?: number;
+  pressed?: boolean;
+  grey?: boolean;
 };
 
-export const Button = ({ title, onPress, disabled, marginTop }: Props) => {
+export const Button = ({
+  title,
+  onPress,
+  disabled,
+  marginTop,
+  borderRadius,
+  size,
+  pressed: forcedPressed,
+  grey,
+}: Props) => {
   const opacity = disabled ? DEFAULT_OPACITY : 1;
+  const radius = borderRadius ?? 40;
+  const pressableStyle = [
+    styles.pressable,
+    {
+      width: size ?? '100%',
+      height: size ?? 'auto',
+      opacity,
+      marginTop,
+    },
+  ];
+
+  const shadowRadiusStyle = { borderRadius: radius };
+  const clipRadiusStyle = {
+    borderRadius: radius,
+    paddingVertical: size ? 0 : DEFAULT_SPACE,
+    ...(size ? { height: size } : null),
+  };
 
   return (
-    <RNPressable
-      disabled={disabled}
-      style={[styles.pressable, { opacity, marginTop }]}
-      onPress={onPress}
-    >
-      {({ pressed }) => (
-        <View style={[styles.shadowWrap, pressed && styles.shadowWrapPressed]}>
-          <View style={styles.clipWrap}>
-            <LinearGradient
-              colors={pressed ? pressedBaseColors : baseColors}
-              end={{ x: 0.5, y: 1 }}
-              locations={[0, 0.55, 1]}
-              pointerEvents="none"
-              start={{ x: 0.5, y: 0 }}
-              style={styles.baseGradient}
-            />
+    <RNPressable disabled={disabled} style={pressableStyle} onPress={onPress}>
+      {({ pressed }) => {
+        const isPressed = forcedPressed === true || pressed;
+        const base = grey ? grayBaseColors : baseColors;
+        const pressedBase = grey ? grayPressedBaseColors : pressedBaseColors;
+        const gloss = grey ? grayGlossColors : glossColors;
+        const pressedGloss = grey ? grayPressedGlossColors : pressedGlossColors;
 
-            <LinearGradient
-              colors={pressed ? pressedGlossColors : glossColors}
-              end={{ x: 0.5, y: 1 }}
-              pointerEvents="none"
-              start={{ x: 0.5, y: 0 }}
-              style={styles.glossGradient}
-            />
+        return (
+          <View
+            style={[
+              styles.shadowWrap,
+              isPressed && styles.shadowWrapPressed,
+              shadowRadiusStyle,
+            ]}
+          >
+            <View style={[styles.clipWrap, clipRadiusStyle]}>
+              <LinearGradient
+                colors={isPressed ? pressedBase : base}
+                end={{ x: 0.5, y: 1 }}
+                locations={[0, 0.55, 1]}
+                pointerEvents="none"
+                start={{ x: 0.5, y: 0 }}
+                style={styles.baseGradient}
+              />
 
-            <Text bold size={22}>
-              {title}
-            </Text>
+              <LinearGradient
+                colors={isPressed ? pressedGloss : gloss}
+                end={{ x: 0.5, y: 1 }}
+                pointerEvents="none"
+                start={{ x: 0.5, y: 0 }}
+                style={styles.glossGradient}
+              />
+
+              <Text bold size={22}>
+                {title}
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
+        );
+      }}
     </RNPressable>
   );
 };
@@ -60,14 +100,22 @@ const pressedGlossColors = [
   'rgba(255,255,255,0)',
 ] satisfies string[];
 
+const grayBaseColors: string[] = ['#F2F2F2', '#DADADA', '#BEBEBE'];
+const grayPressedBaseColors: string[] = ['#D9D9D9', '#CFCFCF', '#B5B5B5'];
+const grayGlossColors: string[] = [
+  'rgba(255,255,255,0.55)',
+  'rgba(255,255,255,0)',
+];
+const grayPressedGlossColors = [
+  'rgba(255,255,255,0.18)',
+  'rgba(255,255,255,0)',
+] satisfies string[];
+
 const styles = StyleSheet.create({
-  pressable: {
-    width: '100%',
-  },
+  pressable: {},
   shadowWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 40,
     backgroundColor: colors.white,
   },
   shadowWrapPressed: {
@@ -80,8 +128,7 @@ const styles = StyleSheet.create({
   clipWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 40,
+    // paddingVertical: 16,
     borderWidth: 1,
     borderColor: colors.black,
     overflow: 'hidden',

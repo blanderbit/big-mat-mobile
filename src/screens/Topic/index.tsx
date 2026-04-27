@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   findNodeHandle,
   Image,
@@ -27,6 +27,7 @@ import {
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
+import { pluralizeUk } from '@extra/pluralizeUk';
 
 import ActiveLessonButton from '@assets/images/activeLessonButton.svg';
 import Background10 from '@assets/images/background10.svg';
@@ -71,7 +72,7 @@ export const Topic = ({ route }: Props) => {
   const TOOLTIP_HEIGHT_ESTIMATE = 230;
   const TOOLTIP_OFFSET_FROM_BUTTON = 90;
 
-  const updateFirstLockedTooltipSide = useCallback(() => {
+  const updateFirstLockedTooltipSide = () => {
     const node =
       firstLockedButtonWrapperRef.current != null
         ? findNodeHandle(firstLockedButtonWrapperRef.current)
@@ -88,14 +89,18 @@ export const Topic = ({ route }: Props) => {
         prev === shouldBeBelow ? prev : shouldBeBelow,
       );
     });
-  }, [headerHeight]);
+  };
 
-  const handleCloseTooltip = useCallback(() => {
+  const handleCloseTooltip = () => {
     setTooltipIndex(prev => {
       if (prev >= sortedLessons.length - 1) return sortedLessons.length;
       return prev + 1;
     });
-  }, [sortedLessons.length]);
+  };
+
+  const passedLessonsCount = sortedLessons.filter(
+    lesson => !!lesson.progress.completedAt,
+  ).length;
 
   return (
     <ScrollView
@@ -289,8 +294,20 @@ export const Topic = ({ route }: Props) => {
         marginBottom={bottom}
         marginHorizontal={DEFAULT_SPACE}
         marginTop={DEFAULT_SPACE}
-        tooltipText="6 рівнів з 8"
         value={50}
+        tooltipText={
+          passedLessonsCount +
+          ' ' +
+          pluralizeUk(passedLessonsCount, [
+            t('level_one'),
+            t('level_few'),
+            t('level_many'),
+          ]) +
+          ' ' +
+          t('from') +
+          ' ' +
+          sortedLessons.length
+        }
       />
 
       <View

@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,6 +28,21 @@ export const LessonHeader = () => {
           Math.max(0, ((currentSlideIndex + 1) / slides.length) * 100),
         );
 
+  const [progressAnim] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 1000,
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
+
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
+
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
       <Pressable style={styles.backButton} onPress={goBack}>
@@ -37,11 +53,13 @@ export const LessonHeader = () => {
         <View style={styles.progressWrap}>
           <View style={styles.progressTrack} />
 
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
 
-          <View style={[styles.progressIconRail, { width: `${progress}%` }]}>
+          <Animated.View
+            style={[styles.progressIconRail, { width: progressWidth }]}
+          >
             <Lightning />
-          </View>
+          </Animated.View>
         </View>
       )}
     </View>
