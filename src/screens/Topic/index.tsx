@@ -294,7 +294,7 @@ export const Topic = ({ route }: Props) => {
         marginBottom={bottom}
         marginHorizontal={DEFAULT_SPACE}
         marginTop={DEFAULT_SPACE}
-        value={50}
+        value={(passedLessonsCount / sortedLessons.length) * 100}
         tooltipText={
           passedLessonsCount +
           ' ' +

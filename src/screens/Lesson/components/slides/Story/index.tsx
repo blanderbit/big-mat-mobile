@@ -32,14 +32,14 @@ export const Story = ({ slide }: Props) => {
     setContainerHeight(event.nativeEvent.layout.height);
   };
   const { bottom } = useSafeAreaInsets();
-  const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
 
   const answer = async () => {
     try {
       //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
       //     answer: slide.variants[0].answer,
       //   });
-      goToNetSlide();
+      goToNextSlide();
     } finally {
     }
   };

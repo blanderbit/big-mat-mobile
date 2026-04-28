@@ -31,7 +31,7 @@ export const FractionSlider = ({ setScrollEnabled, slide }: Props) => {
   const [sliderWidth, setSliderWidth] = useState(0);
   const transparentThumb = Image.resolveAssetSource(transparent48x48);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const { t } = useTranslation();
 
   const answerId = options[index].id;
@@ -178,7 +178,7 @@ export const FractionSlider = ({ setScrollEnabled, slide }: Props) => {
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNetSlide}
+          onPressNext={goToNextSlide}
         />
       )}
     </Wrapper>

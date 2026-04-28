@@ -7,7 +7,7 @@ type LessonsStore = {
   setSlides: (lessons: Slide[]) => void;
   currentSlideIndex: number;
   setCurrentSlideIndex: (currentSlideIndex: number) => void;
-  goToNetSlide: () => void;
+  goToNextSlide: () => void;
 };
 
 export const useLessonsStore = create<LessonsStore>((set, get) => ({
@@ -16,7 +16,7 @@ export const useLessonsStore = create<LessonsStore>((set, get) => ({
   currentSlideIndex: 0,
   setCurrentSlideIndex: (currentSlideIndex: number) =>
     set({ currentSlideIndex }),
-  goToNetSlide: () => {
+  goToNextSlide: () => {
     if (get().currentSlideIndex < get().slides.length - 1) {
       set(state => ({ currentSlideIndex: state.currentSlideIndex + 1 }));
     }

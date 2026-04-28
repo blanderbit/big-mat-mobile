@@ -37,7 +37,7 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
           (buttonsRowWidth - DEFAULT_SPACE * (optionsCount - 1)) / optionsCount,
         )
       : 80;
-  const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
 
   const gridItemWidth =
     optionsGridWidth > 0
@@ -153,7 +153,7 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNetSlide}
+          onPressNext={goToNextSlide}
         />
       )}
     </Wrapper>

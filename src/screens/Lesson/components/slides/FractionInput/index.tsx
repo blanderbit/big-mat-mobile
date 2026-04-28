@@ -27,7 +27,7 @@ export const FractionInput = ({ slide }: Props) => {
   const [numerator, setNumerator] = useState('');
   const [denominator, setDenominator] = useState('');
   const { t } = useTranslation();
-  const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const keyboardSet: Array<
@@ -179,7 +179,7 @@ export const FractionInput = ({ slide }: Props) => {
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNetSlide}
+          onPressNext={goToNextSlide}
         />
       )}
     </Wrapper>

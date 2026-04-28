@@ -31,7 +31,7 @@ export const DragDrop = ({ setScrollEnabled, slide }: Props) => {
   console.log('DragDrop slide', slide);
   const variant = slide.variants[0];
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const goToNetSlide = useLessonsStore(state => state.goToNetSlide);
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const containerRef = useRef<View>(null);
   const zoneRefs = useRef<Record<string, View | null>>({});
   const { t } = useTranslation();
@@ -412,7 +412,7 @@ export const DragDrop = ({ setScrollEnabled, slide }: Props) => {
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNetSlide}
+          onPressNext={goToNextSlide}
         />
       )}
     </Wrapper>

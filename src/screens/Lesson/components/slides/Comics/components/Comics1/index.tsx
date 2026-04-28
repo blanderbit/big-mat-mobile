@@ -7,6 +7,7 @@ import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
+import { useLessonsStore } from '@stores/lessonsStore';
 
 import Arrow2 from '@assets/images/arrow2.svg';
 import Arrow3 from '@assets/images/arrow3.svg';
@@ -37,6 +38,12 @@ import Unlock from '@assets/images/unlock.svg';
 export const Comics1 = () => {
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
+  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
+
+  const answer = async () => {
+    // TODO: add answer logic
+    goToNextSlide();
+  };
 
   const questsPhrase = [
     t('guestsAlready'),
@@ -317,7 +324,7 @@ export const Comics1 = () => {
           marginBottom={DEFAULT_SPACE + bottom}
           marginTop={DEFAULT_SPACE * 2}
           title={t('helpCipa')}
-          onPress={() => {}}
+          onPress={answer}
         />
       </View>
     </View>
