@@ -24,7 +24,6 @@ type Props = {
 };
 
 export const FractionSlider = ({ setScrollEnabled, slide }: Props) => {
-  console.log('FractionSlider slide', slide);
   const options = slide.variants[0].options;
   const maxIndex = Math.max(0, options.length - 1);
   const [index, setIndex] = useState(0);

@@ -91,6 +91,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <DragDrop
             key={currentSlide.id}
+            lessonId={lessonId}
             setScrollEnabled={setScrollEnabled}
             slide={currentSlide as Slide<SlideType.DRAG_DROP>}
           />

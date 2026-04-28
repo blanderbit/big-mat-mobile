@@ -23,7 +23,6 @@ type Props = {
 };
 
 export const FractionInput = ({ slide }: Props) => {
-  console.log('FractionInput slide', slide);
   const [numerator, setNumerator] = useState('');
   const [denominator, setDenominator] = useState('');
   const { t } = useTranslation();

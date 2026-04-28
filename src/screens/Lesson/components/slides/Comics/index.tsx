@@ -9,8 +9,6 @@ type Props = {
 };
 
 export const Comics = ({ lessonId, slide }: Props) => {
-  console.log('Comics slide', slide);
-
   const getComicComponent = () => {
     switch (slide.variants[0].nativeKey) {
       case 'comic_1':

@@ -20,7 +20,6 @@ type Props = {
 };
 
 export const Story = ({ slide }: Props) => {
-  console.log('Story slide', slide);
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const [textBubbleY, setTextBubbleY] = useState<number | null>(null);

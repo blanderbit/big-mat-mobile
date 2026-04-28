@@ -17,23 +17,29 @@ import { AnswerResult } from '@screens/Lesson/components/AnswerResult';
 import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';
 
+import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { DragDropItem, DragDropItemType, Slide, SlideType } from '@extra/types';
 import { useLessonsStore } from '@stores/lessonsStore';
+import { useUserStore } from '@stores/userStore';
 
 type Props = {
   slide: Slide<SlideType.DRAG_DROP>;
+  lessonId: string;
   setScrollEnabled?: (enabled: boolean) => void;
 };
 
-export const DragDrop = ({ setScrollEnabled, slide }: Props) => {
-  console.log('DragDrop slide', slide);
+export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
   const variant = slide.variants[0];
+  const [triesCount, setTriesCount] = useState(1);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const containerRef = useRef<View>(null);
   const zoneRefs = useRef<Record<string, View | null>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const slides = useLessonsStore(state => state.slides);
+  const getTotalScore = useUserStore(state => state.getTotalScore);
   const { t } = useTranslation();
   const [containerWindow, setContainerWindow] = useState<{
     x: number;
@@ -224,6 +230,26 @@ export const DragDrop = ({ setScrollEnabled, slide }: Props) => {
     setIsCorrect(isCorrect);
   };
 
+  const handleGoToNextSlide = async () => {
+    if (isCorrect) {
+      setIsLoading(true);
+      await API.patch(`/v1/progress/routes/${lessonId}`, {
+        lastSlideOrder: slides[slides.length - 1].order,
+        attempt: {
+          slideId: slide.id,
+          isCorrect: true,
+          optionsCount: triesCount,
+        },
+      });
+      await getTotalScore();
+      setIsLoading(false);
+      goToNextSlide();
+    } else {
+      setTriesCount(prev => prev + 1);
+      setIsCorrect(null);
+    }
+  };
+
   return (
     <Wrapper>
       <SlideQuestion
@@ -399,20 +425,21 @@ export const DragDrop = ({ setScrollEnabled, slide }: Props) => {
       </View>
 
       <Button
-        disabled={hasUnplacedItems || isCorrect != null}
+        disabled={hasUnplacedItems || isCorrect != null || isLoading}
         title={t('check')}
         onPress={answer}
       />
 
       {isCorrect != null && (
         <AnswerResult
+          disabled={isLoading}
           isCorrect={isCorrect}
           text={
             isCorrect
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNextSlide}
+          onPressNext={handleGoToNextSlide}
         />
       )}
     </Wrapper>

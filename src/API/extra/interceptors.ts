@@ -62,6 +62,8 @@ API.interceptors.request.use(
     // Debug: log request as curl command
     // console.log(toCurl(config));
 
+    console.log('[API] request data:', config);
+
     return config;
   },
   error => {
@@ -71,24 +73,12 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   response => {
-    console.log(
-      '[API] success',
-      response.status,
-      response.config?.method,
-      response.config?.url,
-      response.data,
-    );
+    console.log('[API] response success:', response);
     return response;
   },
   async error => {
     const axiosError = error as AxiosError;
-    console.log(
-      '[API] error',
-      axiosError.response?.status,
-      axiosError.config?.method,
-      axiosError.config?.url,
-      axiosError.message,
-    );
+    console.log('[API] error:', axiosError);
 
     const originalConfig = axiosError.config as AxiosRequestConfig & {
       _retry?: boolean;

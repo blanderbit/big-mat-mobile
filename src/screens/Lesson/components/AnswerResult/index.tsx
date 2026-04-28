@@ -1,8 +1,4 @@
-import {
-  Dimensions,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,9 +12,15 @@ type Props = {
   isCorrect: boolean;
   text: string;
   onPressNext: () => void;
+  disabled?: boolean;
 };
 
-export const AnswerResult = ({ isCorrect, text, onPressNext }: Props) => {
+export const AnswerResult = ({
+  isCorrect,
+  text,
+  onPressNext,
+  disabled,
+}: Props) => {
   const windowWidth = Dimensions.get('window').width;
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
@@ -39,6 +41,7 @@ export const AnswerResult = ({ isCorrect, text, onPressNext }: Props) => {
       </Text>
 
       <Button
+        disabled={disabled}
         title={isCorrect ? t('next') : t('continue')}
         onPress={onPressNext}
       />
