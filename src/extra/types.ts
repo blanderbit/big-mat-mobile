@@ -43,6 +43,30 @@ export enum SlideType {
   COMIC = 'comic',
 }
 
+export enum DragDropItemType {
+  BLOCK = 'block',
+  IMAGE = 'image',
+  NUMBER = 'number',
+  TEXT = 'text',
+}
+
+export type DragDropItem =
+  | { id: string; type: DragDropItemType.TEXT; text: string }
+  | {
+      id: string;
+      type: DragDropItemType.IMAGE;
+      imageUrl: string;
+      alt: string;
+    }
+  | { id: string; type: DragDropItemType.NUMBER; value: number }
+  | {
+      id: string;
+      type: DragDropItemType.BLOCK;
+      label: string;
+      color?: string;
+      icon?: string;
+    };
+
 export type SlideVariantsByType = {
   [SlideType.SINGLE_CHOICE]: {
     buttonText: string;
@@ -121,7 +145,22 @@ export type SlideVariantsByType = {
     };
     wrongExplanation: { content: { content: { text: string }[] }[] };
   };
-  // [SlideType.DRAG_DROP]: unknown;
+  [SlideType.DRAG_DROP]: {
+    explanation: {
+      content: { content: { text: string }[] }[];
+    };
+    wrongExplanation: { content: { content: { text: string }[] }[] };
+    id: string;
+    itemZoneMap: Record<string, string>;
+    items: DragDropItem[];
+    questionText: {
+      content: { content: { text: string }[] }[];
+    };
+    zones: {
+      id: string;
+      label: string;
+    }[];
+  };
   // [SlideType.COMIC]: unknown;
 };
 

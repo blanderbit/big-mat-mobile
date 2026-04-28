@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Image, StyleSheet } from 'react-native';
-import FastImage from 'react-native-fast-image';
+import { Image, StyleProp, StyleSheet } from 'react-native';
+import FastImage, { ImageStyle as FastImageStyle } from 'react-native-fast-image';
 
 type Props = {
   uri: string;
+  style?: StyleProp<FastImageStyle>;
 };
 
-export const FullWidthFastImage = ({ uri }: Props) => {
+export const FullWidthFastImage = ({ style, uri }: Props) => {
   const [questionImageMeta, setQuestionImageMeta] = useState<{
     url: string;
     aspectRatio: number;
@@ -45,6 +46,7 @@ export const FullWidthFastImage = ({ uri }: Props) => {
         questionImageAspectRatio != null
           ? { aspectRatio: questionImageAspectRatio }
           : null,
+        style,
       ]}
     />
   );

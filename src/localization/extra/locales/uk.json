@@ -24,6 +24,9 @@
     "level_many": "рівнів",
     "from": "з",
     "check": "Перевірити",
-    "continue": "Продовжити"
+    "continue": "Продовжити",
+    "cancel": "Скасувати",
+    "confirmInterruptLesson": "Ви впевнені, що хочете перервати урок?",
+    "yes": "Так"
   }
 }

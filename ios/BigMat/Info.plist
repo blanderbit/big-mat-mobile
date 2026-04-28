@@ -53,6 +53,7 @@
 		<string>Unbounded-Bold.ttf</string>
 		<string>Unbounded-SemiBold.ttf</string>
 		<string>Unbounded-Regular.ttf</string>
+		<string>MaterialCommunityIcons.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

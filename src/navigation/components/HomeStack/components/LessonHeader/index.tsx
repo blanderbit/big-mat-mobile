@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Alert, Animated, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Pressable } from '@components/Pressable';
@@ -15,6 +16,7 @@ import Lightning from '@assets/images/lightning.svg';
 export const LessonHeader = () => {
   const { top } = useSafeAreaInsets();
   const { goBack } = useNavigation();
+  const { t } = useTranslation();
   const slides = useLessonsStore(s => s.slides);
   const currentSlideIndex = useLessonsStore(s => s.currentSlideIndex);
 
@@ -43,9 +45,16 @@ export const LessonHeader = () => {
     outputRange: ['0%', '100%'],
   });
 
+  const handlePressBackButton = () => {
+    Alert.alert(t('confirmInterruptLesson'), undefined, [
+      { style: 'cancel', text: t('cancel') },
+      { onPress: goBack, text: t('yes'), style: 'destructive' },
+    ]);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
-      <Pressable style={styles.backButton} onPress={goBack}>
+      <Pressable style={styles.backButton} onPress={handlePressBackButton}>
         <BackArrow />
       </Pressable>
 
@@ -53,7 +62,9 @@ export const LessonHeader = () => {
         <View style={styles.progressWrap}>
           <View style={styles.progressTrack} />
 
-          <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+          <Animated.View
+            style={[styles.progressFill, { width: progressWidth }]}
+          />
 
           <Animated.View
             style={[styles.progressIconRail, { width: progressWidth }]}
