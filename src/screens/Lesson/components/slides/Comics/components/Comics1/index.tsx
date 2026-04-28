@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,11 +5,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
 
-import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
-import { useLessonsStore } from '@stores/lessonsStore';
+import { usePatchSlide } from '@hooks/usePatchSlide';
 
 import Arrow2 from '@assets/images/arrow2.svg';
 import Arrow3 from '@assets/images/arrow3.svg';
@@ -46,28 +44,11 @@ type Props = {
 export const Comics1 = ({ lessonId, slide }: Props) => {
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
-  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
-  const slides = useLessonsStore(state => state.slides);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const answer = async () => {
-    setIsLoading(true);
-
-    try {
-      await API.patch(`/v1/progress/routes/${lessonId}`, {
-        lastSlideOrder: slides[slides.length - 1].order,
-        attempt: {
-          slideId: slide.id,
-          isCorrect: true,
-          optionsCount: 1,
-        },
-      });
-
-      goToNextSlide();
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+    isCorrect: true,
+    lessonId,
+    slideId: slide.id,
+  });
 
   const questsPhrase = [
     t('guestsAlready'),
@@ -305,10 +286,9 @@ export const Comics1 = ({ lessonId, slide }: Props) => {
 
                   <Text
                     size={12}
-                    style={[
-                      styles.cakeWord,
-                      index === 0 ? styles.cakeWordOpaque : styles.cakeWordDim,
-                    ]}
+                    style={
+                      index === 0 ? styles.cakeWordOpaque : styles.cakeWordDim
+                    }
                   >
                     {el.word}
                   </Text>
@@ -346,10 +326,11 @@ export const Comics1 = ({ lessonId, slide }: Props) => {
 
         <Button
           disabled={isLoading}
+          isLoading={isLoading}
           marginBottom={DEFAULT_SPACE + bottom}
           marginTop={DEFAULT_SPACE * 2}
           title={t('helpCipa')}
-          onPress={answer}
+          onPress={handleGoToNextSlide}
         />
       </View>
     </View>
@@ -471,7 +452,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  cakeWord: {},
   cakeImage: {
     width: 80,
   },

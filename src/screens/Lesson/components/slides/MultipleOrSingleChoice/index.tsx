@@ -13,14 +13,15 @@ import { Wrapper } from '@screens/Lesson/components/Wrapper';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { getUkrLetterByIndex } from '@extra/getUkrLetterByIndex';
 import { Slide, SlideType } from '@extra/types';
-import { useLessonsStore } from '@stores/lessonsStore';
+import { usePatchSlide } from '@hooks/usePatchSlide';
 
 type Props = {
   slide: Slide<SlideType.MULTIPLE_CHOICE | SlideType.SINGLE_CHOICE>;
   type: 'multiple' | 'single';
+  lessonId: string;
 };
 
-export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
+export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
   const { t } = useTranslation();
   const [chosenOptionsIds, setChosenOptionsIds] = useState<
     Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'][]
@@ -36,7 +37,13 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
           (buttonsRowWidth - DEFAULT_SPACE * (optionsCount - 1)) / optionsCount,
         )
       : 80;
-  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
+
+  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+    isCorrect,
+    lessonId,
+    slideId: slide.id,
+    setIsCorrect,
+  });
 
   const gridItemWidth =
     optionsGridWidth > 0
@@ -60,10 +67,7 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
     setChosenOptionsIds([optionId]);
   };
 
-  const answer = async () => {
-    //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
-    //     answer: slide.variants[0].answer,
-    //   });
+  const answer = () => {
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = chosenOptionsIds;
 
@@ -139,20 +143,22 @@ export const MultipleOrSingleChoice = ({ slide, type }: Props) => {
       </View>
 
       <Button
-        disabled={!chosenOptionsIds.length || isCorrect != null}
+        disabled={!chosenOptionsIds.length || isCorrect != null || isLoading}
         title={t('check')}
         onPress={answer}
       />
 
       {isCorrect != null && (
         <AnswerResult
+          disabled={isLoading}
           isCorrect={isCorrect}
+          isLoading={isLoading}
           text={
             isCorrect
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNextSlide}
+          onPressNext={handleGoToNextSlide}
         />
       )}
     </Wrapper>

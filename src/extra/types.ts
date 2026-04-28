@@ -41,6 +41,7 @@ export enum SlideType {
   FRACTION_INPUT = 'fraction_input',
   FRACTION_SLIDER = 'fraction_slider',
   COMIC = 'comic',
+  FINISH = 'finish',
 }
 
 export enum DragDropItemType {
@@ -171,6 +172,7 @@ export type SlideVariantsByType = {
       | 'comic_5'
       | 'comic_6';
   };
+  [SlideType.FINISH]: undefined;
 };
 
 export type SlideTypeWithVariants = keyof SlideVariantsByType;

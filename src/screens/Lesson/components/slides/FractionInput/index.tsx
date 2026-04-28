@@ -13,20 +13,23 @@ import { Wrapper } from '@screens/Lesson/components/Wrapper';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
-import { useLessonsStore } from '@stores/lessonsStore';
+import { usePatchSlide } from '@hooks/usePatchSlide';
 
 import Arrow from '@assets/images/arrow.svg';
 import BackArrow2 from '@assets/images/backArrow2.svg';
 
 type Props = {
   slide: Slide<SlideType.FRACTION_INPUT>;
+  lessonId: string;
 };
 
-export const FractionInput = ({ slide }: Props) => {
+export const FractionInput = ({ slide, lessonId }: Props) => {
   const [numerator, setNumerator] = useState('');
   const [denominator, setDenominator] = useState('');
+  const [activeField, setActiveField] = useState<'numerator' | 'denominator'>(
+    'numerator',
+  );
   const { t } = useTranslation();
-  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const keyboardSet: Array<
@@ -47,30 +50,29 @@ export const FractionInput = ({ slide }: Props) => {
   ];
 
   const handleBackspace = () => {
-    if (denominator) {
+    if (activeField === 'denominator') {
       setDenominator(prev => prev.slice(0, -1));
       return;
     }
 
-    if (numerator) {
-      setNumerator(prev => prev.slice(0, -1));
-    }
+    setNumerator(prev => prev.slice(0, -1));
   };
 
+  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+    isCorrect,
+    lessonId,
+    slideId: slide.id,
+    setIsCorrect,
+  });
+
   const answer = async () => {
-    try {
-      //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
-      //     answer: slide.variants[0].answer,
-      //   });
-      if (
-        slide.variants[0].correctNumerator === Number(numerator) &&
-        slide.variants[0].correctDenominator === Number(denominator)
-      ) {
-        setIsCorrect(true);
-      } else {
-        setIsCorrect(false);
-      }
-    } finally {
+    if (
+      slide.variants[0].correctNumerator === Number(numerator) &&
+      slide.variants[0].correctDenominator === Number(denominator)
+    ) {
+      setIsCorrect(true);
+    } else {
+      setIsCorrect(false);
     }
   };
 
@@ -94,19 +96,37 @@ export const FractionInput = ({ slide }: Props) => {
                 <Arrow />
               </View>
 
-              <View style={styles.inputBox}>
+              <Pressable
+                style={[
+                  styles.inputBox,
+                  activeField === 'numerator' ? styles.inputBoxActive : null,
+                ]}
+                onPress={() => {
+                  if (isCorrect != null) return;
+                  setActiveField('numerator');
+                }}
+              >
                 <Text semiBold size={34}>
-                  {numerator}
+                  {numerator || ' '}
                 </Text>
-              </View>
+              </Pressable>
 
               <View style={styles.divider} />
 
-              <View style={styles.inputBox}>
+              <Pressable
+                style={[
+                  styles.inputBox,
+                  activeField === 'denominator' ? styles.inputBoxActive : null,
+                ]}
+                onPress={() => {
+                  if (isCorrect != null) return;
+                  setActiveField('denominator');
+                }}
+              >
                 <Text semiBold size={34}>
-                  {denominator}
+                  {denominator || ' '}
                 </Text>
-              </View>
+              </Pressable>
             </View>
           </View>
         </View>
@@ -136,16 +156,12 @@ export const FractionInput = ({ slide }: Props) => {
                     ? undefined
                     : () => {
                         if (el.type === 'digit') {
-                          if (!numerator) {
-                            setNumerator(el.value);
+                          if (activeField === 'numerator') {
+                            setNumerator(prev => `${prev}${el.value}`);
                             return;
                           }
 
-                          if (!denominator) {
-                            setDenominator(el.value);
-                            return;
-                          }
-
+                          setDenominator(prev => `${prev}${el.value}`);
                           return;
                         }
 
@@ -172,13 +188,15 @@ export const FractionInput = ({ slide }: Props) => {
 
       {isCorrect != null && (
         <AnswerResult
+          disabled={isLoading}
           isCorrect={isCorrect}
+          isLoading={isLoading}
           text={
             isCorrect
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNextSlide}
+          onPressNext={handleGoToNextSlide}
         />
       )}
     </Wrapper>
@@ -209,12 +227,16 @@ const styles = StyleSheet.create({
   inputBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 60,
+    minWidth: 60,
     height: 60,
     backgroundColor: '#EEEEE2',
     borderWidth: 1,
     borderColor: colors.darkGrey,
     borderRadius: 8,
+  },
+  inputBoxActive: {
+    borderColor: colors.black,
+    borderWidth: 2,
   },
   key: {
     width: '30%',

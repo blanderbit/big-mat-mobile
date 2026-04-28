@@ -10,16 +10,17 @@ import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
-import { useLessonsStore } from '@stores/lessonsStore';
+import { usePatchSlide } from '@hooks/usePatchSlide';
 
 import Background12 from '@assets/images/background12.svg';
 import Notch2 from '@assets/images/notch2.svg';
 
 type Props = {
   slide: Slide<SlideType.STORY>;
+  lessonId: string;
 };
 
-export const Story = ({ slide }: Props) => {
+export const Story = ({ slide, lessonId }: Props) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const [textBubbleY, setTextBubbleY] = useState<number | null>(null);
@@ -31,17 +32,12 @@ export const Story = ({ slide }: Props) => {
     setContainerHeight(event.nativeEvent.layout.height);
   };
   const { bottom } = useSafeAreaInsets();
-  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
 
-  const answer = async () => {
-    try {
-      //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
-      //     answer: slide.variants[0].answer,
-      //   });
-      goToNextSlide();
-    } finally {
-    }
-  };
+  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+    isCorrect: true,
+    lessonId,
+    slideId: slide.id,
+  });
 
   const getImagePositionStyle = () => {
     switch (slide.variants[0].imagePosition) {
@@ -116,8 +112,10 @@ export const Story = ({ slide }: Props) => {
         }}
       >
         <Button
+          disabled={isLoading}
+          isLoading={isLoading}
           title={slide.variants[0].buttonText || t('next')}
-          onPress={answer}
+          onPress={handleGoToNextSlide}
         />
       </View>
 

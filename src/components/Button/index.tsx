@@ -1,10 +1,14 @@
-import { Pressable as RNPressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable as RNPressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
-import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
 
 type Props = {
   title: string;
@@ -16,6 +20,7 @@ type Props = {
   pressed?: boolean;
   marginVertical?: number;
   marginBottom?: number;
+  isLoading?: boolean;
 };
 
 export const Button = ({
@@ -28,16 +33,16 @@ export const Button = ({
   pressed: forcedPressed,
   marginVertical,
   marginBottom,
+  isLoading,
 }: Props) => {
-  const opacity = disabled ? DEFAULT_OPACITY : 1;
+  const DEFAULT_HEIGHT = 50;
   const radius = borderRadius ?? 40;
   const isGray = disabled;
   const pressableStyle = [
     styles.pressable,
     {
       width: size ?? '100%',
-      ...(size ? { height: size } : null),
-      opacity,
+      height: size ?? DEFAULT_HEIGHT,
       marginTop,
       marginVertical,
       marginBottom,
@@ -47,8 +52,7 @@ export const Button = ({
   const shadowRadiusStyle = { borderRadius: radius };
   const clipRadiusStyle = {
     borderRadius: radius,
-    paddingVertical: size ? 0 : DEFAULT_SPACE,
-    ...(size ? { height: size } : null),
+    height: size ?? DEFAULT_HEIGHT,
   };
 
   return (
@@ -88,9 +92,13 @@ export const Button = ({
                 style={styles.glossGradient}
               />
 
-              <Text bold size={22}>
-                {title}
-              </Text>
+              {isLoading ? (
+                <ActivityIndicator />
+              ) : (
+                <Text bold size={22}>
+                  {title}
+                </Text>
+              )}
             </View>
           </View>
         );

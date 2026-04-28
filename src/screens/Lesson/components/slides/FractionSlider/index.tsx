@@ -13,7 +13,7 @@ import { Wrapper } from '@screens/Lesson/components/Wrapper';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
-import { useLessonsStore } from '@stores/lessonsStore';
+import { usePatchSlide } from '@hooks/usePatchSlide';
 
 import SliderToggler from '@assets/images/sliderToggler.svg';
 import transparent48x48 from '@assets/images/transparent48x48.png';
@@ -21,25 +21,33 @@ import transparent48x48 from '@assets/images/transparent48x48.png';
 type Props = {
   slide: Slide<SlideType.FRACTION_SLIDER>;
   setScrollEnabled?: (enabled: boolean) => void;
+  lessonId: string;
 };
 
-export const FractionSlider = ({ setScrollEnabled, slide }: Props) => {
+export const FractionSlider = ({
+  setScrollEnabled,
+  slide,
+  lessonId,
+}: Props) => {
   const options = slide.variants[0].options;
   const maxIndex = Math.max(0, options.length - 1);
   const [index, setIndex] = useState(0);
   const [sliderWidth, setSliderWidth] = useState(0);
   const transparentThumb = Image.resolveAssetSource(transparent48x48);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const { t } = useTranslation();
+
+  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+    isCorrect,
+    lessonId,
+    slideId: slide.id,
+    setIsCorrect,
+  });
 
   const answerId = options[index].id;
   const dragDisabled = isCorrect != null;
 
   const answer = async () => {
-    //   await API.post(`/v1/content/routes/${lessonId}/answer`, {
-    //     answer: slide.variants[0].answer,
-    //   });
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = [answerId];
 
@@ -171,13 +179,15 @@ export const FractionSlider = ({ setScrollEnabled, slide }: Props) => {
 
       {isCorrect != null && (
         <AnswerResult
+          disabled={isLoading}
           isCorrect={isCorrect}
+          isLoading={isLoading}
           text={
             isCorrect
               ? slide.variants[0].explanation?.content[0]?.content[0]?.text
               : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
           }
-          onPressNext={goToNextSlide}
+          onPressNext={handleGoToNextSlide}
         />
       )}
     </Wrapper>

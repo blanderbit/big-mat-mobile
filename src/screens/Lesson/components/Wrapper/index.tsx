@@ -7,13 +7,19 @@ import { DEFAULT_SPACE } from '@extra/constants';
 
 type Props = {
   children: ReactNode;
+  backgroundColor?: string;
 };
 
-export const Wrapper = ({ children }: Props) => {
+export const Wrapper = ({ children, backgroundColor }: Props) => {
   const { bottom } = useSafeAreaInsets();
 
   return (
-    <View style={[styles.container, { paddingBottom: bottom + DEFAULT_SPACE }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingBottom: bottom + DEFAULT_SPACE, backgroundColor },
+      ]}
+    >
       {children}
     </View>
   );

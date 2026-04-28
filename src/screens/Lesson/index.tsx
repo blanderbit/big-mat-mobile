@@ -5,6 +5,7 @@ import { RouteProp } from '@react-navigation/native';
 import { ScrollView } from '@components/ScrollView';
 import { Comics } from '@screens/Lesson/components/slides/Comics';
 import { DragDrop } from '@screens/Lesson/components/slides/DragDrop';
+import { Finish } from '@screens/Lesson/components/slides/Finish';
 import { FractionInput } from '@screens/Lesson/components/slides/FractionInput';
 import { FractionSlider } from '@screens/Lesson/components/slides/FractionSlider';
 import { MultipleOrSingleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
@@ -40,7 +41,11 @@ export const Lesson = ({ route }: Props) => {
           routeId: lessonId,
         });
         const response = await API.get(`/v1/content/routes/${lessonId}/slides`);
-        setSlides(response.data.data.slides);
+        const slides = response.data.data.slides;
+        slides.push({
+          type: SlideType.FINISH,
+        });
+        setSlides(slides);
       } finally {
         setIsLoading(false);
       }
@@ -53,6 +58,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <Story
             key={currentSlide.id}
+            lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.STORY>}
           />
         );
@@ -60,6 +66,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <MultipleOrSingleChoice
             key={currentSlide.id}
+            lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.MULTIPLE_CHOICE>}
             type="multiple"
           />
@@ -68,6 +75,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <MultipleOrSingleChoice
             key={currentSlide.id}
+            lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.SINGLE_CHOICE>}
             type="single"
           />
@@ -76,6 +84,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <FractionSlider
             key={currentSlide.id}
+            lessonId={lessonId}
             setScrollEnabled={setScrollEnabled}
             slide={currentSlide as Slide<SlideType.FRACTION_SLIDER>}
           />
@@ -84,6 +93,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <FractionInput
             key={currentSlide.id}
+            lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.FRACTION_INPUT>}
           />
         );
@@ -104,6 +114,8 @@ export const Lesson = ({ route }: Props) => {
             slide={currentSlide as Slide<SlideType.COMIC>}
           />
         );
+      case SlideType.FINISH:
+        return <Finish key={currentSlide.id} lessonId={lessonId} />;
       default:
         return null;
     }
