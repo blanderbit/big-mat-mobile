@@ -161,7 +161,16 @@ export type SlideVariantsByType = {
       label: string;
     }[];
   };
-  // [SlideType.COMIC]: unknown;
+  [SlideType.COMIC]: {
+    id: string;
+    nativeKey:
+      | 'comic_1'
+      | 'comic_2'
+      | 'comic_3'
+      | 'comic_4'
+      | 'comic_5'
+      | 'comic_6';
+  };
 };
 
 export type SlideTypeWithVariants = keyof SlideVariantsByType;

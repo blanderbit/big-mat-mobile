@@ -8,6 +8,7 @@ import { Pressable } from '@components/Pressable';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
+import { SlideType } from '@extra/types';
 import { useLessonsStore } from '@stores/lessonsStore';
 
 import BackArrow from '@assets/images/backArrow.svg';
@@ -19,16 +20,12 @@ export const LessonHeader = () => {
   const { t } = useTranslation();
   const slides = useLessonsStore(s => s.slides);
   const currentSlideIndex = useLessonsStore(s => s.currentSlideIndex);
-
   const currentSlide = slides[currentSlideIndex];
 
   const progress =
     slides.length === 0
       ? 0
-      : Math.min(
-          100,
-          Math.max(0, ((currentSlideIndex + 1) / slides.length) * 100),
-        );
+      : Math.min(100, Math.max(0, (currentSlideIndex / slides.length) * 100));
 
   const [progressAnim] = useState(() => new Animated.Value(0));
 
@@ -54,16 +51,46 @@ export const LessonHeader = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
-      <Pressable style={styles.backButton} onPress={handlePressBackButton}>
+      <Pressable
+        style={[
+          styles.backButton,
+          {
+            backgroundColor:
+              currentSlide?.type === SlideType.COMIC
+                ? colors.pink
+                : colors.white,
+          },
+        ]}
+        onPress={handlePressBackButton}
+      >
         <BackArrow />
       </Pressable>
 
       {currentSlide && (
         <View style={styles.progressWrap}>
-          <View style={styles.progressTrack} />
+          <View
+            style={[
+              styles.progressTrack,
+              {
+                backgroundColor:
+                  currentSlide?.type === SlideType.COMIC
+                    ? colors.pink
+                    : colors.white,
+              },
+            ]}
+          />
 
           <Animated.View
-            style={[styles.progressFill, { width: progressWidth }]}
+            style={[
+              styles.progressFill,
+              {
+                width: progressWidth,
+                backgroundColor:
+                  currentSlide?.type === SlideType.COMIC
+                    ? colors.pink
+                    : colors.white,
+              },
+            ]}
           />
 
           <Animated.View
@@ -90,7 +117,6 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 9999,
-    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     paddingRight: 2,
@@ -106,7 +132,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: '100%',
     width: '100%',
-    backgroundColor: colors.white,
     opacity: DEFAULT_OPACITY,
     borderRadius: 45,
   },
@@ -115,7 +140,6 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: colors.white,
     borderRadius: 45,
     height: '100%',
   },

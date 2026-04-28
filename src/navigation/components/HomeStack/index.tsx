@@ -10,49 +10,62 @@ import { routes } from '@navigation/extra/routes';
 import { HomeStackParamList } from '@navigation/extra/types';
 
 import { colors } from '@extra/colors';
+import { SlideType } from '@extra/types';
+import { useLessonsStore } from '@stores/lessonsStore';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
-export const HomeStack = () => (
-  <Stack.Navigator
-    initialRouteName={routes.home.HOME}
-    screenOptions={{ headerShown: false }}
-  >
-    <Stack.Screen
-      component={Home}
-      name={routes.home.HOME}
-      options={{
-        headerShown: true,
-        header: HomeHeader,
-        contentStyle: { backgroundColor: colors.pink },
-      }}
-    />
-    <Stack.Screen
-      component={Topic}
-      name={routes.home.TOPIC}
-      options={{
-        headerShown: true,
-        header: HomeHeader,
-        contentStyle: { backgroundColor: colors.brightPurple },
-      }}
-    />
-    <Stack.Screen
-      component={StartLesson}
-      name={routes.home.START_LESSON}
-      options={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.brightPurple },
-      }}
-    />
-    <Stack.Screen
-      component={Lesson}
-      name={routes.home.LESSON}
-      options={{
-        gestureEnabled: false,
-        headerShown: true,
-        header: LessonHeader,
-        contentStyle: { backgroundColor: colors.pink },
-      }}
-    />
-  </Stack.Navigator>
-);
+export const HomeStack = () => {
+  const slides = useLessonsStore(state => state.slides);
+  const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
+  const currentSlide = slides[currentSlideIndex];
+
+  return (
+    <Stack.Navigator
+      initialRouteName={routes.home.HOME}
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen
+        component={Home}
+        name={routes.home.HOME}
+        options={{
+          headerShown: true,
+          header: HomeHeader,
+          contentStyle: { backgroundColor: colors.pink },
+        }}
+      />
+      <Stack.Screen
+        component={Topic}
+        name={routes.home.TOPIC}
+        options={{
+          headerShown: true,
+          header: HomeHeader,
+          contentStyle: { backgroundColor: colors.brightPurple },
+        }}
+      />
+      <Stack.Screen
+        component={StartLesson}
+        name={routes.home.START_LESSON}
+        options={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.brightPurple },
+        }}
+      />
+      <Stack.Screen
+        component={Lesson}
+        name={routes.home.LESSON}
+        options={{
+          gestureEnabled: false,
+          headerShown: true,
+          header: LessonHeader,
+          contentStyle: {
+            backgroundColor:
+              currentSlide?.type === SlideType.COMIC
+                ? colors.white
+                : colors.pink,
+          },
+        }}
+      />
+    </Stack.Navigator>
+  );
+};

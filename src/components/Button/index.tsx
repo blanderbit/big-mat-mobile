@@ -14,6 +14,8 @@ type Props = {
   borderRadius?: number;
   size?: number;
   pressed?: boolean;
+  marginVertical?: number;
+  marginBottom?: number;
 };
 
 export const Button = ({
@@ -24,6 +26,8 @@ export const Button = ({
   borderRadius,
   size,
   pressed: forcedPressed,
+  marginVertical,
+  marginBottom,
 }: Props) => {
   const opacity = disabled ? DEFAULT_OPACITY : 1;
   const radius = borderRadius ?? 40;
@@ -35,6 +39,8 @@ export const Button = ({
       ...(size ? { height: size } : null),
       opacity,
       marginTop,
+      marginVertical,
+      marginBottom,
     },
   ];
 
@@ -52,7 +58,9 @@ export const Button = ({
         const base = isGray ? grayBaseColors : baseColors;
         const pressedBase = isGray ? grayPressedBaseColors : pressedBaseColors;
         const gloss = isGray ? grayGlossColors : glossColors;
-        const pressedGloss = isGray ? grayPressedGlossColors : pressedGlossColors;
+        const pressedGloss = isGray
+          ? grayPressedGlossColors
+          : pressedGlossColors;
 
         return (
           <View
