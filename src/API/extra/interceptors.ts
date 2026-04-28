@@ -70,9 +70,25 @@ API.interceptors.request.use(
 );
 
 API.interceptors.response.use(
-  response => response,
+  response => {
+    console.log(
+      '[API] success',
+      response.status,
+      response.config?.method,
+      response.config?.url,
+      response.data,
+    );
+    return response;
+  },
   async error => {
     const axiosError = error as AxiosError;
+    console.log(
+      '[API] error',
+      axiosError.response?.status,
+      axiosError.config?.method,
+      axiosError.config?.url,
+      axiosError.message,
+    );
 
     const originalConfig = axiosError.config as AxiosRequestConfig & {
       _retry?: boolean;

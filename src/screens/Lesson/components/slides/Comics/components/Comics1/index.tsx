@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -5,8 +6,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
 
+import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
+import { Slide, SlideType } from '@extra/types';
 import { useLessonsStore } from '@stores/lessonsStore';
 
 import Arrow2 from '@assets/images/arrow2.svg';
@@ -35,14 +38,35 @@ import Notch from '@assets/images/notch.svg';
 import PinkStar from '@assets/images/pinkStar.svg';
 import Unlock from '@assets/images/unlock.svg';
 
-export const Comics1 = () => {
+type Props = {
+  lessonId: string;
+  slide: Slide<SlideType.COMIC>;
+};
+
+export const Comics1 = ({ lessonId, slide }: Props) => {
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
   const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
+  const slides = useLessonsStore(state => state.slides);
+  const [isLoading, setIsLoading] = useState(false);
 
   const answer = async () => {
-    // TODO: add answer logic
-    goToNextSlide();
+    setIsLoading(true);
+
+    try {
+      await API.patch(`/v1/progress/routes/${lessonId}`, {
+        lastSlideOrder: slides[slides.length - 1].order,
+        attempt: {
+          slideId: slide.id,
+          isCorrect: true,
+          optionsCount: 1,
+        },
+      });
+
+      goToNextSlide();
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const questsPhrase = [
@@ -321,6 +345,7 @@ export const Comics1 = () => {
         </View>
 
         <Button
+          disabled={isLoading}
           marginBottom={DEFAULT_SPACE + bottom}
           marginTop={DEFAULT_SPACE * 2}
           title={t('helpCipa')}

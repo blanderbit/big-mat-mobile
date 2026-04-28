@@ -36,6 +36,9 @@ export const Lesson = ({ route }: Props) => {
       setIsLoading(true);
 
       try {
+        await API.post(`/v1/progress/routes/${lessonId}/start`, {
+          routeId: lessonId,
+        });
         const response = await API.get(`/v1/content/routes/${lessonId}/slides`);
         setSlides(response.data.data.slides);
       } finally {
@@ -96,6 +99,7 @@ export const Lesson = ({ route }: Props) => {
         return (
           <Comics
             key={currentSlide.id}
+            lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.COMIC>}
           />
         );
