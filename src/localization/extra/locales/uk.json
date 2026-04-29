@@ -58,6 +58,20 @@
     "oCipaDividedTheCakeInto": "О! Ципа розділив\nторт на",
     "equalPieces": "рівних частин",
     "attentionIHaveAQuestion": "Увага!\nМаю запитання:",
-    "whatPartOfTheCakeWillEachFriendGet": "Яку частину торта\nотримає кожен\nз друзів?"
+    "whatPartOfTheCakeWillEachFriendGet": "Яку частину торта\nотримає кожен\nз друзів?",
+    "comics": "Комікс",
+    "part": "Частина",
+    "numeratorAndDenominator": "Чисельник та\nзнаменник",
+    "scrollDownToReadTheComic": "Гортай униз, щоб\nпрочитати комікс",
+    "helloTodayWeWillRevealTheMysteryOfFractions": "Привіт! Сьогодні\nми розкриємо\nтаємницю дробів.",
+    "lookAtThisFractionItHasTwoParts": "Поглянь на цей\nдріб — він має\nдві частини:",
+    "numerator": "Чисельник",
+    "denominator": "Знаменник",
+    "fractionWordOrigin": "«Дріб»\nпоходить від слова\n«подрібнити»",
+    "fractionDefinition": "Дріб — це число, яке\nпоказує частину цілого.\n\nУяви, що в нас є піца.\nЇї розрізали на 4 однакові шматочки.\nЯкщо візьмеш 1 шматочок — це одна четверта піци.",
+    "numeratorAtTheTop": "Чисельник — вгорі",
+    "denominatorAtTheBottom": "Знаменник — внизу",
+    "iShowYouHowManyPartsYouHaveTaken": "Я показую, скільки\nчастин взяли",
+    "iShowYouHowManyPartsYouHaveDividedTheWholeInto": "А я показую, на скільки рівних частин поділили ціле"
   }
 }
