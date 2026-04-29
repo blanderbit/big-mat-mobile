@@ -25,7 +25,10 @@ export const LessonHeader = () => {
   const progress =
     slides.length === 0
       ? 0
-      : Math.min(100, Math.max(0, (currentSlideIndex / slides.length) * 100));
+      : Math.min(
+          100,
+          Math.max(0, ((currentSlideIndex + 1) / slides.length) * 100),
+        );
 
   const [progressAnim] = useState(() => new Animated.Value(0));
 

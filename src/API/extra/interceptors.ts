@@ -62,7 +62,12 @@ API.interceptors.request.use(
     // Debug: log request as curl command
     // console.log(toCurl(config));
 
-    console.log('[API] request data:', config.url, config.data);
+    console.log(
+      '[API] request data:',
+      config.method?.toUpperCase(),
+      config.url,
+      config.data && config.data,
+    );
 
     return config;
   },
@@ -73,13 +78,21 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   response => {
-    console.log('[API] response success:', response.config.url, response.data);
+    console.log(
+      '[API] response:',
+      response.config.method?.toUpperCase(),
+      response.status,
+      response.config.url,
+      response.data && response.data,
+    );
     return response;
   },
   async error => {
     const axiosError = error as AxiosError;
     console.log(
       '[API] error:',
+      axiosError.config?.method?.toUpperCase(),
+      axiosError.response?.status,
       axiosError.config?.url,
       axiosError.response?.data,
     );

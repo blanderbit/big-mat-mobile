@@ -170,7 +170,7 @@ export const Topic = ({ route }: Props) => {
                   isShowTooltip ? updateFirstLockedTooltipSide : undefined
                 }
               >
-                <Pressable onPress={() => {}}>
+                <View>
                   {isShowTooltip && (
                     <View
                       style={[
@@ -225,7 +225,7 @@ export const Topic = ({ route }: Props) => {
                       </View>
                     </View>
                   )}
-                </Pressable>
+                </View>
               </View>
 
               {isLast ? (

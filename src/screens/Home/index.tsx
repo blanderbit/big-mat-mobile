@@ -15,6 +15,7 @@ import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { Topic } from '@extra/types';
+import { useUserStore } from '@stores/userStore';
 
 import background6 from '@assets/images/background6.png';
 import background7 from '@assets/images/background7.png';
@@ -28,13 +29,24 @@ export const Home = () => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const { bottom } = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(false);
-  const isFocused = useIsFocused();
   const navigation = useNavigation<HomeStackNavigationProp>();
+  const getTotalScore = useUserStore(s => s.getTotalScore);
+  const [isAlreadyRenderedOnce, setIsAlreadyRenderedOnce] = useState(false);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused && isAlreadyRenderedOnce) {
+      (async () => {
+        await getTotalScore();
+      })();
+    }
+  }, [getTotalScore, isAlreadyRenderedOnce, isFocused]);
 
   const getTopics = async () => {
     setIsLoading(true);
     try {
       const response = await API.get('/v1/content/topics');
+      await getTotalScore();
       setTopics(response.data.data.topics);
     } finally {
       setIsLoading(false);
@@ -42,12 +54,13 @@ export const Home = () => {
   };
 
   useEffect(() => {
-    if (isFocused) {
-      (async () => {
-        await getTopics();
-      })();
-    }
-  }, [isFocused]);
+    (async () => {
+      await getTopics();
+      setIsAlreadyRenderedOnce(true);
+    })();
+    // НЕ ДОБАВЛЯТЬ ЗАВИСИМОСТИ!
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const ListHeader = () => (
     <>

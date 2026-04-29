@@ -121,6 +121,7 @@ export const Auth = () => {
       >
         <Button
           disabled={isLoading}
+          isLoading={isLoading}
           title={t('signIn')}
           onPress={handleSignIn}
         />

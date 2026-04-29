@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable as RNPressable,
@@ -11,7 +12,7 @@ import { Text } from '@components/Text';
 import { colors } from '@extra/colors';
 
 type Props = {
-  title: string;
+  title?: string;
   onPress: () => void;
   disabled?: boolean;
   marginTop?: number;
@@ -21,6 +22,7 @@ type Props = {
   marginVertical?: number;
   marginBottom?: number;
   isLoading?: boolean;
+  children?: ReactNode;
 };
 
 export const Button = ({
@@ -34,6 +36,7 @@ export const Button = ({
   marginVertical,
   marginBottom,
   isLoading,
+  children,
 }: Props) => {
   const DEFAULT_HEIGHT = 50;
   const radius = borderRadius ?? 40;
@@ -94,6 +97,8 @@ export const Button = ({
 
               {isLoading ? (
                 <ActivityIndicator />
+              ) : children ? (
+                children
               ) : (
                 <Text bold size={22}>
                   {title}

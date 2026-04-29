@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import { API } from '@API/index';
 import { useLessonsStore } from '@stores/lessonsStore';
-import { useUserStore } from '@stores/userStore';
 
 export const usePatchSlide = ({
   lessonId,
@@ -17,7 +16,6 @@ export const usePatchSlide = ({
 }) => {
   const [triesCount, setTriesCount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const getTotalScore = useUserStore(state => state.getTotalScore);
   const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const slides = useLessonsStore(state => state.slides);
 
@@ -33,7 +31,6 @@ export const usePatchSlide = ({
           optionsCount: triesCount,
         },
       });
-      await getTotalScore();
       setIsLoading(false);
       goToNextSlide();
     } else {
