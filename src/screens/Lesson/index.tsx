@@ -126,6 +126,7 @@ export const Lesson = ({ route }: Props) => {
   return (
     <ScrollView
       contentContainerStyle={styles.contentContainer}
+      key={currentSlideIndex}
       scrollEnabled={scrollEnabled}
     >
       {isLoading ? (
