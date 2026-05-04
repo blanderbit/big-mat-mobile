@@ -2,13 +2,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { routes } from '@navigation/extra/routes';
 
-import { Topic } from '@extra/types';
+import { Lesson, Topic } from '@extra/types';
 
 export type HomeStackParamList = {
   [routes.home.HOME]: undefined;
-  [routes.home.TOPIC]: { lessons: Topic['routes'] };
-  [routes.home.START_LESSON]: { lesson: Topic['routes'][number] };
-  [routes.home.LESSON]: { lessonId: Topic['routes'][number]['id'] };
+  [routes.home.TOPIC]: { topicId: Topic['id'] };
+  [routes.home.START_LESSON]: { lesson: Lesson };
+  [routes.home.LESSON]: { lessonId: Lesson['id'] };
 };
 
 export type AuthStackParamList = {

@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   findNodeHandle,
   Image,
   LayoutChangeEvent,
@@ -15,7 +16,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line } from 'react-native-svg';
 
 import { Button } from '@components/Button';
-import { Pressable } from '@components/Pressable';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';
 import { RoundSlider } from '@screens/Topic/components/RoundSlider';
@@ -25,9 +25,11 @@ import {
   HomeStackParamList,
 } from '@navigation/extra/types';
 
+import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { pluralizeUk } from '@extra/pluralizeUk';
+import { Lesson } from '@extra/types';
 
 import ActiveLessonButton from '@assets/images/activeLessonButton.svg';
 import Background10 from '@assets/images/background10.svg';
@@ -39,12 +41,24 @@ type Props = {
   route: RouteProp<HomeStackParamList, typeof routes.home.TOPIC>;
 };
 
+type TopicProgress = {
+  completedRoutes: number;
+  inProgressRoutes: number;
+  notStartedRoutes: number;
+  totalRoutes: number;
+};
+
 export const Topic = ({ route }: Props) => {
   const { t } = useTranslation();
-  const { lessons } = route.params;
+  const { topicId } = route.params;
   const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const { navigate } = useNavigation<HomeStackNavigationProp>();
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
@@ -52,6 +66,31 @@ export const Topic = ({ route }: Props) => {
   const [firstLockedTooltipBelow, setFirstLockedTooltipBelow] = useState(false);
   const firstLockedButtonWrapperRef = useRef<View | null>(null);
   const [tooltipIndex, setTooltipIndex] = useState(0);
+
+  useEffect(() => {
+    const getLessons = async () => {
+      const response = await API.get(`/v1/content/topics/${topicId}/routes`);
+
+      setLessons(response.data.data.routes);
+    };
+
+    const getTopicProgress = async () => {
+      const response = await API.get(`/v1/content/topics/${topicId}/progress`);
+
+      setTopicProgress(response.data.data.summary);
+    };
+
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        await getLessons();
+        await getTopicProgress();
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [topicId]);
 
   const sortedLessons = lessons.slice().sort((a, b) => {
     const aLocked = a.locked === true;
@@ -98,9 +137,12 @@ export const Topic = ({ route }: Props) => {
     });
   };
 
-  const passedLessonsCount = sortedLessons.filter(
-    lesson => !!lesson.progress.completedAt,
-  ).length;
+  const completedRoutes = topicProgress?.completedRoutes ?? 0;
+  const totalRoutes =
+    topicProgress?.totalRoutes ??
+    (sortedLessons.length > 0 ? sortedLessons.length : 0);
+  const progressPercent =
+    totalRoutes > 0 ? (completedRoutes / totalRoutes) * 100 : 0;
 
   return (
     <ScrollView
@@ -108,228 +150,244 @@ export const Topic = ({ route }: Props) => {
       scrollViewStyle={styles.scrollView}
       onLayout={handleSetContainerWidth}
     >
-      <Text bold center color={colors.white} size={24}>
-        {sortedLessons.find(lesson => lesson.progress.status !== 'not_started')
-          ? t('youAreDoingGreat')
-          : t('startMasteringThisTopic')}
-      </Text>
+      {isLoading ? (
+        <View style={styles.loadingIndicatorWrap}>
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <>
+          <Text bold center color={colors.white} size={24}>
+            {t('youAreDoingGreat')}
+          </Text>
 
-      <View style={styles.lessonsContainer}>
-        {sortedLessons.map((lesson, index) => {
-          const isLeft = (index + 1) % 2 === 1;
-          const isLast = index === sortedLessons.length - 1;
-          const isShowTooltip = index === tooltipIndex;
+          <View style={styles.lessonsContainer}>
+            {sortedLessons.map((lesson, index) => {
+              const isLeft = (index + 1) % 2 === 1;
+              const isLast = index === sortedLessons.length - 1;
+              const isShowTooltip = index === tooltipIndex;
 
-          const navigateToStartLesson = () => {
-            navigate(routes.home.START_LESSON, {
-              lesson,
-            });
-          };
+              const navigateToStartLesson = () => {
+                navigate(routes.home.START_LESSON, {
+                  lesson,
+                });
+              };
 
-          return (
-            <View key={lesson.id} style={styles.lessonItem}>
-              {isShowTooltip && (
-                <View
-                  pointerEvents="box-none"
-                  style={[
-                    styles.firstLockedTooltip,
-                    firstLockedTooltipBelow
-                      ? styles.firstLockedTooltipBelow
-                      : styles.firstLockedTooltipAbove,
-                  ]}
-                >
-                  <View style={styles.tooltip}>
-                    <Text bold size={20}>
-                      {index + 1}. {lesson.title}
-                    </Text>
-
-                    {lesson.subtitle && (
-                      <Text center semiBold size={14}>
-                        {lesson.subtitle}
-                      </Text>
-                    )}
-
-                    <Button title={t('close')} onPress={handleCloseTooltip} />
-
-                    <Button
-                      title={t('start')}
-                      onPress={navigateToStartLesson}
-                    />
-                  </View>
-                </View>
-              )}
-
-              <View
-                ref={isShowTooltip ? firstLockedButtonWrapperRef : undefined}
-                style={[
-                  styles.lessonButtonWrapper,
-                  isLeft ? styles.lessonButtonLeft : styles.lessonButtonRight,
-                  isShowTooltip ? styles.lessonButtonWrapperOnTop : null,
-                ]}
-                onLayout={
-                  isShowTooltip ? updateFirstLockedTooltipSide : undefined
-                }
-              >
-                <View>
+              return (
+                <View key={lesson.id} style={styles.lessonItem}>
                   {isShowTooltip && (
                     <View
+                      pointerEvents="box-none"
                       style={[
-                        styles.notchWrapper,
+                        styles.firstLockedTooltip,
                         firstLockedTooltipBelow
-                          ? styles.notchWrapperBelow
-                          : styles.notchWrapperAbove,
+                          ? styles.firstLockedTooltipBelow
+                          : styles.firstLockedTooltipAbove,
                       ]}
                     >
-                      <Tooltip1Notch />
-
-                      <View style={styles.notchBorderMask} />
-                    </View>
-                  )}
-
-                  {lesson.locked ? (
-                    <View>
-                      <InactiveLessonButton />
-
-                      <View style={styles.inactiveOverlay}>
-                        <Text
-                          bold
-                          color={colors.white}
-                          size={26}
-                          style={styles.inactiveIndexText}
-                        >
-                          {index + 1}
+                      <View style={styles.tooltip}>
+                        <Text bold size={20}>
+                          {index + 1}. {lesson.title}
                         </Text>
-                      </View>
 
-                      <View style={styles.lockOverlay}>
-                        <Image
-                          resizeMode="contain"
-                          source={lock2}
-                          style={styles.lockIcon}
+                        {lesson.subtitle && (
+                          <Text center semiBold size={14}>
+                            {lesson.subtitle}
+                          </Text>
+                        )}
+
+                        <Button
+                          title={t('close')}
+                          onPress={handleCloseTooltip}
+                        />
+
+                        <Button
+                          title={t('start')}
+                          onPress={navigateToStartLesson}
                         />
                       </View>
                     </View>
-                  ) : (
-                    <View>
-                      <ActiveLessonButton />
+                  )}
 
-                      <View style={styles.inactiveOverlay}>
-                        <Text
-                          bold
-                          color={colors.white}
-                          size={26}
-                          style={styles.inactiveIndexText}
+                  <View
+                    ref={
+                      isShowTooltip ? firstLockedButtonWrapperRef : undefined
+                    }
+                    style={[
+                      styles.lessonButtonWrapper,
+                      isLeft
+                        ? styles.lessonButtonLeft
+                        : styles.lessonButtonRight,
+                      isShowTooltip ? styles.lessonButtonWrapperOnTop : null,
+                    ]}
+                    onLayout={
+                      isShowTooltip ? updateFirstLockedTooltipSide : undefined
+                    }
+                  >
+                    <View>
+                      {isShowTooltip && (
+                        <View
+                          style={[
+                            styles.notchWrapper,
+                            firstLockedTooltipBelow
+                              ? styles.notchWrapperBelow
+                              : styles.notchWrapperAbove,
+                          ]}
                         >
-                          {index + 1}
+                          <Tooltip1Notch />
+
+                          <View style={styles.notchBorderMask} />
+                        </View>
+                      )}
+
+                      {lesson.locked ? (
+                        <View>
+                          <InactiveLessonButton />
+
+                          <View style={styles.inactiveOverlay}>
+                            <Text
+                              bold
+                              color={colors.white}
+                              size={26}
+                              style={styles.inactiveIndexText}
+                            >
+                              {index + 1}
+                            </Text>
+                          </View>
+
+                          <View style={styles.lockOverlay}>
+                            <Image
+                              resizeMode="contain"
+                              source={lock2}
+                              style={styles.lockIcon}
+                            />
+                          </View>
+                        </View>
+                      ) : (
+                        <View>
+                          <ActiveLessonButton />
+
+                          <View style={styles.inactiveOverlay}>
+                            <Text
+                              bold
+                              color={colors.white}
+                              size={26}
+                              style={styles.inactiveIndexText}
+                            >
+                              {index + 1}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  {isLast ? (
+                    <View
+                      pointerEvents="none"
+                      style={[
+                        styles.finishTooltip,
+                        isLeft
+                          ? styles.finishTooltipRightOfLesson
+                          : styles.finishTooltipLeftOfLesson,
+                      ]}
+                    >
+                      <View
+                        style={[
+                          styles.finishTooltipNotch,
+                          isLeft
+                            ? styles.finishTooltipNotchLeft
+                            : styles.finishTooltipNotchRight,
+                        ]}
+                      />
+                      <View style={styles.finishTooltipBubble}>
+                        <Text bold center color={colors.white} size={18}>
+                          {t('finish')}
                         </Text>
                       </View>
                     </View>
+                  ) : null}
+
+                  {!isLast && (
+                    <Svg
+                      height={20}
+                      pointerEvents="none"
+                      width={70}
+                      style={[
+                        styles.connectorBase,
+                        isLeft ? styles.connectorLeft : styles.connectorRight,
+                      ]}
+                    >
+                      <Line
+                        stroke={colors.white}
+                        strokeDasharray={lesson.locked ? '6 6' : undefined}
+                        strokeWidth={3}
+                        x1={0}
+                        x2={70}
+                        y1={10}
+                        y2={10}
+                      />
+                    </Svg>
                   )}
                 </View>
-              </View>
+              );
+            })}
+          </View>
 
-              {isLast ? (
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.finishTooltip,
-                    isLeft
-                      ? styles.finishTooltipRightOfLesson
-                      : styles.finishTooltipLeftOfLesson,
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.finishTooltipNotch,
-                      isLeft
-                        ? styles.finishTooltipNotchLeft
-                        : styles.finishTooltipNotchRight,
-                    ]}
-                  />
-                  <View style={styles.finishTooltipBubble}>
-                    <Text bold center color={colors.white} size={18}>
-                      {t('finish')}
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
+          <Text
+            bold
+            center
+            color={colors.white}
+            marginTop={DEFAULT_SPACE * 2}
+            size={28}
+          >
+            {t('youAreSuper.YouHaveAlreadyMastered')}
+          </Text>
 
-              {!isLast && (
-                <Svg
-                  height={20}
-                  pointerEvents="none"
-                  width={70}
-                  style={[
-                    styles.connectorBase,
-                    isLeft ? styles.connectorLeft : styles.connectorRight,
-                  ]}
-                >
-                  <Line
-                    stroke={colors.white}
-                    strokeDasharray={lesson.locked ? '6 6' : undefined}
-                    strokeWidth={3}
-                    x1={0}
-                    x2={70}
-                    y1={10}
-                    y2={10}
-                  />
-                </Svg>
-              )}
-            </View>
-          );
-        })}
-      </View>
+          <RoundSlider
+            marginBottom={bottom}
+            marginHorizontal={DEFAULT_SPACE}
+            marginTop={DEFAULT_SPACE}
+            value={progressPercent}
+            tooltipText={
+              completedRoutes +
+              ' ' +
+              pluralizeUk(completedRoutes, [
+                t('level_one'),
+                t('level_few'),
+                t('level_many'),
+              ]) +
+              ' ' +
+              t('from') +
+              ' ' +
+              totalRoutes
+            }
+          />
 
-      <Text
-        bold
-        center
-        color={colors.white}
-        marginTop={DEFAULT_SPACE * 2}
-        size={28}
-      >
-        {t('youAreSuper.YouHaveAlreadyMastered')}
-      </Text>
-
-      <RoundSlider
-        marginBottom={bottom}
-        marginHorizontal={DEFAULT_SPACE}
-        marginTop={DEFAULT_SPACE}
-        value={(passedLessonsCount / sortedLessons.length) * 100}
-        tooltipText={
-          passedLessonsCount +
-          ' ' +
-          pluralizeUk(passedLessonsCount, [
-            t('level_one'),
-            t('level_few'),
-            t('level_many'),
-          ]) +
-          ' ' +
-          t('from') +
-          ' ' +
-          sortedLessons.length
-        }
-      />
-
-      <View
-        style={[
-          styles.background,
-          {
-            width: contentWidth,
-            height: screenHeight,
-          },
-        ]}
-      >
-        <Background10
-          height="100%"
-          preserveAspectRatio="xMinYMin slice"
-          width="100%"
-        />
-      </View>
+          <View
+            style={[
+              styles.background,
+              {
+                width: contentWidth,
+                height: screenHeight,
+              },
+            ]}
+          >
+            <Background10
+              height="100%"
+              preserveAspectRatio="xMinYMin slice"
+              width="100%"
+            />
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingIndicatorWrap: {
+    alignItems: 'center',
+  },
   scrollView: {
     flexGrow: 1,
   },

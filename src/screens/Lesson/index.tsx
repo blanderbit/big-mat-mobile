@@ -3,13 +3,12 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
 import { ScrollView } from '@components/ScrollView';
-import { Comics } from '@screens/Lesson/components/slides/Comics';
 import { DragDrop } from '@screens/Lesson/components/slides/DragDrop';
 import { Finish } from '@screens/Lesson/components/slides/Finish';
 import { FractionInput } from '@screens/Lesson/components/slides/FractionInput';
 import { FractionSlider } from '@screens/Lesson/components/slides/FractionSlider';
 import { MultipleOrSingleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
-import { Story } from '@screens/Lesson/components/slides/Story';
+import { StoryComics } from '@screens/Lesson/components/slides/StoryComics';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackParamList } from '@navigation/extra/types';
 
@@ -54,12 +53,12 @@ export const Lesson = ({ route }: Props) => {
 
   const getSlideComponent = () => {
     switch (currentSlide?.type) {
-      case SlideType.STORY:
+      case SlideType.STORY_COMIC:
         return (
-          <Story
+          <StoryComics
             key={currentSlide.id}
             lessonId={lessonId}
-            slide={currentSlide as Slide<SlideType.STORY>}
+            slide={currentSlide as Slide<SlideType.STORY_COMIC>}
           />
         );
       case SlideType.MULTIPLE_CHOICE:
@@ -104,14 +103,6 @@ export const Lesson = ({ route }: Props) => {
             lessonId={lessonId}
             setScrollEnabled={setScrollEnabled}
             slide={currentSlide as Slide<SlideType.DRAG_DROP>}
-          />
-        );
-      case SlideType.COMIC:
-        return (
-          <Comics
-            key={currentSlide.id}
-            lessonId={lessonId}
-            slide={currentSlide as Slide<SlideType.COMIC>}
           />
         );
       case SlideType.FINISH:

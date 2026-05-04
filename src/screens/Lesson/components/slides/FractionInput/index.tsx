@@ -79,7 +79,7 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
   return (
     <Wrapper>
       <View style={styles.root}>
-        <View style={{ gap: DEFAULT_SPACE }}>
+        <View style={styles.questionStack}>
           <SlideQuestion
             text={slide.variants[0].questionText.content[0].content[0].text}
           />
@@ -204,6 +204,9 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
 };
 
 const styles = StyleSheet.create({
+  questionStack: {
+    gap: DEFAULT_SPACE,
+  },
   arrow: {
     position: 'absolute',
     left: '12%',

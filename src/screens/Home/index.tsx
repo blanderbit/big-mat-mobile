@@ -141,7 +141,7 @@ export const Home = () => {
 
   const renderItem = ({ item, index }: { item: Topic; index: number }) => {
     const navigateToTopic = () => {
-      navigation.navigate(routes.home.TOPIC, { lessons: item.routes });
+      navigation.navigate(routes.home.TOPIC, { topicId: item.id });
     };
 
     return (

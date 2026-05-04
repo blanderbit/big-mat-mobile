@@ -8,7 +8,6 @@ import { Pressable } from '@components/Pressable';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
-import { SlideType } from '@extra/types';
 import { useLessonsStore } from '@stores/lessonsStore';
 
 import BackArrow from '@assets/images/backArrow.svg';
@@ -54,44 +53,19 @@ export const LessonHeader = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
-      <Pressable
-        style={[
-          styles.backButton,
-          {
-            backgroundColor:
-              currentSlide?.type === SlideType.COMIC
-                ? colors.pink
-                : colors.white,
-          },
-        ]}
-        onPress={handlePressBackButton}
-      >
+      <Pressable style={styles.backButton} onPress={handlePressBackButton}>
         <BackArrow />
       </Pressable>
 
       {currentSlide && (
         <View style={styles.progressWrap}>
-          <View
-            style={[
-              styles.progressTrack,
-              {
-                backgroundColor:
-                  currentSlide?.type === SlideType.COMIC
-                    ? colors.pink
-                    : colors.white,
-              },
-            ]}
-          />
+          <View style={styles.progressTrack} />
 
           <Animated.View
             style={[
               styles.progressFill,
               {
                 width: progressWidth,
-                backgroundColor:
-                  currentSlide?.type === SlideType.COMIC
-                    ? colors.pink
-                    : colors.white,
               },
             ]}
           />
@@ -117,6 +91,7 @@ const styles = StyleSheet.create({
     gap: DEFAULT_SPACE,
   },
   backButton: {
+    backgroundColor: colors.white,
     width: 30,
     height: 30,
     borderRadius: 9999,
@@ -129,6 +104,7 @@ const styles = StyleSheet.create({
     height: 10,
   },
   progressTrack: {
+    backgroundColor: colors.white,
     position: 'absolute',
     left: 0,
     top: 0,
@@ -139,6 +115,7 @@ const styles = StyleSheet.create({
     borderRadius: 45,
   },
   progressFill: {
+    backgroundColor: colors.white,
     position: 'absolute',
     left: 0,
     top: 0,
