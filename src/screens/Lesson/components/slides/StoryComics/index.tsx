@@ -8,7 +8,7 @@ import { Carousel } from '@components/Carousel';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 
-import { DEFAULT_SPACE } from '@extra/constants';
+import { CAROUSEL_MAX_HEIGHT, DEFAULT_SPACE } from '@extra/constants';
 import {
   Block,
   ContainerBlock,
@@ -83,8 +83,8 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
     );
   };
 
-  const renderText = (textData: TextBlock, autoHeight = true) => (
-    <WebView autoHeight={autoHeight} html={textData.content} />
+  const renderText = (textData: TextBlock, containerHeight?: number) => (
+    <WebView containerHeight={containerHeight} html={textData.content} />
   );
 
   const renderTitle = (titleData: TitleBlock) => (
@@ -100,23 +100,23 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
 
   const renderDescriptionText = (
     descriptionTextData: DescriptionTextBlock,
-    autoHeight = true,
+    containerHeight?: number,
   ) => (
     <WebView
-      autoHeight={autoHeight}
       color={descriptionTextData.color}
+      containerHeight={containerHeight}
       html={descriptionTextData.content}
     />
   );
 
   const renderDescriptionTextBox = (
     descriptionTextBoxData: DescriptionTextBoxBlock,
-    autoHeight = true,
+    containerHeight?: number,
   ) => (
     <WebView
-      autoHeight={autoHeight}
       backgroundColor={descriptionTextBoxData.background}
       borderRadius={descriptionTextBoxData.borderRadius}
+      containerHeight={containerHeight}
       html={descriptionTextBoxData.content}
     />
   );
@@ -146,13 +146,19 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
             case 'image':
               return renderImage(slide as ImageBlock);
             case 'text':
-              return renderText(slide as TextBlock);
+              return renderText(slide as TextBlock, CAROUSEL_MAX_HEIGHT);
             case 'title':
               return renderTitle(slide as TitleBlock);
             case 'description_text':
-              return renderDescriptionText(slide as DescriptionTextBlock);
+              return renderDescriptionText(
+                slide as DescriptionTextBlock,
+                CAROUSEL_MAX_HEIGHT,
+              );
             case 'description_text_box':
-              return renderDescriptionTextBox(slide as DescriptionTextBoxBlock);
+              return renderDescriptionTextBox(
+                slide as DescriptionTextBoxBlock,
+                CAROUSEL_MAX_HEIGHT,
+              );
             case 'container':
               return renderContainer(slide as ContainerBlock);
             default:

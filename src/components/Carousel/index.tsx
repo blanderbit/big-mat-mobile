@@ -15,6 +15,8 @@ import { useWindowDimensions } from 'react-native';
 
 import { Text } from '@components/Text';
 
+import { CAROUSEL_MAX_HEIGHT } from '@extra/constants';
+
 type Props = {
   items: ReactNode[];
   initialIndex?: number;
@@ -23,7 +25,6 @@ type Props = {
 };
 
 const AUTO_PLAY_INTERVAL_MS = 3000;
-const MAX_HEIGHT = 200;
 
 /** Ignore glitched layouts (e.g. WebView before first content measure). */
 const MIN_LAYOUT_HEIGHT = 12;
@@ -58,10 +59,10 @@ export const Carousel = ({
     indexRef.current = index;
   }, [index]);
 
-  const [heightAnim] = useState(() => new Animated.Value(MAX_HEIGHT));
+  const [heightAnim] = useState(() => new Animated.Value(CAROUSEL_MAX_HEIGHT));
 
-  const currentContentHeight = measuredHeights[index] ?? MAX_HEIGHT;
-  const currentHeight = Math.min(currentContentHeight, MAX_HEIGHT);
+  const currentContentHeight = measuredHeights[index] ?? CAROUSEL_MAX_HEIGHT;
+  const currentHeight = Math.min(currentContentHeight, CAROUSEL_MAX_HEIGHT);
   useEffect(() => {
     Animated.timing(heightAnim, {
       toValue: currentHeight,
@@ -120,7 +121,7 @@ export const Carousel = ({
         showsHorizontalScrollIndicator={false}
         renderItem={({ item, index: i }) => {
           const contentHeight = measuredHeights[i] ?? 0;
-          const needScroll = contentHeight > MAX_HEIGHT;
+          const needScroll = contentHeight > CAROUSEL_MAX_HEIGHT;
 
           return (
             <View style={[styles.page, { width: pageWidth }]}>

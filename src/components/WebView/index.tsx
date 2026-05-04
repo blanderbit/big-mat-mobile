@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import {
   WebView as RNWebView,
   WebViewMessageEvent,
@@ -8,6 +8,7 @@ import {
 type Props = {
   html: string;
   autoHeight?: boolean;
+  containerHeight?: number;
   backgroundColor?: string;
   color?: string;
   borderRadius?: number;
@@ -72,12 +73,15 @@ export const WebView = ({
   backgroundColor,
   borderRadius,
   color,
+  containerHeight,
 }: Props) => {
   const webViewRef = useRef<RNWebView | null>(null);
   // Start at MAX_HEIGHT so parents (e.g. Carousel onLayout) never lock to 1px before postMessage.
-  const [height, setHeight] = useState<number>(MIN_HEIGHT);
+  const [height, setHeight] = useState<number>(MAX_HEIGHT);
   const pageBackground = backgroundColor ?? 'transparent';
   const hasTextColor = color != null && color !== '';
+  const allowScrollInFixedContainer =
+    containerHeight != null && Platform.OS === 'ios';
 
   const documentHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -153,6 +157,7 @@ export const WebView = ({
           styles.wrapper,
           borderRadius != null ? { borderRadius } : undefined,
           backgroundColor ? { backgroundColor } : undefined,
+          containerHeight ? { height: containerHeight } : undefined,
         ]}
       >
         <RNWebView
@@ -166,6 +171,7 @@ export const WebView = ({
             styles.webView,
             styles.webViewMaxHeight,
             backgroundColor ? { backgroundColor } : undefined,
+            containerHeight ? { height: containerHeight } : undefined,
           ]}
         />
       </View>
@@ -178,6 +184,7 @@ export const WebView = ({
         styles.wrapper,
         borderRadius != null ? { borderRadius } : undefined,
         backgroundColor ? { backgroundColor } : undefined,
+        containerHeight ? { height: containerHeight } : undefined,
       ]}
     >
       <RNWebView
@@ -187,14 +194,17 @@ export const WebView = ({
         nestedScrollEnabled={true}
         originWhitelist={['*']}
         ref={webViewRef}
-        scrollEnabled={false}
+        // When WebView is embedded into Carousel we pin its height (containerHeight),
+        // so on iOS we must allow the WebView to scroll vertically inside that box.
+        scrollEnabled={allowScrollInFixedContainer ? true : false}
         showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={allowScrollInFixedContainer ? true : false}
         source={{ html: documentHtml }}
         style={[
           styles.webView,
           { height },
           { backgroundColor: backgroundColor || 'transparent' },
+          containerHeight ? { height: containerHeight } : undefined,
         ]}
         onMessage={handleMessage}
         onLoadEnd={() => {
@@ -211,8 +221,6 @@ const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'red',
   },
   webView: {
     width: '100%',
