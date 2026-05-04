@@ -193,13 +193,9 @@ export type SlideVariantsByType = {
     correctDenominator: number;
     id: string;
     questionImageUrl: string;
-    questionText: {
-      content: { content: { text: string }[] }[];
-    };
-    explanation: {
-      content: { content: { text: string }[] }[];
-    };
-    wrongExplanation: { content: { content: { text: string }[] }[] };
+    questionText: string; // HTML string;
+    explanation: string; // HTML string;
+    wrongExplanation: string; // HTML string;
   };
   [SlideType.DRAG_DROP]: {
     explanation: string; // HTML string;

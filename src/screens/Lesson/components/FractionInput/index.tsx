@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
 import { Button } from '@components/Button';
+import { FractionKeyboard } from '@components/FractionKeyboard';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Pressable } from '@components/Pressable';
 import { SlideQuestion } from '@components/Question';
@@ -16,7 +17,6 @@ import { Slide, SlideType } from '@extra/types';
 import { usePatchSlide } from '@hooks/usePatchSlide';
 
 import Arrow from '@assets/images/arrow.svg';
-import BackArrow2 from '@assets/images/backArrow2.svg';
 
 type Props = {
   slide: Slide<SlideType.FRACTION_INPUT>;
@@ -32,23 +32,6 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
   const { t } = useTranslation();
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  const keyboardSet: Array<
-    { type: 'digit'; value: string } | { type: 'empty' } | { type: 'backspace' }
-  > = [
-    { type: 'digit', value: '1' },
-    { type: 'digit', value: '2' },
-    { type: 'digit', value: '3' },
-    { type: 'digit', value: '4' },
-    { type: 'digit', value: '5' },
-    { type: 'digit', value: '6' },
-    { type: 'digit', value: '7' },
-    { type: 'digit', value: '8' },
-    { type: 'digit', value: '9' },
-    { type: 'empty' },
-    { type: 'digit', value: '0' },
-    { type: 'backspace' },
-  ];
-
   const handleBackspace = () => {
     if (activeField === 'denominator') {
       setDenominator(prev => prev.slice(0, -1));
@@ -56,6 +39,14 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
     }
 
     setNumerator(prev => prev.slice(0, -1));
+  };
+
+  const handleDigit = (digit: string) => {
+    if (activeField === 'numerator') {
+      setNumerator(prev => `${prev}${digit}`);
+      return;
+    }
+    setDenominator(prev => `${prev}${digit}`);
   };
 
   const { handleGoToNextSlide, isLoading } = usePatchSlide({
@@ -137,51 +128,11 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
           />
         </View>
 
-        <View style={styles.keyboard}>
-          {keyboardSet.map((el, index) => {
-            const isDisabledKey =
-              el.type === 'empty' || el.type === 'backspace';
-
-            return (
-              <Pressable
-                key={index}
-                style={[
-                  styles.key,
-                  isDisabledKey ? styles.keyDisabled : styles.keyEnabled,
-                ]}
-                onPress={
-                  isCorrect != null
-                    ? undefined
-                    : () => {
-                        if (el.type === 'digit') {
-                          if (activeField === 'numerator') {
-                            setNumerator(prev => `${prev}${el.value}`);
-                            return;
-                          }
-
-                          setDenominator(prev => `${prev}${el.value}`);
-                          return;
-                        }
-
-                        if (el.type === 'backspace') {
-                          handleBackspace();
-                        }
-                      }
-                }
-              >
-                {el.type === 'digit' ? (
-                  <Text semiBold size={34} style={styles.keyText}>
-                    {el.value}
-                  </Text>
-                ) : el.type === 'backspace' ? (
-                  <View style={styles.backspaceIconWrap}>
-                    <BackArrow2 />
-                  </View>
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
+        <FractionKeyboard
+          disabled={isCorrect != null}
+          onBackspace={handleBackspace}
+          onDigit={handleDigit}
+        />
       </View>
 
       {isCorrect != null && (
@@ -189,10 +140,10 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}
-          text={
+          content={
             isCorrect
-              ? slide.variants[0].explanation?.content[0]?.content[0]?.text
-              : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
+              ? slide.variants[0].explanation
+              : slide.variants[0].wrongExplanation
           }
           onPressNext={handleGoToNextSlide}
         />
@@ -209,15 +160,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: '12%',
     top: 0,
-  },
-  backspaceIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 9999,
-    backgroundColor: colors.black,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: 2,
   },
   divider: {
     borderBottomWidth: 1,
@@ -238,38 +180,6 @@ const styles = StyleSheet.create({
   inputBoxActive: {
     borderColor: colors.black,
     borderWidth: 2,
-  },
-  key: {
-    width: '30%',
-    height: 48,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  keyDisabled: {
-    backgroundColor: 'transparent',
-    borderWidth: 0,
-    borderColor: 'transparent',
-  },
-  keyEnabled: {
-    backgroundColor: colors.brightBeige,
-    borderWidth: 1,
-    borderColor: colors.darkGrey,
-  },
-  keyText: {
-    ...(Platform.OS === 'android'
-      ? {
-          includeFontPadding: false,
-          lineHeight: 34,
-          textAlignVertical: 'center',
-        }
-      : null),
-  },
-  keyboard: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: DEFAULT_SPACE,
-    justifyContent: 'space-between',
   },
   leftCol: {
     width: '50%',
