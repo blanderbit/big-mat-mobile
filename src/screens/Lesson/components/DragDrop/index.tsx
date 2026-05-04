@@ -9,12 +9,12 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AnswerResult } from '@components/AnswerResult';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Icon } from '@components/Icon';
+import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { AnswerResult } from '@screens/Lesson/components/AnswerResult';
-import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';
 
 import { colors } from '@extra/colors';
@@ -231,9 +231,7 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
-      <SlideQuestion
-        text={slide.variants[0].questionText.content[0].content[0].text}
-      />
+      <SlideQuestion content={slide.variants[0].questionText} />
       <View
         ref={containerRef}
         style={styles.container}

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AnswerResult } from '@components/AnswerResult';
+import { AnswerVariant } from '@components/AnswerVariant';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { AnswerResult } from '@screens/Lesson/components/AnswerResult';
-import { AnswerVariant } from '@screens/Lesson/components/AnswerVariant';
-import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';
 
 import { DEFAULT_SPACE } from '@extra/constants';
@@ -16,16 +16,17 @@ import { Slide, SlideType } from '@extra/types';
 import { usePatchSlide } from '@hooks/usePatchSlide';
 
 type Props = {
-  slide: Slide<SlideType.MULTIPLE_CHOICE | SlideType.SINGLE_CHOICE>;
-  type: 'multiple' | 'single';
+  slide: Slide<SlideType.SINGLE_CHOICE>;
   lessonId: string;
 };
 
-export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
+export const SingleChoice = ({ slide, lessonId }: Props) => {
+  console.log('SingleChoice', slide);
   const { t } = useTranslation();
-  const [chosenOptionsIds, setChosenOptionsIds] = useState<
-    Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'][]
-  >([]);
+  const [chosenOptionId, setChosenOptionId] = useState<
+    | Slide<SlideType.SINGLE_CHOICE>['variants'][0]['options'][number]['id']
+    | null
+  >(null);
   const [buttonsRowWidth, setButtonsRowWidth] = useState(0);
   const [optionsGridWidth, setOptionsGridWidth] = useState(0);
   const optionsLayout = slide.variants[0].optionsLayout || 'list';
@@ -37,6 +38,7 @@ export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
           (buttonsRowWidth - DEFAULT_SPACE * (optionsCount - 1)) / optionsCount,
         )
       : 80;
+  const { cardDesign } = slide.variants[0];
 
   const { handleGoToNextSlide, isLoading } = usePatchSlide({
     isCorrect,
@@ -50,39 +52,21 @@ export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
       ? Math.floor((optionsGridWidth - DEFAULT_SPACE) / 2)
       : undefined;
 
-  const toggleChooseOption = (
-    optionId: Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'],
-  ) => {
-    setChosenOptionsIds(prev => {
-      if (prev.includes(optionId)) {
-        return prev.filter(id => id !== optionId);
-      }
-      return [...prev, optionId];
-    });
-  };
-
   const chooseOption = (
-    optionId: Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'],
+    optionId: Slide<SlideType.SINGLE_CHOICE>['variants'][0]['options'][number]['id'],
   ) => {
-    setChosenOptionsIds([optionId]);
+    setChosenOptionId(optionId);
   };
 
   const answer = () => {
     const correctIds = slide.variants[0].correctOptionIds;
-    const chosenIds = chosenOptionsIds;
-
-    setIsCorrect(
-      chosenIds.length === correctIds.length &&
-        chosenIds.every(id => correctIds.includes(id)) &&
-        correctIds.every(id => chosenIds.includes(id)),
-    );
+    if (chosenOptionId == null) return;
+    setIsCorrect(correctIds.length === 1 && correctIds[0] === chosenOptionId);
   };
 
   return (
     <Wrapper>
-      <SlideQuestion
-        text={slide.variants[0].questionText.content[0].content[0].text}
-      />
+      <SlideQuestion content={slide.variants[0].questionText} />
 
       {slide.variants[0].questionImageUrl && (
         <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />
@@ -123,27 +107,19 @@ export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
         onLayout={e => setButtonsRowWidth(e.nativeEvent.layout.width)}
       >
         {slide.variants[0].options.map((option, index) => (
-          // size: чтобы все кнопки влезали в 1 строку
-          // width = rowWidth - gaps
-          // size = floor(width / count)
           <Button
-            borderRadius={25}
             disabled={isCorrect != null}
             key={option.id}
-            pressed={chosenOptionsIds.includes(option.id)}
-            size={optionButtonSize}
+            pressed={chosenOptionId === option.id}
             title={getUkrLetterByIndex(index)}
-            onPress={() =>
-              type === 'multiple'
-                ? toggleChooseOption(option.id)
-                : chooseOption(option.id)
-            }
+            onPress={() => chooseOption(option.id)}
+            // width={}
           />
         ))}
       </View>
 
       <Button
-        disabled={!chosenOptionsIds.length || isCorrect != null || isLoading}
+        disabled={chosenOptionId == null || isCorrect != null || isLoading}
         title={t('check')}
         onPress={answer}
       />
@@ -153,10 +129,10 @@ export const MultipleOrSingleChoice = ({ slide, type, lessonId }: Props) => {
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}
-          text={
+          content={
             isCorrect
-              ? slide.variants[0].explanation?.content[0]?.content[0]?.text
-              : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
+              ? slide.variants[0].explanation
+              : slide.variants[0].wrongExplanation
           }
           onPressNext={handleGoToNextSlide}
         />

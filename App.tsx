@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Toast } from '@components/Toast';
 import { Navigation } from '@navigation/index';
 

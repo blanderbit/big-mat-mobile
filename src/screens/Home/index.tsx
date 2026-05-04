@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Image, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  Image,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
@@ -64,6 +71,12 @@ export const Home = () => {
 
   const ListHeader = () => (
     <>
+      {isLoading ? (
+        <View style={styles.refreshIndicatorWrap}>
+          <ActivityIndicator />
+        </View>
+      ) : null}
+
       <Image
         resizeMode="contain"
         source={background6}
@@ -152,21 +165,37 @@ export const Home = () => {
   };
 
   return (
-    <FlatList
-      contentContainerStyle={styles.listContent}
-      data={topics}
-      keyExtractor={keyExtractor}
-      ListFooterComponent={ListFooter}
-      ListHeaderComponent={ListHeader}
-      refreshing={isLoading}
-      renderItem={renderItem}
-      showsVerticalScrollIndicator={false}
-      onRefresh={getTopics}
-    />
+    <View style={styles.root}>
+      <FlatList
+        contentContainerStyle={styles.listContent}
+        data={topics}
+        keyExtractor={keyExtractor}
+        ListFooterComponent={ListFooter}
+        ListHeaderComponent={ListHeader}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            // Hide native spinner; we render our own ActivityIndicator above.
+            colors={['transparent']}
+            refreshing={isLoading}
+            tintColor="transparent"
+            onRefresh={getTopics}
+          />
+        }
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  refreshIndicatorWrap: {
+    alignItems: 'center',
+    paddingVertical: DEFAULT_SPACE,
+  },
   listContent: {
     paddingHorizontal: DEFAULT_SPACE,
     paddingVertical: DEFAULT_SPACE,

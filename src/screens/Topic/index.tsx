@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   findNodeHandle,
   Image,
   LayoutChangeEvent,
@@ -15,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Line } from 'react-native-svg';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';

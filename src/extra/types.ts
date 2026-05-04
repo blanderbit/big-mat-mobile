@@ -128,25 +128,29 @@ export type Block =
 
 export type SlideVariantsByType = {
   [SlideType.SINGLE_CHOICE]: {
+    descriptionBlocks?: Block[];
     buttonText: string;
+    cardDesign?:
+      | 'image_top_buttons_bottom'
+      | 'image_and_button_combined'
+      | 'block_as_button';
     correctOptionIds: string[];
-    explanation: {
-      content: { content: { text: string }[] }[];
-    };
+    explanation: string; // HTML string;
     id: string;
-    imageUrl: string;
+    optionImageBorderColor?: string;
+    imageUrl?: string;
     options: {
       id: string;
       imageUrl?: string;
       label: string;
     }[];
-    optionsLayout: 'grid';
+    optionsLayout: 'grid' | 'list';
     questionImageUrl: string;
     questionText: {
       content: { content: { text: string }[] }[];
     };
     text: { content: { content: { text: string }[] }[] };
-    wrongExplanation: { content: { content: { text: string }[] }[] };
+    wrongExplanation: string; // HTML string;
   };
   [SlideType.STORY_COMIC]: {
     buttonText: string;
@@ -154,21 +158,19 @@ export type SlideVariantsByType = {
     blocks?: Block[];
   };
   [SlideType.MULTIPLE_CHOICE]: {
+    buttonText?: string;
     correctOptionIds: string[];
-    questionImageUrl: string;
-    questionText: {
-      content: { content: { text: string }[] }[];
-    };
+    questionImageUrl?: string;
+    questionText: string; // HTML string;
     optionsLayout?: 'grid' | 'list';
     options: {
       id: string;
       imageUrl?: string;
       label: string;
     }[];
-    explanation: {
-      content: { content: { text: string }[] }[];
-    };
-    wrongExplanation: { content: { content: { text: string }[] }[] };
+    explanation: string; // HTML string;
+    wrongExplanation: string; // HTML string;
+    id: string;
   };
   [SlideType.FRACTION_SLIDER]: {
     correctOptionIds: string[];

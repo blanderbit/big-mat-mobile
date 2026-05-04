@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';

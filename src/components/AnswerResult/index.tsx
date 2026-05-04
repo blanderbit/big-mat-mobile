@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@components/Button';
-import { Text } from '@components/Text';
+import { WebView } from '@components/WebView';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 
 type Props = {
   isCorrect: boolean;
-  text: string;
+  content: string; // HTML string;
   onPressNext: () => void;
   disabled: boolean;
   isLoading: boolean;
@@ -18,7 +18,7 @@ type Props = {
 
 export const AnswerResult = ({
   isCorrect,
-  text,
+  content,
   onPressNext,
   disabled,
   isLoading,
@@ -38,9 +38,7 @@ export const AnswerResult = ({
         },
       ]}
     >
-      <Text center semiBold color={colors.white} size={20}>
-        {text}
-      </Text>
+      <WebView html={content} />
 
       <Button
         disabled={disabled}

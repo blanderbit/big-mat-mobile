@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { ScrollView } from '@components/ScrollView';
-import { DragDrop } from '@screens/Lesson/components/slides/DragDrop';
-import { Finish } from '@screens/Lesson/components/slides/Finish';
-import { FractionInput } from '@screens/Lesson/components/slides/FractionInput';
-import { FractionSlider } from '@screens/Lesson/components/slides/FractionSlider';
-import { MultipleOrSingleChoice } from '@screens/Lesson/components/slides/MultipleOrSingleChoice';
-import { StoryComics } from '@screens/Lesson/components/slides/StoryComics';
+import { DragDrop } from '@screens/Lesson/components/DragDrop';
+import { Finish } from '@screens/Lesson/components/Finish';
+import { FractionInput } from '@screens/Lesson/components/FractionInput';
+import { FractionSlider } from '@screens/Lesson/components/FractionSlider';
+import { MultipleChoice } from '@screens/Lesson/components/MultipleChoice';
+import { SingleChoice } from '@screens/Lesson/components/SingleChoice';
+import { StoryComics } from '@screens/Lesson/components/StoryComics';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackParamList } from '@navigation/extra/types';
 
@@ -63,20 +65,18 @@ export const Lesson = ({ route }: Props) => {
         );
       case SlideType.MULTIPLE_CHOICE:
         return (
-          <MultipleOrSingleChoice
+          <MultipleChoice
             key={currentSlide.id}
             lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.MULTIPLE_CHOICE>}
-            type="multiple"
           />
         );
       case SlideType.SINGLE_CHOICE:
         return (
-          <MultipleOrSingleChoice
+          <SingleChoice
             key={currentSlide.id}
             lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.SINGLE_CHOICE>}
-            type="single"
           />
         );
       case SlideType.FRACTION_SLIDER:

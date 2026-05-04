@@ -3,11 +3,11 @@ import { Image, StyleSheet, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useTranslation } from 'react-i18next';
 
+import { AnswerResult } from '@components/AnswerResult';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { AnswerResult } from '@screens/Lesson/components/AnswerResult';
-import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';
 
 import { colors } from '@extra/colors';
@@ -96,9 +96,7 @@ export const FractionSlider = ({
 
   return (
     <Wrapper>
-      <SlideQuestion
-        text={slide.variants[0].questionText.content[0].content[0].text}
-      />
+      <SlideQuestion content={slide.variants[0].questionText} />
 
       {slide.variants[0].questionImageUrl && (
         <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />

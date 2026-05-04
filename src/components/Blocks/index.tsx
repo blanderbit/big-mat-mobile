@@ -1,9 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button } from '@components/Button';
 import { Carousel } from '@components/Carousel';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
@@ -15,18 +12,10 @@ import {
   DescriptionTextBlock,
   DescriptionTextBoxBlock,
   ImageBlock,
-  Slide,
   SliderBlock,
-  SlideType,
   TextBlock,
   TitleBlock,
 } from '@extra/types';
-import { usePatchSlide } from '@hooks/usePatchSlide';
-
-type Props = {
-  slide: Slide<SlideType.STORY_COMIC>;
-  lessonId: string;
-};
 
 const TITLE_LEVEL_SIZE: Record<NonNullable<TitleBlock['level']>, number> = {
   h1: 32,
@@ -40,18 +29,11 @@ const TITLE_LEVEL_SIZE: Record<NonNullable<TitleBlock['level']>, number> = {
 const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
 
-export const StoryComics = ({ slide, lessonId }: Props) => {
-  const { bottom } = useSafeAreaInsets();
-  const { t } = useTranslation();
+type Props = {
+  blocks: Block[];
+};
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
-    isCorrect: true,
-    lessonId,
-    slideId: slide.id,
-  });
-
-  console.log('StoryComics', slide);
-
+export const Blocks = ({ blocks }: Props) => {
   const renderImage = (imageData: ImageBlock) => {
     const imageRowAlignStyle =
       imageData.verticalAlign === 'left'
@@ -183,32 +165,14 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
 
       const blockContent = switchBlockType();
 
-      return <View key={`${slide.id}-${index}`}>{blockContent}</View>;
+      return <View key={index}>{blockContent}</View>;
     });
   };
 
-  const blocks = renderBlocks(slide.variants[0].blocks ?? []);
-
-  return (
-    <View style={styles.container}>
-      {blocks}
-
-      <Button
-        disabled={isLoading}
-        isLoading={isLoading}
-        marginBottom={bottom}
-        title={slide.variants[0].buttonText ?? t('next')}
-        onPress={handleGoToNextSlide}
-      />
-    </View>
-  );
+  return renderBlocks(blocks ?? []);
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    gap: DEFAULT_SPACE,
-  },
   imageRowAlignStart: {
     alignItems: 'flex-start',
   },

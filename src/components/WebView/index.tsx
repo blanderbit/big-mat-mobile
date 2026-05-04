@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   WebView as RNWebView,
   WebViewMessageEvent,
 } from 'react-native-webview';
+
+import { DEFAULT_SPACE } from '@extra/constants';
 
 type Props = {
   html: string;
@@ -80,6 +82,12 @@ export const WebView = ({
   const hasTextColor = color != null && color !== '';
 
   const isFixedHeight = containerHeight != null;
+  const hasBackground = backgroundColor != null && backgroundColor !== '';
+  const paddingV = hasBackground ? DEFAULT_SPACE : 0;
+  const fixedWebViewHeight =
+    isFixedHeight && containerHeight != null
+      ? Math.max(MIN_HEIGHT, containerHeight - paddingV * 2)
+      : undefined;
 
   const documentHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -133,10 +141,38 @@ export const WebView = ({
    overflow-y: ${autoHeight && !isFixedHeight ? 'hidden' : 'auto'};
  }
 
- p {
-  margin: 0;
-  padding: 0;
+ /* Make the very first content sit flush to top */
+ body > :first-child {
+   margin-top: 0 !important;
+   padding-top: 0 !important;
  }
+
+ body > :last-child {
+   margin-bottom: 0 !important;
+   padding-bottom: 0 !important;
+ }
+
+ /* Reset default top margins that browsers add to block elements */
+ h1, h2, h3, h4, h5, h6,
+ p,
+ ul, ol,
+ pre,
+ blockquote,
+ table {
+   margin-top: 0;
+ }
+
+ /* Reset default bottom margins that browsers add to block elements */
+ h1, h2, h3, h4, h5, h6,
+ p,
+ ul, ol,
+ pre,
+ blockquote,
+ table {
+   margin-bottom: 0;
+ }
+
+
 </style>
 </head>
 <body>${html}</body>
@@ -155,6 +191,7 @@ export const WebView = ({
           styles.wrapper,
           borderRadius != null ? { borderRadius } : undefined,
           backgroundColor ? { backgroundColor } : undefined,
+          hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
           containerHeight ? { height: containerHeight } : undefined,
         ]}
       >
@@ -169,7 +206,9 @@ export const WebView = ({
             styles.webView,
             styles.webViewMaxHeight,
             backgroundColor ? { backgroundColor } : undefined,
-            containerHeight ? { height: containerHeight } : undefined,
+            fixedWebViewHeight != null
+              ? { height: fixedWebViewHeight }
+              : undefined,
           ]}
         />
       </View>
@@ -185,6 +224,7 @@ export const WebView = ({
         styles.wrapper,
         borderRadius != null ? { borderRadius } : undefined,
         backgroundColor ? { backgroundColor } : undefined,
+        hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
         isFixedHeight ? { height: containerHeight } : undefined,
       ]}
     >
@@ -194,7 +234,6 @@ export const WebView = ({
         injectedJavaScript={WEBVIEW_HEIGHT_BRIDGE_JS}
         nestedScrollEnabled={shouldEnableScroll} // ✅ Android fix
         originWhitelist={['*']}
-        overScrollMode={shouldEnableScroll ? 'auto' : 'never'} // ✅ Android fix
         ref={webViewRef}
         scrollEnabled={shouldEnableScroll} // ✅ ключ
         showsHorizontalScrollIndicator={false}
@@ -203,7 +242,7 @@ export const WebView = ({
         style={[
           styles.webView,
           {
-            height: isFixedHeight ? containerHeight : height,
+            height: isFixedHeight ? fixedWebViewHeight : height,
           },
           { backgroundColor: backgroundColor || 'transparent' },
         ]}

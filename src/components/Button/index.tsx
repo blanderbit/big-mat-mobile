@@ -1,12 +1,8 @@
 import { ReactNode } from 'react';
-import {
-  ActivityIndicator,
-  Pressable as RNPressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Pressable as RNPressable, StyleSheet, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
@@ -23,6 +19,7 @@ type Props = {
   marginBottom?: number;
   isLoading?: boolean;
   children?: ReactNode;
+  width?: number | string;
 };
 
 export const Button = ({
@@ -37,6 +34,7 @@ export const Button = ({
   marginBottom,
   isLoading,
   children,
+  width,
 }: Props) => {
   const DEFAULT_HEIGHT = 50;
   const radius = borderRadius ?? 40;
@@ -44,7 +42,7 @@ export const Button = ({
   const pressableStyle = [
     styles.pressable,
     {
-      width: size ?? '100%',
+      width: width ?? size ?? '100%',
       height: size ?? DEFAULT_HEIGHT,
       marginTop,
       marginVertical,

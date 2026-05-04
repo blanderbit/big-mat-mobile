@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { AnswerResult } from '@components/AnswerResult';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Pressable } from '@components/Pressable';
+import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { AnswerResult } from '@screens/Lesson/components/AnswerResult';
-import { SlideQuestion } from '@screens/Lesson/components/Question';
 import { Wrapper } from '@screens/Lesson/components/Wrapper';
 
 import { colors } from '@extra/colors';
@@ -80,9 +80,7 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
     <Wrapper>
       <View style={styles.root}>
         <View style={styles.questionStack}>
-          <SlideQuestion
-            text={slide.variants[0].questionText.content[0].content[0].text}
-          />
+          <SlideQuestion content={slide.variants[0].questionText} />
 
           <View style={styles.row}>
             <View style={styles.leftCol}>
