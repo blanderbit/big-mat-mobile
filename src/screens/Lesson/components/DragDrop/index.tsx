@@ -232,6 +232,7 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
   return (
     <Wrapper>
       <SlideQuestion content={slide.variants[0].questionText} />
+
       <View
         ref={containerRef}
         style={styles.container}
@@ -412,10 +413,10 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}
-          text={
+          content={
             isCorrect
-              ? slide.variants[0].explanation?.content[0]?.content[0]?.text
-              : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
+              ? slide.variants[0].explanation
+              : slide.variants[0].wrongExplanation
           }
           onPressNext={handleGoToNextSlide}
         />

@@ -21,7 +21,6 @@ type Props = {
 };
 
 export const MultipleChoice = ({ slide, lessonId }: Props) => {
-  console.log('MultipleChoice', slide);
   const { t } = useTranslation();
   const [chosenOptionsIds, setChosenOptionsIds] = useState<
     Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['id'][]
