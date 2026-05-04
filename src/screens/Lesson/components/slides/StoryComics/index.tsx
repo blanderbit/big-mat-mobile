@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button } from '@components/Button';
 import { Carousel } from '@components/Carousel';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
@@ -41,17 +41,8 @@ const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
 
 export const StoryComics = ({ slide, lessonId }: Props) => {
-  const [containerWidth, setContainerWidth] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-  const [textBubbleY, setTextBubbleY] = useState<number | null>(null);
-  const [notchBottom, setNotchBottom] = useState<number | null>(null);
-  const [buttonTop, setButtonTop] = useState<number | null>(null);
-  const { t } = useTranslation();
-  const handleSetContainerLayout = (event: LayoutChangeEvent) => {
-    setContainerWidth(event.nativeEvent.layout.width);
-    setContainerHeight(event.nativeEvent.layout.height);
-  };
   const { bottom } = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   const { handleGoToNextSlide, isLoading } = usePatchSlide({
     isCorrect: true,
@@ -199,10 +190,16 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
   const blocks = renderBlocks(slide.variants[0].blocks ?? []);
 
   return (
-    <View style={styles.container} onLayout={handleSetContainerLayout}>
+    <View style={styles.container}>
       {blocks}
 
-      <View style={{ marginBottom: bottom }} />
+      <Button
+        disabled={isLoading}
+        isLoading={isLoading}
+        marginBottom={bottom}
+        title={slide.variants[0].buttonText ?? t('next')}
+        onPress={handleGoToNextSlide}
+      />
     </View>
   );
 };
