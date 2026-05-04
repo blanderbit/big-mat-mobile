@@ -174,19 +174,15 @@ export type SlideVariantsByType = {
   };
   [SlideType.FRACTION_SLIDER]: {
     correctOptionIds: string[];
-    explanation: {
-      content: { content: { text: string }[] }[];
-    };
+    explanation: string; // HTML string;
     id: string;
     options: {
       id: string;
       label: string;
     }[];
-    questionImageUrl: string;
-    questionText: {
-      content: { content: { text: string }[] }[];
-    };
-    wrongExplanation: { content: { content: { text: string }[] }[] };
+    questionImageUrl?: string;
+    questionText: string; // HTML string;
+    wrongExplanation: string; // HTML string;
   };
   [SlideType.FRACTION_INPUT]: {
     correctNumerator: number;

@@ -180,10 +180,10 @@ export const FractionSlider = ({
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}
-          text={
+          content={
             isCorrect
-              ? slide.variants[0].explanation?.content[0]?.content[0]?.text
-              : slide.variants[0].wrongExplanation?.content[0]?.content[0]?.text
+              ? slide.variants[0].explanation
+              : slide.variants[0].wrongExplanation
           }
           onPressNext={handleGoToNextSlide}
         />
