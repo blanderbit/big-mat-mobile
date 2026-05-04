@@ -15,7 +15,6 @@ type Props = {
 };
 
 const MAX_HEIGHT = 200;
-
 const MIN_HEIGHT = 1;
 
 const WEBVIEW_HEIGHT_BRIDGE_JS = `
@@ -25,7 +24,6 @@ const WEBVIEW_HEIGHT_BRIDGE_JS = `
     var i = 0;
     for (; i < nodes.length; i++) {
       nodes[i].style.maxWidth = '100%';
-      // do not force height for iframes (could break players)
       if (nodes[i].tagName !== 'IFRAME') {
         nodes[i].style.height = 'auto';
       }
@@ -76,12 +74,12 @@ export const WebView = ({
   containerHeight,
 }: Props) => {
   const webViewRef = useRef<RNWebView | null>(null);
-  // Start at MAX_HEIGHT so parents (e.g. Carousel onLayout) never lock to 1px before postMessage.
-  const [height, setHeight] = useState<number>(MAX_HEIGHT);
+  const [height, setHeight] = useState<number>(MIN_HEIGHT);
+
   const pageBackground = backgroundColor ?? 'transparent';
   const hasTextColor = color != null && color !== '';
-  const allowScrollInFixedContainer =
-    containerHeight != null && Platform.OS === 'ios';
+
+  const isFixedHeight = containerHeight != null;
 
   const documentHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -132,7 +130,7 @@ export const WebView = ({
  }
 
  body {
-   overflow-y: ${autoHeight ? 'hidden' : 'auto'};
+   overflow-y: ${autoHeight && !isFixedHeight ? 'hidden' : 'auto'};
  }
 
  p {
@@ -178,40 +176,38 @@ export const WebView = ({
     );
   }
 
+  const shouldEnableScroll = isFixedHeight;
+
   return (
     <View
+      pointerEvents="box-none"
       style={[
         styles.wrapper,
         borderRadius != null ? { borderRadius } : undefined,
         backgroundColor ? { backgroundColor } : undefined,
-        containerHeight ? { height: containerHeight } : undefined,
+        isFixedHeight ? { height: containerHeight } : undefined,
       ]}
     >
       <RNWebView
+        injectedJavaScriptForMainFrameOnly
+        javaScriptEnabled
         injectedJavaScript={WEBVIEW_HEIGHT_BRIDGE_JS}
-        injectedJavaScriptForMainFrameOnly={true}
-        javaScriptEnabled={true}
-        nestedScrollEnabled={true}
+        nestedScrollEnabled={shouldEnableScroll} // ✅ Android fix
         originWhitelist={['*']}
+        overScrollMode={shouldEnableScroll ? 'auto' : 'never'} // ✅ Android fix
         ref={webViewRef}
-        // When WebView is embedded into Carousel we pin its height (containerHeight),
-        // so on iOS we must allow the WebView to scroll vertically inside that box.
-        scrollEnabled={allowScrollInFixedContainer ? true : false}
+        scrollEnabled={shouldEnableScroll} // ✅ ключ
         showsHorizontalScrollIndicator={false}
-        showsVerticalScrollIndicator={allowScrollInFixedContainer ? true : false}
+        showsVerticalScrollIndicator={shouldEnableScroll}
         source={{ html: documentHtml }}
         style={[
           styles.webView,
-          { height },
+          {
+            height: isFixedHeight ? containerHeight : height,
+          },
           { backgroundColor: backgroundColor || 'transparent' },
-          containerHeight ? { height: containerHeight } : undefined,
         ]}
         onMessage={handleMessage}
-        onLoadEnd={() => {
-          // WKWebView can miss initial paint/injected measure sometimes.
-          // if (isIOS)
-          //   webViewRef.current?.injectJavaScript(WEBVIEW_HEIGHT_BRIDGE_JS);
-        }}
       />
     </View>
   );
