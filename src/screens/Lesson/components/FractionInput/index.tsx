@@ -9,7 +9,7 @@ import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Pressable } from '@components/Pressable';
 import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { Wrapper } from '@screens/Lesson/components/Wrapper';
+import { Wrapper } from '@components/Wrapper';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';

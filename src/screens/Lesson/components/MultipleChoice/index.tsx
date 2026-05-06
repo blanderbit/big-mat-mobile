@@ -8,7 +8,7 @@ import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
-import { Wrapper } from '@screens/Lesson/components/Wrapper';
+import { Wrapper } from '@components/Wrapper';
 
 import { DEFAULT_SPACE } from '@extra/constants';
 import { getUkrLetterByIndex } from '@extra/getUkrLetterByIndex';

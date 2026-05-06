@@ -8,6 +8,7 @@ import { DragDrop } from '@screens/Lesson/components/DragDrop';
 import { Finish } from '@screens/Lesson/components/Finish';
 import { FractionInput } from '@screens/Lesson/components/FractionInput';
 import { FractionSlider } from '@screens/Lesson/components/FractionSlider';
+import { FractionSliderMulti } from '@screens/Lesson/components/FractionSliderMulti';
 import { MultipleChoice } from '@screens/Lesson/components/MultipleChoice';
 import { SingleChoice } from '@screens/Lesson/components/SingleChoice';
 import { StoryComics } from '@screens/Lesson/components/StoryComics';
@@ -107,6 +108,14 @@ export const Lesson = ({ route }: Props) => {
         );
       case SlideType.FINISH:
         return <Finish key={currentSlide.id} lessonId={lessonId} />;
+      case SlideType.FRACTION_SLIDER_MULTI:
+        return (
+          <FractionSliderMulti
+            key={currentSlide.id}
+            lessonId={lessonId}
+            slide={currentSlide as Slide<SlideType.FRACTION_SLIDER_MULTI>}
+          />
+        );
       default:
         return null;
     }

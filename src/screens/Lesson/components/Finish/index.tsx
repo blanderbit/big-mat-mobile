@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
-import { Wrapper } from '@screens/Lesson/components/Wrapper';
+import { Wrapper } from '@components/Wrapper';
 
 import { API } from '@API/index';
 import { colors } from '@extra/colors';

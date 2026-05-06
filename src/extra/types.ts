@@ -21,6 +21,8 @@ export type Topic = {
   title: string;
 };
 
+export type FractionString = `${number}/${number}`;
+
 export type Lesson = {
   id: string;
   order: number;
@@ -38,6 +40,7 @@ export enum SlideType {
   FRACTION_INPUT = 'fraction_input',
   FRACTION_SLIDER = 'fraction_slider',
   FINISH = 'finish',
+  FRACTION_SLIDER_MULTI = 'fraction_slider_multi',
 }
 
 export enum DragDropItemType {
@@ -178,7 +181,7 @@ export type SlideVariantsByType = {
     id: string;
     options: {
       id: string;
-      label: string;
+      label: FractionString;
     }[];
     questionImageUrl?: string;
     questionText: string; // HTML string;
@@ -204,6 +207,26 @@ export type SlideVariantsByType = {
       id: string;
       label: string;
     }[];
+  };
+  [SlideType.FRACTION_SLIDER_MULTI]: {
+    buttonText?: string;
+    explanation: string; // HTML string;
+    id: string;
+    introBlocks?: Block[];
+    tasks: {
+      correctOptionIds: string[];
+      id: string;
+      imageUrl?: string;
+      layout:
+        | 'image_left_slider_right'
+        | 'image_right_slider_left'
+        | 'image_top_slider_bottom';
+      options: {
+        id: string;
+        label: FractionString;
+      }[];
+    }[];
+    wrongExplanation: string; // HTML string;
   };
   [SlideType.FINISH]: undefined;
 };
