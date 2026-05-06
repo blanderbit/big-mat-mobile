@@ -14,6 +14,7 @@ type Props = {
   onPressNext: () => void;
   disabled: boolean;
   isLoading: boolean;
+  buttonText: string;
 };
 
 export const AnswerResult = ({
@@ -22,6 +23,7 @@ export const AnswerResult = ({
   onPressNext,
   disabled,
   isLoading,
+  buttonText,
 }: Props) => {
   const windowWidth = Dimensions.get('window').width;
   const { t } = useTranslation();
@@ -43,7 +45,9 @@ export const AnswerResult = ({
       <Button
         disabled={disabled}
         isLoading={isLoading}
-        title={isCorrect ? t('next') : t('continue')}
+        title={
+          isCorrect ? (buttonText ? buttonText : t('next')) : t('continue')
+        }
         onPress={onPressNext}
       />
     </View>

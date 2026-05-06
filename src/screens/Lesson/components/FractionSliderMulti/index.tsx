@@ -282,6 +282,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
 
       {isCorrect != null && (
         <AnswerResult
+          buttonText={slide.variants[0].buttonText || ''}
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}

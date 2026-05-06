@@ -186,8 +186,10 @@ export type SlideVariantsByType = {
     questionImageUrl?: string;
     questionText: string; // HTML string;
     wrongExplanation: string; // HTML string;
+    buttonText?: string;
   };
   [SlideType.FRACTION_INPUT]: {
+    buttonText?: string;
     correctNumerator: number;
     correctDenominator: number;
     id: string;
@@ -197,6 +199,7 @@ export type SlideVariantsByType = {
     wrongExplanation: string; // HTML string;
   };
   [SlideType.DRAG_DROP]: {
+    buttonText?: string;
     explanation: string; // HTML string;
     wrongExplanation: string; // HTML string;
     id: string;

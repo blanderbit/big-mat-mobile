@@ -29,6 +29,7 @@ export const FractionSlider = ({
   slide,
   lessonId,
 }: Props) => {
+  console.log('FractionSlider', slide);
   const options = slide.variants[0].options;
   const maxIndex = Math.max(0, options.length - 1);
   const [index, setIndex] = useState(0);
@@ -177,6 +178,7 @@ export const FractionSlider = ({
 
       {isCorrect != null && (
         <AnswerResult
+          buttonText={slide.variants[0].buttonText || ''}
           disabled={isLoading}
           isCorrect={isCorrect}
           isLoading={isLoading}
