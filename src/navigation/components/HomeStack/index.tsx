@@ -59,7 +59,7 @@ export const HomeStack = () => {
           headerShown: true,
           header: LessonHeader,
           contentStyle: {
-            backgroundColor: currentSlide?.backgroundColor ?? colors.white,
+            backgroundColor: currentSlide?.backgroundColor ?? colors.pink,
           },
         }}
       />

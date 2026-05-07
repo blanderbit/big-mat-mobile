@@ -12,6 +12,7 @@ import { FractionSliderMulti } from '@screens/Lesson/components/FractionSliderMu
 import { MultipleChoice } from '@screens/Lesson/components/MultipleChoice';
 import { SingleChoice } from '@screens/Lesson/components/SingleChoice';
 import { StoryComics } from '@screens/Lesson/components/StoryComics';
+import { WriteTheAnswer } from '@screens/Lesson/components/WriteTheAnswer';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackParamList } from '@navigation/extra/types';
 
@@ -114,6 +115,14 @@ export const Lesson = ({ route }: Props) => {
             key={currentSlide.id}
             lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.FRACTION_SLIDER_MULTI>}
+          />
+        );
+      case SlideType.NUMBER_ANSWER:
+        return (
+          <WriteTheAnswer
+            key={currentSlide.id}
+            lessonId={lessonId}
+            slide={currentSlide as Slide<SlideType.NUMBER_ANSWER>}
           />
         );
       default:

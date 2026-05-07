@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
 import { Button } from '@components/Button';
-import { FractionKeyboard } from '@components/FractionKeyboard';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { Keyboard } from '@components/Keyboard';
 import { Pressable } from '@components/Pressable';
 import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
@@ -128,7 +128,7 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
           />
         </View>
 
-        <FractionKeyboard
+        <Keyboard
           disabled={isCorrect != null}
           onBackspace={handleBackspace}
           onDigit={handleDigit}

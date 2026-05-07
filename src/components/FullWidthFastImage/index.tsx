@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Image, StyleProp, StyleSheet } from 'react-native';
-import FastImage, { ImageStyle as FastImageStyle } from 'react-native-fast-image';
+import FastImage, {
+  ImageStyle as FastImageStyle,
+} from 'react-native-fast-image';
 
 type Props = {
   uri: string;

@@ -30,6 +30,7 @@ export const FractionSlider = ({
   lessonId,
 }: Props) => {
   console.log('FractionSlider', slide);
+  // TODO: finish after API is ready
   const options = slide.variants[0].options;
   const maxIndex = Math.max(0, options.length - 1);
   const [index, setIndex] = useState(0);

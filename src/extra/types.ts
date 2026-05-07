@@ -41,6 +41,7 @@ export enum SlideType {
   FRACTION_SLIDER = 'fraction_slider',
   FINISH = 'finish',
   FRACTION_SLIDER_MULTI = 'fraction_slider_multi',
+  NUMBER_ANSWER = 'number_answer',
 }
 
 export enum DragDropItemType {
@@ -230,6 +231,32 @@ export type SlideVariantsByType = {
       }[];
     }[];
     wrongExplanation: string; // HTML string;
+  };
+  [SlideType.NUMBER_ANSWER]: {
+    blocks?: Block[];
+    buttonText?: string;
+    correctNumber?: number;
+    explanation: string; // HTML string;
+    wrongExplanation: string; // HTML string;
+    id: string;
+    numberAnswerLayout: 'blocks_below' | 'image_side' | 'columns';
+    numberAnswerFields?: {
+      correctNumber: number;
+      id: string;
+      label: string;
+    }[];
+    numberAnswerSideImagePosition?: 'left' | 'right';
+    numberAnswerSideImageUrl?: string;
+    numberAnswerLeftColumnFields?: {
+      correctNumber: number;
+      id: string;
+      label: string;
+    }[];
+    numberAnswerRightColumnFields?: {
+      correctNumber: number;
+      id: string;
+      label: string;
+    }[];
   };
   [SlideType.FINISH]: undefined;
 };

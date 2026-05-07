@@ -34,11 +34,7 @@ const KEYS: Key[] = [
   { type: 'backspace' },
 ];
 
-export const FractionKeyboard = ({
-  disabled = false,
-  onBackspace,
-  onDigit,
-}: Props) => {
+export const Keyboard = ({ disabled = false, onBackspace, onDigit }: Props) => {
   return (
     <View style={styles.keyboard}>
       {KEYS.map((el, index) => {
@@ -125,4 +121,3 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 });
-
