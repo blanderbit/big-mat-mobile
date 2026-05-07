@@ -9,6 +9,7 @@ import { Finish } from '@screens/Lesson/components/Finish';
 import { FractionInput } from '@screens/Lesson/components/FractionInput';
 import { FractionSlider } from '@screens/Lesson/components/FractionSlider';
 import { FractionSliderMulti } from '@screens/Lesson/components/FractionSliderMulti';
+import { MatchJoin } from '@screens/Lesson/components/MatchJoin';
 import { MultipleChoice } from '@screens/Lesson/components/MultipleChoice';
 import { SingleChoice } from '@screens/Lesson/components/SingleChoice';
 import { StoryComics } from '@screens/Lesson/components/StoryComics';
@@ -34,6 +35,8 @@ export const Lesson = ({ route }: Props) => {
   const setSlides = useLessonsStore(state => state.setSlides);
 
   const currentSlide = slides[currentSlideIndex];
+
+  console.log('currentSlide', currentSlide);
 
   useEffect(() => {
     (async () => {
@@ -123,6 +126,14 @@ export const Lesson = ({ route }: Props) => {
             key={currentSlide.id}
             lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.NUMBER_ANSWER>}
+          />
+        );
+      case SlideType.MATCH_JOIN:
+        return (
+          <MatchJoin
+            key={currentSlide.id}
+            lessonId={lessonId}
+            slide={currentSlide as Slide<SlideType.MATCH_JOIN>}
           />
         );
       default:

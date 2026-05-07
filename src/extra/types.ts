@@ -42,6 +42,7 @@ export enum SlideType {
   FINISH = 'finish',
   FRACTION_SLIDER_MULTI = 'fraction_slider_multi',
   NUMBER_ANSWER = 'number_answer',
+  MATCH_JOIN = 'match_join',
 }
 
 export enum DragDropItemType {
@@ -190,12 +191,12 @@ export type SlideVariantsByType = {
     buttonText?: string;
   };
   [SlideType.FRACTION_INPUT]: {
+    blocks?: Block[];
     buttonText?: string;
     correctNumerator: number;
     correctDenominator: number;
     id: string;
     questionImageUrl: string;
-    questionText: string; // HTML string;
     explanation: string; // HTML string;
     wrongExplanation: string; // HTML string;
   };
@@ -257,6 +258,28 @@ export type SlideVariantsByType = {
       id: string;
       label: string;
     }[];
+  };
+  [SlideType.MATCH_JOIN]: {
+    buttonText?: string;
+    explanation: string; // HTML string;
+    wrongExplanation: string; // HTML string;
+    id: string;
+    introBlocks?: Block[];
+    leftItems: {
+      id: string;
+      kind: 'text' | 'image';
+      text?: string;
+      imageUrl?: string;
+    }[];
+    rightItems: {
+      id: string;
+      kind: 'text' | 'image';
+      text?: string;
+      imageUrl?: string;
+      matchesLeftId: string;
+    }[];
+    shuffleLeft: boolean;
+    shuffleRight: boolean;
   };
   [SlideType.FINISH]: undefined;
 };

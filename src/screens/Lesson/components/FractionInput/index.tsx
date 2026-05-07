@@ -3,12 +3,11 @@ import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
+import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { Input } from '@components/Input';
 import { Keyboard } from '@components/Keyboard';
-import { Pressable } from '@components/Pressable';
-import { SlideQuestion } from '@components/Question';
-import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
 import { colors } from '@extra/colors';
@@ -69,10 +68,10 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
+      {slide.variants[0].blocks && <Blocks blocks={slide.variants[0].blocks} />}
+
       <View style={styles.root}>
         <View style={styles.questionStack}>
-          <SlideQuestion content={slide.variants[0].questionText} />
-
           <View style={styles.row}>
             <View style={styles.leftCol}>
               {slide.variants[0].questionImageUrl && (
@@ -85,37 +84,21 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
                 <Arrow />
               </View>
 
-              <Pressable
-                style={[
-                  styles.inputBox,
-                  activeField === 'numerator' ? styles.inputBoxActive : null,
-                ]}
-                onPress={() => {
-                  if (isCorrect != null) return;
-                  setActiveField('numerator');
-                }}
-              >
-                <Text semiBold size={34}>
-                  {numerator || ' '}
-                </Text>
-              </Pressable>
+              <Input
+                active={activeField === 'numerator'}
+                disabled={isCorrect != null}
+                value={numerator}
+                onPress={() => setActiveField('numerator')}
+              />
 
               <View style={styles.divider} />
 
-              <Pressable
-                style={[
-                  styles.inputBox,
-                  activeField === 'denominator' ? styles.inputBoxActive : null,
-                ]}
-                onPress={() => {
-                  if (isCorrect != null) return;
-                  setActiveField('denominator');
-                }}
-              >
-                <Text semiBold size={34}>
-                  {denominator || ' '}
-                </Text>
-              </Pressable>
+              <Input
+                active={activeField === 'denominator'}
+                disabled={isCorrect != null}
+                value={denominator}
+                onPress={() => setActiveField('denominator')}
+              />
             </View>
           </View>
         </View>
@@ -167,20 +150,6 @@ const styles = StyleSheet.create({
     borderColor: colors.black,
     marginVertical: 4,
     width: 60,
-  },
-  inputBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 60,
-    height: 60,
-    backgroundColor: '#EEEEE2',
-    borderWidth: 1,
-    borderColor: colors.darkGrey,
-    borderRadius: 8,
-  },
-  inputBoxActive: {
-    borderColor: colors.black,
-    borderWidth: 2,
   },
   leftCol: {
     width: '50%',

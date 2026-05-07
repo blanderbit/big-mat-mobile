@@ -6,12 +6,11 @@ import { AnswerResult } from '@components/AnswerResult';
 import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { Input } from '@components/Input';
 import { Keyboard } from '@components/Keyboard';
-import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
-import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
 import { usePatchSlide } from '@hooks/usePatchSlide';
@@ -129,19 +128,12 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
     return (
       <View key={field.id} style={styles.fieldRow}>
         <Text size={14}>{field.label}</Text>
-
-        <Pressable
+        <Input
+          active={isActive}
           disabled={inputDisabled}
-          style={[
-            styles.inputBox,
-            isActive && !inputDisabled ? styles.inputBoxActive : null,
-          ]}
+          value={fieldValue}
           onPress={() => setActiveFieldId(field.id)}
-        >
-          <Text semiBold size={34}>
-            {fieldValue || ' '}
-          </Text>
-        </Pressable>
+        />
       </View>
     );
   };
@@ -156,18 +148,12 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
 
           {slide.variants[0].numberAnswerLayout === 'blocks_below' ? (
             <View style={styles.inputRow}>
-              <Pressable
+              <Input
+                active={isCorrect == null}
                 disabled={isCorrect != null}
-                style={[
-                  styles.inputBox,
-                  isCorrect == null ? styles.inputBoxActive : null,
-                ]}
+                value={value}
                 onPress={() => {}}
-              >
-                <Text semiBold size={34}>
-                  {value || ' '}
-                </Text>
-              </Pressable>
+              />
             </View>
           ) : null}
         </View>
@@ -272,21 +258,6 @@ const styles = StyleSheet.create({
   },
   imageSideRowReverse: {
     flexDirection: 'row-reverse',
-  },
-  inputBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 60,
-    height: 60,
-    backgroundColor: '#EEEEE2',
-    borderWidth: 1,
-    borderColor: colors.darkGrey,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-  },
-  inputBoxActive: {
-    borderColor: colors.black,
-    borderWidth: 2,
   },
   inputRow: {
     alignItems: 'center',
