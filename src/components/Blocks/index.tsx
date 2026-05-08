@@ -17,6 +17,23 @@ import {
   TitleBlock,
 } from '@extra/types';
 
+const getSpacingStyle = (spacing?: {
+  margin?: { top?: number; right?: number; bottom?: number; left?: number };
+  padding?: { top?: number; right?: number; bottom?: number; left?: number };
+}) => {
+  if (!spacing) return null;
+  return {
+    marginTop: spacing.margin?.top,
+    marginRight: spacing.margin?.right,
+    marginBottom: spacing.margin?.bottom,
+    marginLeft: spacing.margin?.left,
+    paddingTop: spacing.padding?.top,
+    paddingRight: spacing.padding?.right,
+    paddingBottom: spacing.padding?.bottom,
+    paddingLeft: spacing.padding?.left,
+  } as const;
+};
+
 const TITLE_LEVEL_SIZE: Record<NonNullable<TitleBlock['level']>, number> = {
   h1: 32,
   h2: 28,
@@ -43,7 +60,7 @@ export const Blocks = ({ blocks }: Props) => {
         : styles.imageRowAlignEnd;
 
     return (
-      <View style={imageRowAlignStyle}>
+      <View style={[imageRowAlignStyle, getSpacingStyle(imageData.spacing)]}>
         <FastImage
           resizeMode="cover"
           source={{ uri: imageData.imageUrl ?? '' }}
@@ -57,41 +74,49 @@ export const Blocks = ({ blocks }: Props) => {
   };
 
   const renderText = (textData: TextBlock, containerHeight?: number) => (
-    <WebView containerHeight={containerHeight} html={textData.content} />
+    <View style={getSpacingStyle(textData.spacing)}>
+      <WebView containerHeight={containerHeight} html={textData.content} />
+    </View>
   );
 
   const renderTitle = (titleData: TitleBlock) => (
-    <Text
-      bold
-      color={titleData.color}
-      size={titleSizeFromLevel(titleData.level)}
-      style={{ lineHeight: titleSizeFromLevel(titleData.level) }}
-    >
-      {titleData.value}
-    </Text>
+    <View style={getSpacingStyle(titleData.spacing)}>
+      <Text
+        bold
+        color={titleData.color}
+        size={titleSizeFromLevel(titleData.level)}
+        style={{ lineHeight: titleSizeFromLevel(titleData.level) }}
+      >
+        {titleData.value}
+      </Text>
+    </View>
   );
 
   const renderDescriptionText = (
     descriptionTextData: DescriptionTextBlock,
     containerHeight?: number,
   ) => (
-    <WebView
-      color={descriptionTextData.color}
-      containerHeight={containerHeight}
-      html={descriptionTextData.content}
-    />
+    <View style={getSpacingStyle(descriptionTextData.spacing)}>
+      <WebView
+        color={descriptionTextData.color}
+        containerHeight={containerHeight}
+        html={descriptionTextData.content}
+      />
+    </View>
   );
 
   const renderDescriptionTextBox = (
     descriptionTextBoxData: DescriptionTextBoxBlock,
     containerHeight?: number,
   ) => (
-    <WebView
-      backgroundColor={descriptionTextBoxData.background}
-      borderRadius={descriptionTextBoxData.borderRadius}
-      containerHeight={containerHeight}
-      html={descriptionTextBoxData.content}
-    />
+    <View style={getSpacingStyle(descriptionTextBoxData.spacing)}>
+      <WebView
+        backgroundColor={descriptionTextBoxData.background}
+        borderRadius={descriptionTextBoxData.borderRadius}
+        containerHeight={containerHeight}
+        html={descriptionTextBoxData.content}
+      />
+    </View>
   );
 
   const renderContainer = (containerData: ContainerBlock) => {
@@ -99,6 +124,7 @@ export const Blocks = ({ blocks }: Props) => {
       <View
         style={[
           styles.containerBlockShell,
+          getSpacingStyle(containerData.spacing),
           {
             backgroundColor: containerData.background,
             borderRadius: containerData.borderRadius,
@@ -112,33 +138,35 @@ export const Blocks = ({ blocks }: Props) => {
 
   const renderSlider = (sliderData: SliderBlock) => {
     return (
-      <Carousel
-        autoPlay={sliderData.autoplay}
-        items={sliderData.slides.map(slide => {
-          switch (slide.type) {
-            case 'image':
-              return renderImage(slide as ImageBlock);
-            case 'text':
-              return renderText(slide as TextBlock, CAROUSEL_MAX_HEIGHT);
-            case 'title':
-              return renderTitle(slide as TitleBlock);
-            case 'description_text':
-              return renderDescriptionText(
-                slide as DescriptionTextBlock,
-                CAROUSEL_MAX_HEIGHT,
-              );
-            case 'description_text_box':
-              return renderDescriptionTextBox(
-                slide as DescriptionTextBoxBlock,
-                CAROUSEL_MAX_HEIGHT,
-              );
-            case 'container':
-              return renderContainer(slide as ContainerBlock);
-            default:
-              return null;
-          }
-        })}
-      />
+      <View style={getSpacingStyle(sliderData.spacing)}>
+        <Carousel
+          autoPlay={sliderData.autoplay}
+          items={sliderData.slides.map(slide => {
+            switch (slide.type) {
+              case 'image':
+                return renderImage(slide as ImageBlock);
+              case 'text':
+                return renderText(slide as TextBlock, CAROUSEL_MAX_HEIGHT);
+              case 'title':
+                return renderTitle(slide as TitleBlock);
+              case 'description_text':
+                return renderDescriptionText(
+                  slide as DescriptionTextBlock,
+                  CAROUSEL_MAX_HEIGHT,
+                );
+              case 'description_text_box':
+                return renderDescriptionTextBox(
+                  slide as DescriptionTextBoxBlock,
+                  CAROUSEL_MAX_HEIGHT,
+                );
+              case 'container':
+                return renderContainer(slide as ContainerBlock);
+              default:
+                return null;
+            }
+          })}
+        />
+      </View>
     );
   };
 

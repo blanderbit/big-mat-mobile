@@ -81,6 +81,21 @@ export type DragDropItem =
       icon?: string;
     };
 
+type Spacing = {
+  margin?: {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+  };
+  padding?: {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+  };
+};
+
 export type ImageBlock = {
   height?: number;
   imageUrl?: string;
@@ -88,12 +103,14 @@ export type ImageBlock = {
   type?: 'image';
   verticalAlign?: 'left' | 'center' | 'right';
   width?: number;
+  spacing?: Spacing;
 };
 
 export type TextBlock = {
   content: string; // HTML string;
   position: number;
   type: 'text';
+  spacing?: Spacing;
 };
 
 export type TitleBlock = {
@@ -102,6 +119,7 @@ export type TitleBlock = {
   position: number;
   type: 'title';
   value?: string;
+  spacing?: Spacing;
 };
 
 export type DescriptionTextBlock = {
@@ -109,6 +127,7 @@ export type DescriptionTextBlock = {
   content: string; // HTML string;
   position: number;
   type: 'description_text';
+  spacing?: Spacing;
 };
 
 export type DescriptionTextBoxBlock = {
@@ -117,6 +136,7 @@ export type DescriptionTextBoxBlock = {
   color?: string;
   content: string; // HTML string;
   type: 'description_text_box';
+  spacing?: Spacing;
 };
 
 export type SliderBlock = {
@@ -124,6 +144,7 @@ export type SliderBlock = {
   position: number;
   slides: Block[];
   type: 'slider';
+  spacing?: Spacing;
 };
 
 export type ContainerBlock = {
@@ -132,6 +153,7 @@ export type ContainerBlock = {
   borderRadius?: number;
   position: number;
   type: 'container';
+  spacing?: Spacing;
 };
 
 export type Block =
@@ -150,22 +172,27 @@ export type SlideVariantsByType = {
     cardDesign?:
       | 'image_top_buttons_bottom'
       | 'image_and_button_combined'
-      | 'block_as_button';
+      | 'block_as_button'
+      | 'blocks_description_buttons';
     correctOptionIds: string[];
     explanation: string; // HTML string;
     id: string;
+    optionBlockBackground?: string;
     optionImageBorderColor?: string;
     imageUrl?: string;
     options: {
       id: string;
       imageUrl?: string;
       label: string;
+      imageStyle?: {
+        height: number;
+        radius: number;
+        width: number;
+      };
     }[];
     optionsLayout: 'grid' | 'list';
     questionImageUrl: string;
-    questionText: {
-      content: { content: { text: string }[] }[];
-    };
+    questionText: string; // HTML string;
     text: { content: { content: { text: string }[] }[] };
     wrongExplanation: string; // HTML string;
   };

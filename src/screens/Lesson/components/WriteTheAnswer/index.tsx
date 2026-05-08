@@ -153,7 +153,8 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
           width: sideImageStyle?.width,
           height: sideImageStyle?.height,
           borderRadius: sideImageStyle?.radius,
-          overflow: sideImageStyle?.radius != null ? ('hidden' as const) : undefined,
+          overflow:
+            sideImageStyle?.radius != null ? ('hidden' as const) : undefined,
         }
       : null;
 
@@ -200,13 +201,13 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
-      <Text center>{slide.variants[0].numberAnswerCorrectTitle}</Text>
+      {slide.variants[0].blocks && <Blocks blocks={slide.variants[0].blocks} />}
 
       <View style={styles.root}>
         <View style={styles.stack}>
-          {slide.variants[0].blocks && (
-            <Blocks blocks={slide.variants[0].blocks} />
-          )}
+          <View style={{ width: '50%' }}>
+            <Text>{slide.variants[0].numberAnswerCorrectTitle}</Text>
+          </View>
 
           {slide.variants[0].numberAnswerLayout === 'blocks_below' ? (
             <View style={styles.inputRow}>
@@ -397,6 +398,7 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     alignItems: 'center',
+    flex: 1,
   },
   root: {
     flex: 1,
@@ -405,5 +407,10 @@ const styles = StyleSheet.create({
   },
   stack: {
     gap: DEFAULT_SPACE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.brightBeige,
+    borderRadius: 24,
+    padding: DEFAULT_SPACE,
   },
 });
