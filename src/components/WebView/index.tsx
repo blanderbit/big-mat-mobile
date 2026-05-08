@@ -252,10 +252,13 @@ export const WebView = ({
   );
 };
 
+// TODO: add loading indicator
+
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
     overflow: 'hidden',
+    paddingHorizontal: DEFAULT_SPACE,
   },
   webView: {
     width: '100%',

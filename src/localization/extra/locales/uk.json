@@ -72,6 +72,11 @@
     "numeratorAtTheTop": "Чисельник — вгорі",
     "denominatorAtTheBottom": "Знаменник — внизу",
     "iShowYouHowManyPartsYouHaveTaken": "Я показую, скільки\nчастин взяли",
-    "iShowYouHowManyPartsYouHaveDividedTheWholeInto": "А я показую, на скільки рівних частин поділили ціле"
+    "iShowYouHowManyPartsYouHaveDividedTheWholeInto": "А я показую, на скільки рівних частин поділили ціле",
+    "attention": "Увага",
+    "remove_connection_question": "Ви впевнені, що хочете роз'єднати ці елементи?",
+    "replace_connection_question": "Ви впевнені, що хочете замінити цей елемент?",
+    "ok": "Ок",
+    "writeTheAnswer": "Впиши відповідь"
   }
 }

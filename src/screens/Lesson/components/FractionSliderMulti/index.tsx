@@ -31,6 +31,15 @@ const parseFraction = (label: string) => {
 type SlideVariantsTask =
   Slide<SlideType.FRACTION_SLIDER_MULTI>['variants'][number]['tasks'][number];
 
+const getTaskImageStyle = (imageStyle: SlideVariantsTask['imageStyle']) => {
+  if (!imageStyle) return styles.taskImageDefault;
+  return {
+    borderRadius: imageStyle.radius ?? 0,
+    height: imageStyle.height,
+    width: imageStyle.width,
+  };
+};
+
 const FractionSliderTask = ({
   onChangeOptionId,
   task,
@@ -186,7 +195,10 @@ const FractionSliderTask = ({
         <View style={styles.row}>
           {task.imageUrl ? (
             <View style={styles.imageCol}>
-              <FullWidthFastImage uri={task.imageUrl} />
+              <FullWidthFastImage
+                style={getTaskImageStyle(task.imageStyle)}
+                uri={task.imageUrl}
+              />
             </View>
           ) : null}
           <View style={styles.sliderCol}>{renderSlider()}</View>
@@ -198,7 +210,10 @@ const FractionSliderTask = ({
           <View style={styles.sliderCol}>{renderSlider()}</View>
           {task.imageUrl ? (
             <View style={styles.imageCol}>
-              <FullWidthFastImage uri={task.imageUrl} />
+              <FullWidthFastImage
+                style={getTaskImageStyle(task.imageStyle)}
+                uri={task.imageUrl}
+              />
             </View>
           ) : null}
         </View>
@@ -208,7 +223,10 @@ const FractionSliderTask = ({
         <View style={styles.col}>
           {task.imageUrl ? (
             <View style={styles.imageTop}>
-              <FullWidthFastImage uri={task.imageUrl} />
+              <FullWidthFastImage
+                style={getTaskImageStyle(task.imageStyle)}
+                uri={task.imageUrl}
+              />
             </View>
           ) : null}
           <View style={styles.sliderBottom}>{renderSlider()}</View>
@@ -313,7 +331,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   imageCol: {
-    width: '30%',
+    // width: '30%',
   },
   sliderCol: {
     flex: 1,
@@ -321,6 +339,12 @@ const styles = StyleSheet.create({
   imageTop: {
     width: '50%',
     alignSelf: 'center',
+    alignItems: 'center',
+  },
+  taskImageDefault: {
+    width: 120,
+    height: 120,
+    borderRadius: 0,
   },
   sliderBottom: {
     width: '100%',

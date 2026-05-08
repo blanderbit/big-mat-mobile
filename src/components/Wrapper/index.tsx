@@ -17,7 +17,10 @@ export const Wrapper = ({ children, backgroundColor }: Props) => {
     <View
       style={[
         styles.container,
-        { paddingBottom: bottom + DEFAULT_SPACE, backgroundColor },
+        {
+          paddingBottom: bottom + DEFAULT_SPACE,
+          backgroundColor: backgroundColor ?? colors.white,
+        },
       ]}
     >
       {children}
@@ -27,14 +30,14 @@ export const Wrapper = ({ children, backgroundColor }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.white,
     borderTopLeftRadius: 70,
     borderTopRightRadius: 70,
-    // paddingTop: DEFAULT_SPACE * 2,
+    paddingTop: DEFAULT_SPACE * 4,
     paddingHorizontal: DEFAULT_SPACE,
     marginHorizontal: -DEFAULT_SPACE,
     gap: DEFAULT_SPACE,
     flex: 1,
     marginBottom: -DEFAULT_SPACE,
+    overflow: 'hidden',
   },
 });

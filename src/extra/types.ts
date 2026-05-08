@@ -53,12 +53,24 @@ export enum DragDropItemType {
 }
 
 export type DragDropItem =
-  | { id: string; type: DragDropItemType.TEXT; text: string }
+  | {
+      id: string;
+      type: DragDropItemType.TEXT;
+      text: string;
+
+      style?: {
+        italic: boolean;
+        underline: boolean;
+        strike: boolean;
+        color: string;
+      };
+    }
   | {
       id: string;
       type: DragDropItemType.IMAGE;
       imageUrl: string;
       alt: string;
+      style?: { width?: number; height?: number; radius?: number };
     }
   | { id: string; type: DragDropItemType.NUMBER; value: number }
   | {
@@ -166,7 +178,7 @@ export type SlideVariantsByType = {
     buttonText?: string;
     correctOptionIds: string[];
     questionImageUrl?: string;
-    questionText: string; // HTML string;
+    // questionText: string; // HTML string;
     optionsLayout?: 'grid' | 'list';
     options: {
       id: string;
@@ -211,6 +223,14 @@ export type SlideVariantsByType = {
     zones: {
       id: string;
       label: string;
+      style?: {
+        background?: string;
+        backgroundImageHeight?: number;
+        backgroundImageRadius?: number;
+        backgroundImageUrl?: string;
+        backgroundImageWidth?: number;
+        textColor?: 'string';
+      };
     }[];
   };
   [SlideType.FRACTION_SLIDER_MULTI]: {
@@ -219,6 +239,11 @@ export type SlideVariantsByType = {
     id: string;
     introBlocks?: Block[];
     tasks: {
+      imageStyle?: {
+        height: number;
+        radius: number;
+        width: number;
+      };
       correctOptionIds: string[];
       id: string;
       imageUrl?: string;
@@ -235,6 +260,41 @@ export type SlideVariantsByType = {
   };
   [SlideType.NUMBER_ANSWER]: {
     blocks?: Block[];
+    numberAnswerSideImageSpacing?: {
+      bottom: number;
+      left: number;
+      right: number;
+      top: number;
+    };
+    numberAnswerSideImageStyle?: {
+      height: number;
+      radius: number;
+      width: number;
+    };
+    numberAnswerMiddleBlock?: {
+      spacing?: {
+        bottom?: number;
+        left?: number;
+        right?: number;
+        top?: number;
+      };
+      text?: string;
+      textStyle?: {
+        color: string;
+        italic: boolean;
+        strike: boolean;
+        underline: boolean;
+      };
+      imageStyle?: {
+        height: number;
+        radius: number;
+        width: number;
+      };
+      imageUrl?: string;
+
+      type: 'text' | 'image';
+    };
+    numberAnswerCorrectTitle: string;
     buttonText?: string;
     correctNumber?: number;
     explanation: string; // HTML string;

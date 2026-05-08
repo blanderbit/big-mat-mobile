@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import {
   findNodeHandle,
   GestureResponderEvent,
+  Image,
   LayoutRectangle,
   StyleSheet,
   UIManager,
@@ -29,6 +30,7 @@ type Props = {
 };
 
 export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
+  console.log('DragDrop slide', slide);
   const variant = slide.variants[0];
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const containerRef = useRef<View>(null);
@@ -163,8 +165,27 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
   const renderItemContent = (item: DragDropItem) => {
     if (item.type === DragDropItemType.TEXT) {
+      const decoration: Array<'underline' | 'line-through'> = [];
+      if (item.style?.underline) decoration.push('underline');
+      if (item.style?.strike) decoration.push('line-through');
+
+      const textStyle = item.style
+        ? {
+            fontStyle: item.style.italic ? ('italic' as const) : ('normal' as const),
+            textDecorationLine: (decoration.length
+              ? decoration.join(' ')
+              : 'none') as 'none' | 'underline' | 'line-through' | 'underline line-through',
+          }
+        : undefined;
+
       return (
-        <Text center semiBold size={14}>
+        <Text
+          center
+          semiBold
+          color={item.style?.color}
+          size={14}
+          style={textStyle}
+        >
           {item.text}
         </Text>
       );
@@ -180,8 +201,25 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
     if (item.type === DragDropItemType.IMAGE) {
       return (
-        <View style={styles.imageWrap}>
-          <FullWidthFastImage style={styles.image} uri={item.imageUrl} />
+        <View
+          style={[
+            styles.imageWrap,
+            item.style?.width != null ? { width: item.style.width } : null,
+            item.style?.height != null
+              ? { height: item.style.height, minHeight: item.style.height }
+              : null,
+            item.style?.radius != null ? { borderRadius: item.style.radius } : null,
+          ]}
+        >
+          <FullWidthFastImage
+            uri={item.imageUrl}
+            style={[
+              styles.image,
+              item.style?.radius != null
+                ? { borderRadius: item.style.radius }
+                : null,
+            ]}
+          />
         </View>
       );
     }
@@ -329,11 +367,39 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
                   }}
                   style={[
                     styles.zone,
+                    z.style?.background
+                      ? { backgroundColor: z.style.background }
+                      : null,
                     hoverZoneId === z.id ? styles.zoneHover : null,
                   ]}
                   onLayout={() => measureZone(z.id)}
                 >
-                  <Text bold size={14}>
+                  {z.style?.backgroundImageUrl ? (
+                    <View pointerEvents="none" style={styles.zoneBgImageLayer}>
+                      <Image
+                        resizeMode="cover"
+                        source={{ uri: z.style.backgroundImageUrl }}
+                        style={[
+                          styles.zoneBgImage,
+                          z.style.backgroundImageWidth != null
+                            ? { width: z.style.backgroundImageWidth }
+                            : null,
+                          z.style.backgroundImageHeight != null
+                            ? { height: z.style.backgroundImageHeight }
+                            : null,
+                          z.style.backgroundImageRadius != null
+                            ? { borderRadius: z.style.backgroundImageRadius }
+                            : null,
+                        ]}
+                      />
+                    </View>
+                  ) : null}
+
+                  <Text
+                    bold
+                    color={z.style?.textColor ? z.style.textColor : colors.black}
+                    size={14}
+                  >
                     {z.label}
                   </Text>
 
@@ -516,6 +582,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brightBeige,
     padding: DEFAULT_SPACE,
     gap: 8,
+    overflow: 'hidden',
+  },
+  zoneBgImageLayer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zoneBgImage: {
+    width: '100%',
+    height: '100%',
   },
   zoneHover: {
     borderWidth: 2,

@@ -6,7 +6,6 @@ import { AnswerResult } from '@components/AnswerResult';
 import { AnswerVariant } from '@components/AnswerVariant';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
-import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
@@ -73,8 +72,6 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
-      <SlideQuestion content={slide.variants[0].questionText} />
-
       {slide.variants[0].questionImageUrl && (
         <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />
       )}

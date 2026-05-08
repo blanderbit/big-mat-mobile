@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { Alert, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
 
@@ -98,6 +98,12 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
 
   const allMatched = rightItems.every(r => matchedLeftIdByRightId[r.id] != null);
 
+  const isRightConnected = (rightId: string) =>
+    matchedLeftIdByRightId[rightId] != null;
+
+  const isLeftConnected = (leftId: string) =>
+    Object.values(matchedLeftIdByRightId).some(v => v === leftId);
+
   const answer = () => {
     if (!rightItems.length) return;
     if (!allMatched) return;
@@ -108,13 +114,76 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
     setIsCorrect(allCorrect);
   };
 
+  const getRightIdByLeftId = (leftId: string) => {
+    for (const [rightId, matchedLeftId] of Object.entries(
+      matchedLeftIdByRightId,
+    )) {
+      if (matchedLeftId === leftId) return rightId;
+    }
+    return null;
+  };
+
+  const setConnection = (rightId: string, leftId: string) => {
+    setMatchedLeftIdByRightId(prev => {
+      const next = { ...prev };
+
+      // Enforce uniqueness: one right -> one left; one left -> one right.
+      const existingRightForLeft = Object.entries(next).find(
+        ([, l]) => l === leftId,
+      )?.[0];
+      if (existingRightForLeft && existingRightForLeft !== rightId) {
+        next[existingRightForLeft] = undefined as never;
+      }
+
+      next[rightId] = leftId;
+      return next;
+    });
+  };
+
+  const removeConnectionByRightId = (rightId: string) => {
+    setMatchedLeftIdByRightId(prev => {
+      if (prev[rightId] == null) return prev;
+      const next = { ...prev };
+      next[rightId] = undefined as never;
+      return next;
+    });
+  };
+
+  const confirmReplaceOrRemove = (message: string, onConfirm: () => void) => {
+    Alert.alert(t('attention'), message, [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('ok'), onPress: onConfirm },
+    ]);
+  };
+
   const onPressLeft = (leftId: string) => {
     if (isCorrect != null) return;
+
+    // If left is already connected and user taps it (without having a right selected),
+    // treat it as "remove connection" with confirmation.
+    if (!selectedRightId) {
+      const rightId = getRightIdByLeftId(leftId);
+      if (rightId) {
+        confirmReplaceOrRemove(t('remove_connection_question'), () => {
+          removeConnectionByRightId(rightId);
+        });
+        return;
+      }
+    }
+
     if (selectedRightId) {
-      setMatchedLeftIdByRightId(prev => ({
-        ...prev,
-        [selectedRightId]: leftId,
-      }));
+      const rightAlreadyMatched = matchedLeftIdByRightId[selectedRightId];
+      const rightOfThisLeft = getRightIdByLeftId(leftId);
+      const wouldChange =
+        rightAlreadyMatched != null || (rightOfThisLeft && rightOfThisLeft !== selectedRightId);
+
+      const doConnect = () => setConnection(selectedRightId, leftId);
+
+      if (wouldChange) {
+        confirmReplaceOrRemove(t('replace_connection_question'), doConnect);
+      } else {
+        doConnect();
+      }
       setSelectedRightId(null);
       setSelectedLeftId(null);
       return;
@@ -124,11 +193,29 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
 
   const onPressRight = (rightId: string) => {
     if (isCorrect != null) return;
+
+    // If right is already connected and user taps it (without having a left selected),
+    // treat it as "remove connection" with confirmation.
+    if (!selectedLeftId && matchedLeftIdByRightId[rightId]) {
+      confirmReplaceOrRemove(t('remove_connection_question'), () => {
+        removeConnectionByRightId(rightId);
+      });
+      return;
+    }
+
     if (selectedLeftId) {
-      setMatchedLeftIdByRightId(prev => ({
-        ...prev,
-        [rightId]: selectedLeftId,
-      }));
+      const rightAlreadyMatched = matchedLeftIdByRightId[rightId];
+      const rightOfThisLeft = getRightIdByLeftId(selectedLeftId);
+      const wouldChange =
+        rightAlreadyMatched != null || (rightOfThisLeft && rightOfThisLeft !== rightId);
+
+      const doConnect = () => setConnection(rightId, selectedLeftId);
+
+      if (wouldChange) {
+        confirmReplaceOrRemove(t('replace_connection_question'), doConnect);
+      } else {
+        doConnect();
+      }
       setSelectedLeftId(null);
       setSelectedRightId(null);
       return;
@@ -199,6 +286,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
         >
           {leftItems.map(leftItem => {
             const isSelected = selectedLeftId === leftItem.id;
+            const connected = isLeftConnected(leftItem.id);
             return (
               <View
                 key={leftItem.id}
@@ -211,7 +299,11 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
                 }}
               >
                 <Pressable
-                  style={[styles.item, isSelected ? styles.itemSelected : null]}
+                  style={[
+                    styles.item,
+                    connected ? styles.itemConnected : null,
+                    isSelected ? styles.itemSelected : null,
+                  ]}
                   onPress={() => onPressLeft(leftItem.id)}
                 >
                   {leftItem.imageUrl ? (
@@ -234,6 +326,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
         >
           {rightItems.map(rightItem => {
             const isSelected = selectedRightId === rightItem.id;
+            const connected = isRightConnected(rightItem.id);
             return (
               <View
                 key={rightItem.id}
@@ -246,7 +339,11 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
                 }}
               >
                 <Pressable
-                  style={[styles.item, isSelected ? styles.itemSelected : null]}
+                  style={[
+                    styles.item,
+                    connected ? styles.itemConnected : null,
+                    isSelected ? styles.itemSelected : null,
+                  ]}
                   onPress={() => onPressRight(rightItem.id)}
                 >
                   {rightItem.imageUrl ? (
@@ -298,6 +395,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: DEFAULT_SPACE,
+  },
+  itemConnected: {
+    borderWidth: 2,
   },
   itemSelected: {
     borderColor: colors.black,

@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   containerBlockShell: {
-    marginHorizontal: -DEFAULT_SPACE,
     gap: DEFAULT_SPACE,
+    padding: DEFAULT_SPACE,
   },
 });
