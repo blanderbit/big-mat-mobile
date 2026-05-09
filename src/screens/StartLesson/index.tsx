@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@components/Button';
+import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
 import {
@@ -17,6 +18,7 @@ import { useLessonsStore } from '@stores/lessonsStore';
 
 import background1 from '@assets/images/background1.png';
 import Background11 from '@assets/images/background11.svg';
+import BackArrow from '@assets/images/backArrow.svg';
 
 type Props = {
   route: RouteProp<HomeStackParamList, typeof routes.home.START_LESSON>;
@@ -26,7 +28,7 @@ export const StartLesson = ({ route }: Props) => {
   const { lesson } = route.params;
   const { top, bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { navigate } = useNavigation<HomeStackNavigationProp>();
+  const { navigate, goBack } = useNavigation<HomeStackNavigationProp>();
   const setCurrentSlideIndex = useLessonsStore(
     state => state.setCurrentSlideIndex,
   );
@@ -40,6 +42,14 @@ export const StartLesson = ({ route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <Pressable
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={[styles.backButton, { top: top + DEFAULT_SPACE }]}
+        onPress={goBack}
+      >
+        <BackArrow />
+      </Pressable>
+
       <Text
         bold
         center
@@ -80,6 +90,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: DEFAULT_SPACE,
+  },
+  backButton: {
+    position: 'absolute',
+    left: DEFAULT_SPACE,
+    backgroundColor: colors.white,
+    width: 30,
+    height: 30,
+    borderRadius: 9999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingRight: 2,
+    zIndex: 3,
   },
   startButtonWrap: {
     position: 'absolute',

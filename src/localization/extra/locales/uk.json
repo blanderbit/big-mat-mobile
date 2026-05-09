@@ -7,13 +7,17 @@
     "learnMathFun": "Навчайтеся\nматематиці весело",
     "whatWillWeLearnToday": "Що\nопануємо\nсьогодні?",
     "allSectionsHereWillHelpYouMasterMathematicalGaps.OurTeamWorksDayAndNightSoThatTheyBecomeAvailableAsEarlyAsPossible": "Тут усі розділи, які допоможуть опанувати математичні прогалини. Наша команда працює вдень і вночі, щоб вони стали доступними якомога раніше.",
-    "haveYouGotSomethingToAdd.WeAreOpenToYourQuestionsAndSuggestions": "Маєте, що додати? Ми відкриті до ваших запитань та рекомендацій.",
-    "contactUs": "Звʼязатися",
     "whenMathDoesNotScare.ButInsteadItIsFunAndInteresting": "Коли\nматематика\nне лякає, а",
     "inspire": "надихає",
     "startMasteringThisTopic": "Почни опановувати\nцю тему!",
     "youAreDoingGreat": "Ти гарно опановуєш цю тему!\nПродовжуй!",
-    "youAreSuper.YouHaveAlreadyMastered": "Ти — супер!\nВже опановано:",
+    "lockedSequenceWarning": "Ми рекомендуємо проходити маршрути послідовно, ви не закінчили попередній рівень. Все одно почати цей урок?",
+    "lockedTopicSequenceWarning": "Ми рекомендуємо проходити теми послідовно, ви не закінчили попередню тему. Все одно почати цю тему?",
+    "topicTitle.empty": "Мерщій опановувати!",
+    "topicTitle.started": "Ти на вірному шляху,\nтак тримати!",
+    "topicTitle.middle": "Ти — супер!\nВже опановано:",
+    "topicTitle.almost": "Ти вже майже на фініші!",
+    "topicTitle.done": "Ти красавчік!\nОпанував, продовжуй далі!",
     "finish": "Фініш",
     "start": "Почати",
     "close": "Закрити",
@@ -45,6 +49,7 @@
     "letsHurryUp": "поквапмося!",
     "result": "Результат",
     "passAgain": "Пройти ще раз",
+    "backToRoutes": "До маршрутів",
     "birthdayCipa": "День народження Ципи",
     "scrollDownToLearnAboutBirthdayCipa": "Гортай униз, щоб дізнатися історію дня народження!",
     "guestsOfBirthdayCipa": "До Ципи на день народження завітали четверо друзів.",
@@ -77,6 +82,7 @@
     "remove_connection_question": "Ви впевнені, що хочете роз'єднати ці елементи?",
     "replace_connection_question": "Ви впевнені, що хочете замінити цей елемент?",
     "ok": "Ок",
-    "writeTheAnswer": "Впиши відповідь"
+    "writeTheAnswer": "Впиши відповідь",
+    "selectOption": "Обери варіант"
   }
 }

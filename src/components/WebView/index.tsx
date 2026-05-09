@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import {
   WebView as RNWebView,
   WebViewMessageEvent,
@@ -77,6 +77,19 @@ export const WebView = ({
 }: Props) => {
   const webViewRef = useRef<RNWebView | null>(null);
   const [height, setHeight] = useState<number>(MIN_HEIGHT);
+  const [isMeasured, setIsMeasured] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isMeasured) return;
+
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim, isMeasured]);
 
   const pageBackground = backgroundColor ?? 'transparent';
   const hasTextColor = color != null && color !== '';
@@ -182,6 +195,7 @@ export const WebView = ({
     const next = Number.parseFloat(event.nativeEvent.data);
     if (!Number.isFinite(next) || next < MIN_HEIGHT) return;
     setHeight(prev => (Math.round(prev) === Math.round(next) ? prev : next));
+    if (!isMeasured) setIsMeasured(true);
   };
 
   if (!autoHeight) {
@@ -218,7 +232,7 @@ export const WebView = ({
   const shouldEnableScroll = isFixedHeight;
 
   return (
-    <View
+    <Animated.View
       pointerEvents="box-none"
       style={[
         styles.wrapper,
@@ -226,6 +240,7 @@ export const WebView = ({
         backgroundColor ? { backgroundColor } : undefined,
         hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
         isFixedHeight ? { height: containerHeight } : undefined,
+        { opacity: isFixedHeight ? 1 : fadeAnim },
       ]}
     >
       <RNWebView
@@ -248,7 +263,7 @@ export const WebView = ({
         ]}
         onMessage={handleMessage}
       />
-    </View>
+    </Animated.View>
   );
 };
 

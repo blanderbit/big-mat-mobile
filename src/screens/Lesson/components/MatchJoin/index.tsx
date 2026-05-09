@@ -375,6 +375,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
               ? slide.variants[0].explanation
               : slide.variants[0].wrongExplanation
           }
+          onClose={() => setIsCorrect(null)}
           onPressNext={handleGoToNextSlide}
         />
       )}

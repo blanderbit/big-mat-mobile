@@ -1,12 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  findNodeHandle,
   FlatList,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   RefreshControl,
   StyleSheet,
+  UIManager,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -28,6 +35,11 @@ import background6 from '@assets/images/background6.png';
 import background7 from '@assets/images/background7.png';
 import background8 from '@assets/images/background8.png';
 import background9 from '@assets/images/background9.png';
+import Tooltip1Notch from '@assets/images/tooltip1Notch.svg';
+
+const TOOLTIP_OFFSET = 20;
+
+type AnchorRect = { x: number; y: number; width: number; height: number };
 
 const keyExtractor = (item: Topic) => String(item.id);
 
@@ -38,16 +50,22 @@ export const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<HomeStackNavigationProp>();
   const getTotalScore = useUserStore(s => s.getTotalScore);
-  const [isAlreadyRenderedOnce, setIsAlreadyRenderedOnce] = useState(false);
-  const isFocused = useIsFocused();
 
-  useEffect(() => {
-    if (isFocused && isAlreadyRenderedOnce) {
-      (async () => {
-        await getTotalScore();
-      })();
-    }
-  }, [getTotalScore, isAlreadyRenderedOnce, isFocused]);
+  const { height: screenHeight } = useWindowDimensions();
+  const headerHeight = useHeaderHeight();
+
+  const [tooltipTopicId, setTooltipTopicId] = useState<string | null>(null);
+  const [tooltipAnchor, setTooltipAnchor] = useState<AnchorRect | null>(null);
+  const [tooltipHeight, setTooltipHeight] = useState(0);
+  const [tooltipBelow, setTooltipBelow] = useState(false);
+  const tooltipAnim = useRef(new Animated.Value(0)).current;
+  const animatedFor = useRef<string | null>(null);
+  const trapezoidRefs = useRef<Record<string, View | null>>({});
+
+  const tooltipTopic =
+    tooltipTopicId != null
+      ? topics.find(item => item.id === tooltipTopicId)
+      : undefined;
 
   const getTopics = async () => {
     setIsLoading(true);
@@ -63,11 +81,17 @@ export const Home = () => {
   useEffect(() => {
     (async () => {
       await getTopics();
-      setIsAlreadyRenderedOnce(true);
     })();
     // НЕ ДОБАВЛЯТЬ ЗАВИСИМОСТИ!
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getTotalScore();
+    });
+    return unsubscribe;
+  }, [navigation, getTotalScore]);
 
   const ListHeader = () => (
     <>
@@ -112,17 +136,12 @@ export const Home = () => {
 
   const ListFooter = () => (
     <>
-      <Text center marginTop={DEFAULT_SPACE * 2}>
-        {t('haveYouGotSomethingToAdd.WeAreOpenToYourQuestionsAndSuggestions')}
-      </Text>
-
-      <Button
-        marginTop={DEFAULT_SPACE * 2}
-        title={t('contactUs')}
-        onPress={() => {}}
-      />
-
-      <View style={[styles.promoContainer, { marginBottom: bottom + 100 }]}>
+      <View
+        style={[
+          styles.promoContainer,
+          { marginTop: DEFAULT_SPACE * 2, marginBottom: bottom + 100 },
+        ]}
+      >
         <Image
           resizeMode="contain"
           source={background8}
@@ -152,17 +171,117 @@ export const Home = () => {
     </>
   );
 
-  const renderItem = ({ item, index }: { item: Topic; index: number }) => {
-    const navigateToTopic = () => {
-      navigation.navigate(routes.home.TOPIC, { topicId: item.id });
-    };
+  const measureAnchor = (id: string) => {
+    const ref = trapezoidRefs.current[id];
+    if (!ref) return;
+    const handle = findNodeHandle(ref);
+    if (!handle) return;
+    UIManager.measureInWindow(handle, (x, y, width, height) => {
+      setTooltipAnchor({ x, y, width, height });
+    });
+  };
 
+  const handleCloseTooltip = () => {
+    tooltipAnim.setValue(0);
+    animatedFor.current = null;
+    setTooltipTopicId(null);
+  };
+
+  useEffect(() => {
+    if (tooltipTopicId == null) {
+      setTooltipHeight(0);
+      setTooltipAnchor(null);
+      tooltipAnim.setValue(0);
+      animatedFor.current = null;
+      return;
+    }
+    if (!tooltipAnchor || tooltipHeight === 0) return;
+
+    const needed = tooltipHeight + TOOLTIP_OFFSET;
+    const spaceAbove = tooltipAnchor.y - headerHeight;
+    const spaceBelow =
+      screenHeight - (tooltipAnchor.y + tooltipAnchor.height) - bottom;
+
+    let shouldBeBelow: boolean;
+    if (spaceAbove >= needed) {
+      shouldBeBelow = false;
+    } else if (spaceBelow >= needed) {
+      shouldBeBelow = true;
+    } else {
+      shouldBeBelow = spaceBelow > spaceAbove;
+    }
+    setTooltipBelow(prev => (prev === shouldBeBelow ? prev : shouldBeBelow));
+
+    if (animatedFor.current !== tooltipTopicId) {
+      animatedFor.current = tooltipTopicId;
+      tooltipAnim.setValue(0);
+      Animated.spring(tooltipAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [
+    tooltipTopicId,
+    tooltipAnchor,
+    tooltipHeight,
+    headerHeight,
+    screenHeight,
+    bottom,
+    tooltipAnim,
+  ]);
+
+  const handleScroll = (_e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (tooltipTopicId == null) return;
+    measureAnchor(tooltipTopicId);
+  };
+
+  const handlePressTopic = (item: Topic) => {
+    if (!item.locked) {
+      navigation.navigate(routes.home.TOPIC, { topicId: item.id });
+      return;
+    }
+    if (tooltipTopicId === item.id) {
+      handleCloseTooltip();
+      return;
+    }
+    tooltipAnim.setValue(0);
+    animatedFor.current = null;
+    setTooltipHeight(0);
+    setTooltipAnchor(null);
+    setTooltipTopicId(item.id);
+    measureAnchor(item.id);
+  };
+
+  const handlePressStartFromTooltip = () => {
+    if (tooltipTopic == null) return;
+    const { id } = tooltipTopic;
+    handleCloseTooltip();
+    navigation.navigate(routes.home.TOPIC, { topicId: id });
+  };
+
+  const renderItem = ({ item, index }: { item: Topic; index: number }) => {
     return (
-      <Pressable onPress={item.locked ? undefined : navigateToTopic}>
-        <Trapezoid {...item} isLast={index === topics.length - 1} />
-      </Pressable>
+      <View
+        collapsable={false}
+        ref={ref => {
+          trapezoidRefs.current[item.id] = ref;
+        }}
+      >
+        <Pressable onPress={() => handlePressTopic(item)}>
+          <Trapezoid {...item} isLast={index === topics.length - 1} />
+        </Pressable>
+      </View>
     );
   };
+
+  const tooltipTop =
+    tooltipAnchor == null
+      ? 0
+      : tooltipBelow
+      ? tooltipAnchor.y + tooltipAnchor.height + TOOLTIP_OFFSET
+      : tooltipAnchor.y - TOOLTIP_OFFSET - tooltipHeight;
 
   return (
     <View style={styles.root}>
@@ -173,6 +292,7 @@ export const Home = () => {
         ListFooterComponent={ListFooter}
         ListHeaderComponent={ListHeader}
         renderItem={renderItem}
+        scrollEventThrottle={32}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -183,7 +303,88 @@ export const Home = () => {
             onRefresh={getTopics}
           />
         }
+        onScroll={handleScroll}
       />
+
+      {tooltipTopic && tooltipAnchor && (
+        <>
+          <Pressable
+            style={styles.tooltipBackdrop}
+            onPress={handleCloseTooltip}
+          />
+
+          <View
+            pointerEvents="box-none"
+            style={[
+              styles.tooltipOverlay,
+              {
+                top: tooltipTop,
+                left: tooltipAnchor.x,
+                width: tooltipAnchor.width,
+                opacity: tooltipHeight === 0 ? 0 : 1,
+              },
+            ]}
+          >
+            <Animated.View
+              style={[
+                styles.tooltipAnimWrap,
+                {
+                  opacity: tooltipAnim,
+                  transform: [
+                    {
+                      translateY: tooltipAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [tooltipBelow ? -8 : 8, 0],
+                      }),
+                    },
+                    {
+                      scale: tooltipAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.96, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <View
+                style={styles.tooltip}
+                onLayout={e =>
+                  setTooltipHeight(e.nativeEvent.layout.height)
+                }
+              >
+                <Text bold size={20}>
+                  {tooltipTopic.title}
+                </Text>
+
+                <Text center size={18}>
+                  {t('lockedTopicSequenceWarning')}
+                </Text>
+
+                <Button title={t('close')} onPress={handleCloseTooltip} />
+
+                <Button
+                  title={t('start')}
+                  onPress={handlePressStartFromTooltip}
+                />
+              </View>
+
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.notchWrapper,
+                  tooltipBelow
+                    ? styles.notchWrapperBelow
+                    : styles.notchWrapperAbove,
+                  { opacity: tooltipAnim },
+                ]}
+              >
+                <Tooltip1Notch />
+              </Animated.View>
+            </Animated.View>
+          </View>
+        </>
+      )}
     </View>
   );
 };
@@ -254,5 +455,45 @@ const styles = StyleSheet.create({
     top: 60,
     right: 30,
     transform: [{ rotate: '-2deg' }],
+  },
+  tooltipBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 5,
+  },
+  tooltipOverlay: {
+    position: 'absolute',
+    zIndex: 6,
+  },
+  tooltipAnimWrap: {
+    width: '100%',
+  },
+  tooltip: {
+    width: '100%',
+    backgroundColor: colors.pink,
+    borderColor: colors.black,
+    borderWidth: 1,
+    borderRadius: 34,
+    backfaceVisibility: 'hidden',
+    padding: DEFAULT_SPACE,
+    gap: DEFAULT_SPACE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notchWrapper: {
+    position: 'absolute',
+    left: 0,
+    width: '100%',
+    alignItems: 'center',
+  },
+  notchWrapperAbove: {
+    bottom: -12,
+  },
+  notchWrapperBelow: {
+    top: -12,
+    transform: [{ rotate: '180deg' }],
   },
 });

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ScrollView as RNScrollView, StyleSheet, View } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 
 import { ActivityIndicator } from '@components/ActivityIndicator';
+import { AnswerResultScrollContext } from '@components/AnswerResult';
 import { ScrollView } from '@components/ScrollView';
 import { ClozePick } from '@screens/Lesson/components/ClozePick';
 import { DragDrop } from '@screens/Lesson/components/DragDrop';
@@ -34,6 +35,11 @@ export const Lesson = ({ route }: Props) => {
   const slides = useLessonsStore(state => state.slides);
   const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
   const setSlides = useLessonsStore(state => state.setSlides);
+  const scrollViewRef = useRef<RNScrollView | null>(null);
+
+  const scrollToEnd = useCallback(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, []);
 
   const currentSlide = slides[currentSlideIndex];
 
@@ -153,19 +159,22 @@ export const Lesson = ({ route }: Props) => {
   const SlideComponent = getSlideComponent();
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.contentContainer}
-      key={currentSlideIndex}
-      scrollEnabled={scrollEnabled}
-    >
-      {isLoading ? (
-        <View style={styles.loading}>
-          <ActivityIndicator />
-        </View>
-      ) : (
-        <View style={styles.slide}>{SlideComponent}</View>
-      )}
-    </ScrollView>
+    <AnswerResultScrollContext.Provider value={scrollToEnd}>
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        key={currentSlideIndex}
+        ref={scrollViewRef}
+        scrollEnabled={scrollEnabled}
+      >
+        {isLoading ? (
+          <View style={styles.loading}>
+            <ActivityIndicator />
+          </View>
+        ) : (
+          <View style={styles.slide}>{SlideComponent}</View>
+        )}
+      </ScrollView>
+    </AnswerResultScrollContext.Provider>
   );
 };
 

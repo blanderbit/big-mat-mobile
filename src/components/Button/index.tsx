@@ -94,7 +94,7 @@ export const Button = ({
               />
 
               {isLoading ? (
-                <ActivityIndicator />
+                <ActivityIndicator color={colors.black} size="small" />
               ) : children ? (
                 children
               ) : (

@@ -104,28 +104,41 @@ export const FractionSlider = ({
         <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />
       )}
 
-      <View style={styles.labelsRow}>
-        {options.map((opt, i) => {
-          const isActive = i === index;
-          const parsedLabel = opt.label.split('/');
-          const color = isActive ? colors.black : colors.darkGrey;
+      <View pointerEvents="none" style={styles.labelsRow}>
+        {sliderWidth > 0 &&
+          options.map((opt, i) => {
+            const optionProgress = maxIndex === 0 ? 0 : i / maxIndex;
+            const center =
+              optionProgress * (sliderWidth - TOGGLER_SIZE) + TOGGLER_SIZE / 2;
+            const isActive = i === index;
+            const parsedLabel = opt.label.split('/');
+            const color = isActive ? colors.black : colors.darkGrey;
 
-          return (
-            <View key={opt.id}>
-              <Text center bold={isActive} color={color} size={22}>
-                {parsedLabel[0]}
-              </Text>
-
-              <View
-                style={[styles.labelDivider, { borderBottomColor: color }]}
-              />
-
-              <Text center bold={isActive} color={color} size={22}>
-                {parsedLabel[1]}
-              </Text>
-            </View>
-          );
-        })}
+            return (
+              <View key={opt.id} style={[styles.label, { left: center }]}>
+                {parsedLabel.length === 2 ? (
+                  <>
+                    <Text bold={isActive} center color={color} size={22}>
+                      {parsedLabel[0]}
+                    </Text>
+                    <View
+                      style={[
+                        styles.labelDivider,
+                        { borderBottomColor: color },
+                      ]}
+                    />
+                    <Text bold={isActive} center color={color} size={22}>
+                      {parsedLabel[1]}
+                    </Text>
+                  </>
+                ) : (
+                  <Text bold={isActive} center color={color} size={22}>
+                    {opt.label}
+                  </Text>
+                )}
+              </View>
+            );
+          })}
       </View>
 
       <View
@@ -188,6 +201,7 @@ export const FractionSlider = ({
               ? slide.variants[0].explanation
               : slide.variants[0].wrongExplanation
           }
+          onClose={() => setIsCorrect(null)}
           onPressNext={handleGoToNextSlide}
         />
       )}
@@ -197,10 +211,17 @@ export const FractionSlider = ({
 
 const styles = StyleSheet.create({
   labelsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    position: 'relative',
+    width: '100%',
+    height: 70,
     marginTop: DEFAULT_SPACE,
-    paddingHorizontal: DEFAULT_SPACE,
+  },
+  label: {
+    position: 'absolute',
+    top: 0,
+    width: 56,
+    marginLeft: -28,
+    alignItems: 'center',
   },
   slider: {
     width: '100%',

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   findNodeHandle,
   Image,
   LayoutChangeEvent,
@@ -16,6 +17,7 @@ import Svg, { Line } from 'react-native-svg';
 
 import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
+import { Pressable } from '@components/Pressable';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';
 import { RoundSlider } from '@screens/Topic/components/RoundSlider';
@@ -30,6 +32,7 @@ import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { pluralizeUk } from '@extra/pluralizeUk';
 import { Lesson } from '@extra/types';
+import { useUserStore } from '@stores/userStore';
 
 import ActiveLessonButton from '@assets/images/activeLessonButton.svg';
 import Background10 from '@assets/images/background10.svg';
@@ -53,7 +56,9 @@ export const Topic = ({ route }: Props) => {
   const { topicId } = route.params;
   const { bottom } = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
-  const { navigate } = useNavigation<HomeStackNavigationProp>();
+  const navigation = useNavigation<HomeStackNavigationProp>();
+  const { navigate } = navigation;
+  const getTotalScore = useUserStore(s => s.getTotalScore);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [topicProgress, setTopicProgress] = useState<TopicProgress | null>(
     null,
@@ -65,32 +70,47 @@ export const Topic = ({ route }: Props) => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [firstLockedTooltipBelow, setFirstLockedTooltipBelow] = useState(false);
   const firstLockedButtonWrapperRef = useRef<View | null>(null);
-  const [tooltipIndex, setTooltipIndex] = useState(0);
+  const [tooltipIndex, setTooltipIndex] = useState(-1);
+  const [tooltipHeight, setTooltipHeight] = useState(0);
+  const tooltipAnim = useRef(new Animated.Value(0)).current;
+  const hasLoadedOnce = useRef(false);
 
-  useEffect(() => {
-    const getLessons = async () => {
-      const response = await API.get(`/v1/content/topics/${topicId}/routes`);
-
-      setLessons(response.data.data.routes);
-    };
-
-    const getTopicProgress = async () => {
-      const response = await API.get(`/v1/content/topics/${topicId}/progress`);
-
-      setTopicProgress(response.data.data.summary);
-    };
-
-    (async () => {
-      setIsLoading(true);
+  const refreshTopicData = useCallback(
+    async (showLoader: boolean) => {
+      if (showLoader) {
+        setIsLoading(true);
+      }
 
       try {
-        await getLessons();
-        await getTopicProgress();
+        const [lessonsResponse, topicProgressResponse] = await Promise.all([
+          API.get(`/v1/content/topics/${topicId}/routes`),
+          API.get(`/v1/content/topics/${topicId}/progress`),
+          getTotalScore(),
+        ]);
+
+        setLessons(lessonsResponse.data.data.routes);
+        setTopicProgress(topicProgressResponse.data.data.summary);
       } finally {
-        setIsLoading(false);
+        if (showLoader) {
+          setIsLoading(false);
+        }
       }
-    })();
-  }, [topicId]);
+    },
+    [getTotalScore, topicId],
+  );
+
+  useEffect(() => {
+    const shouldShowLoader = !hasLoadedOnce.current;
+
+    refreshTopicData(shouldShowLoader).finally(() => {
+      hasLoadedOnce.current = true;
+    });
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      refreshTopicData(false);
+    });
+    return unsubscribe;
+  }, [navigation, refreshTopicData]);
 
   const sortedLessons = lessons.slice().sort((a, b) => {
     const aLocked = a.locked === true;
@@ -108,8 +128,7 @@ export const Topic = ({ route }: Props) => {
   };
 
   const contentWidth = containerWidth || screenWidth;
-  const TOOLTIP_HEIGHT_ESTIMATE = 230;
-  const TOOLTIP_OFFSET_FROM_BUTTON = 90;
+  const TOOLTIP_OFFSET_FROM_BUTTON = 105;
 
   const updateFirstLockedTooltipSide = () => {
     const node =
@@ -117,24 +136,56 @@ export const Topic = ({ route }: Props) => {
         ? findNodeHandle(firstLockedButtonWrapperRef.current)
         : null;
 
-    if (!node) return;
+    if (!node || tooltipHeight === 0) return;
 
-    UIManager.measureInWindow(node, (_x, buttonY) => {
-      // Пытаемся рисовать СВЕРХУ. Если верх тултипа попадает под header — переключаем на СНИЗУ
-      const tooltipTopIfAbove =
-        buttonY - TOOLTIP_OFFSET_FROM_BUTTON - TOOLTIP_HEIGHT_ESTIMATE;
-      const shouldBeBelow = tooltipTopIfAbove < headerHeight;
+    UIManager.measureInWindow(node, (_x, buttonY, _w, buttonHeight) => {
+      const needed = tooltipHeight + TOOLTIP_OFFSET_FROM_BUTTON;
+      const spaceAbove = buttonY - headerHeight;
+      const spaceBelow = screenHeight - (buttonY + buttonHeight) - bottom;
+
+      let shouldBeBelow: boolean;
+      if (spaceAbove >= needed) {
+        shouldBeBelow = false;
+      } else if (spaceBelow >= needed) {
+        shouldBeBelow = true;
+      } else {
+        shouldBeBelow = spaceBelow > spaceAbove;
+      }
+
       setFirstLockedTooltipBelow(prev =>
         prev === shouldBeBelow ? prev : shouldBeBelow,
       );
     });
   };
 
+  useEffect(() => {
+    if (tooltipIndex === -1) {
+      setTooltipHeight(0);
+      tooltipAnim.setValue(0);
+      return;
+    }
+    updateFirstLockedTooltipSide();
+
+    if (tooltipHeight > 0) {
+      tooltipAnim.setValue(0);
+      Animated.spring(tooltipAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tooltipIndex, tooltipHeight, headerHeight, screenHeight, bottom]);
+
   const handleCloseTooltip = () => {
-    setTooltipIndex(prev => {
-      if (prev >= sortedLessons.length - 1) return sortedLessons.length;
-      return prev + 1;
-    });
+    tooltipAnim.setValue(0);
+    setTooltipIndex(-1);
+  };
+
+  const handleScroll = () => {
+    if (tooltipIndex === -1) return;
+    updateFirstLockedTooltipSide();
   };
 
   const completedRoutes = topicProgress?.completedRoutes ?? 0;
@@ -144,11 +195,32 @@ export const Topic = ({ route }: Props) => {
   const progressPercent =
     totalRoutes > 0 ? (completedRoutes / totalRoutes) * 100 : 0;
 
+  const topicTitleKey =
+    completedRoutes === 0
+      ? 'topicTitle.empty'
+      : progressPercent >= 100
+      ? 'topicTitle.done'
+      : progressPercent <= 20
+      ? 'topicTitle.started'
+      : progressPercent <= 60
+      ? 'topicTitle.middle'
+      : 'topicTitle.almost';
+  const tooltipTranslateY = tooltipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [firstLockedTooltipBelow ? -8 : 8, 0],
+  });
+  const tooltipScale = tooltipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.96, 1],
+  });
+
   return (
     <ScrollView
       contentContainerStyle={styles.contentContainer}
+      scrollEventThrottle={32}
       scrollViewStyle={styles.scrollView}
       onLayout={handleSetContainerWidth}
+      onScroll={handleScroll}
     >
       {isLoading ? (
         <View style={styles.loadingIndicatorWrap}>
@@ -156,6 +228,13 @@ export const Topic = ({ route }: Props) => {
         </View>
       ) : (
         <>
+          {tooltipIndex !== -1 && (
+            <Pressable
+              style={styles.tooltipBackdrop}
+              onPress={handleCloseTooltip}
+            />
+          )}
+
           <Text bold center color={colors.white} size={24}>
             {t('youAreDoingGreat')}
           </Text>
@@ -167,9 +246,16 @@ export const Topic = ({ route }: Props) => {
               const isShowTooltip = index === tooltipIndex;
 
               const navigateToStartLesson = () => {
+                handleCloseTooltip();
                 navigate(routes.home.START_LESSON, {
                   lesson,
                 });
+              };
+
+              const handleToggleTooltip = () => {
+                tooltipAnim.setValue(0);
+                setTooltipHeight(0);
+                setTooltipIndex(prev => (prev === index ? -1 : index));
               };
 
               return (
@@ -182,29 +268,66 @@ export const Topic = ({ route }: Props) => {
                         firstLockedTooltipBelow
                           ? styles.firstLockedTooltipBelow
                           : styles.firstLockedTooltipAbove,
+                        tooltipHeight === 0 ? styles.tooltipMeasuring : null,
                       ]}
                     >
-                      <View style={styles.tooltip}>
-                        <Text bold size={20}>
-                          {index + 1}. {lesson.title}
-                        </Text>
-
-                        {lesson.subtitle && (
-                          <Text center semiBold size={14}>
-                            {lesson.subtitle}
+                      <Animated.View
+                        style={[
+                          styles.tooltipAnimationWrap,
+                          {
+                            opacity: tooltipAnim,
+                            transform: [
+                              { translateY: tooltipTranslateY },
+                              { scale: tooltipScale },
+                            ],
+                          },
+                        ]}
+                      >
+                        <View
+                          style={styles.tooltip}
+                          onLayout={e =>
+                            setTooltipHeight(e.nativeEvent.layout.height)
+                          }
+                        >
+                          <Text bold size={20}>
+                            {index + 1}. {lesson.title}
                           </Text>
-                        )}
 
-                        <Button
-                          title={t('close')}
-                          onPress={handleCloseTooltip}
-                        />
+                          {lesson.locked && (
+                            <Text center size={18}>
+                              {t('lockedSequenceWarning')}
+                            </Text>
+                          )}
 
-                        <Button
-                          title={t('start')}
-                          onPress={navigateToStartLesson}
-                        />
-                      </View>
+                          {lesson.subtitle && (
+                            <Text center semiBold size={14}>
+                              {lesson.subtitle}
+                            </Text>
+                          )}
+
+                          <Button
+                            title={t('close')}
+                            onPress={handleCloseTooltip}
+                          />
+
+                          <Button
+                            title={t('start')}
+                            onPress={navigateToStartLesson}
+                          />
+                        </View>
+
+                        <View
+                          pointerEvents="none"
+                          style={[
+                            styles.notchAttached,
+                            firstLockedTooltipBelow
+                              ? styles.notchAttachedBelow
+                              : styles.notchAttachedAbove,
+                          ]}
+                        >
+                          <Tooltip1Notch />
+                        </View>
+                      </Animated.View>
                     </View>
                   )}
 
@@ -219,26 +342,8 @@ export const Topic = ({ route }: Props) => {
                         : styles.lessonButtonRight,
                       isShowTooltip ? styles.lessonButtonWrapperOnTop : null,
                     ]}
-                    onLayout={
-                      isShowTooltip ? updateFirstLockedTooltipSide : undefined
-                    }
                   >
-                    <View>
-                      {isShowTooltip && (
-                        <View
-                          style={[
-                            styles.notchWrapper,
-                            firstLockedTooltipBelow
-                              ? styles.notchWrapperBelow
-                              : styles.notchWrapperAbove,
-                          ]}
-                        >
-                          <Tooltip1Notch />
-
-                          <View style={styles.notchBorderMask} />
-                        </View>
-                      )}
-
+                    <Pressable onPress={handleToggleTooltip}>
                       {lesson.locked ? (
                         <View>
                           <InactiveLessonButton />
@@ -278,7 +383,7 @@ export const Topic = ({ route }: Props) => {
                           </View>
                         </View>
                       )}
-                    </View>
+                    </Pressable>
                   </View>
 
                   {isLast ? (
@@ -340,7 +445,7 @@ export const Topic = ({ route }: Props) => {
             marginTop={DEFAULT_SPACE * 2}
             size={28}
           >
-            {t('youAreSuper.YouHaveAlreadyMastered')}
+            {t(topicTitleKey)}
           </Text>
 
           <RoundSlider
@@ -393,6 +498,15 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexGrow: 1,
+    position: 'relative',
+  },
+  tooltipBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 2,
   },
   lessonsContainer: {
     gap: 30,
@@ -416,10 +530,29 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   firstLockedTooltipAbove: {
-    bottom: 90,
+    bottom: 105,
   },
   firstLockedTooltipBelow: {
     top: 90,
+  },
+  tooltipMeasuring: {
+    opacity: 0,
+  },
+  tooltipAnimationWrap: {
+    width: '100%',
+  },
+  notchAttached: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  notchAttachedAbove: {
+    bottom: -16,
+  },
+  notchAttachedBelow: {
+    top: -16,
+    transform: [{ rotate: '180deg' }],
   },
   notchWrapper: {
     position: 'absolute',

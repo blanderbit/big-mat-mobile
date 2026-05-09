@@ -31,7 +31,7 @@
 		B50A96CE41F64931AE2CD15C /* Unbounded-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Unbounded-Regular.ttf"; path = "../assets/fonts/Unbounded-Regular.ttf"; sourceTree = "<group>"; };
 		CA5E269D0F2845F5903155A1 /* Unbounded-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Unbounded-Bold.ttf"; path = "../assets/fonts/Unbounded-Bold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		EFC01DF3737D5AAF0E56A7CF /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../GoogleService-Info.plist"; sourceTree = "<group>"; };
+		EFC01DF3737D5AAF0E56A7CF /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "BigMat/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		FBDE09E8C82AF983C82A483A /* Pods_BigMat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BigMat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -132,7 +132,7 @@
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
-				71E123E7FB15B61A9A4CA955 /* [CP-User] [RNFB] Core Configuration */,
+				B6C30915CC589B35D7C56F2D /* [CP-User] [RNFB] Core Configuration */,
 			);
 			buildRules = (
 			);
@@ -225,7 +225,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BigMat/Pods-BigMat-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		71E123E7FB15B61A9A4CA955 /* [CP-User] [RNFB] Core Configuration */ = {
+		B6C30915CC589B35D7C56F2D /* [CP-User] [RNFB] Core Configuration */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

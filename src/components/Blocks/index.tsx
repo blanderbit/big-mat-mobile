@@ -1,17 +1,20 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import { Carousel } from '@components/Carousel';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 
+import { colors } from '@extra/colors';
 import { CAROUSEL_MAX_HEIGHT, DEFAULT_SPACE } from '@extra/constants';
 import {
   Block,
   ContainerBlock,
   DescriptionTextBlock,
   DescriptionTextBoxBlock,
+  GapPickBlock,
   ImageBlock,
   SliderBlock,
   TextBlock,
@@ -48,22 +51,41 @@ const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
 
 type Props = {
-  blocks: Block[];
+  blocks: Array<Block | GapPickBlock>;
   renderGapPickOptions?: Array<{ id: string; label: string }>;
-  renderGapPickValueByBlockIndex?: Record<number, string | null | undefined>;
-  onRenderGapPickChange?: (blockIndex: number, optionId: string) => void;
+  renderGapPickValueByIndex?: Record<number, string | null | undefined>;
+  onRenderGapPickChange?: (index: number, optionId: string) => void;
 };
 
 const GapPickDropdown = ({
+  isOpen,
   onChange,
+  onToggle,
   options,
   value,
 }: {
+  isOpen: boolean;
   options: Array<{ id: string; label: string }>;
   value: string | null | undefined;
   onChange: ((optionId: string) => void) | undefined;
+  onToggle: () => void;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
+  const rotation = useRef(new Animated.Value(isOpen ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(rotation, {
+      toValue: isOpen ? 1 : 0,
+      duration: 180,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [isOpen, rotation]);
+
+  const rotate = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
 
   const selectedLabel = value
     ? options.find(o => o.id === value)?.label ?? ''
@@ -75,36 +97,50 @@ const GapPickDropdown = ({
     <View style={styles.gapPickWrap}>
       <Pressable
         disabled={isDisabled}
-        style={[
+        style={({ pressed }) => [
           styles.gapPickTrigger,
+          isOpen ? styles.gapPickTriggerOpen : null,
           isDisabled ? styles.gapPickTriggerDisabled : null,
+          pressed && !isDisabled ? styles.gapPickTriggerPressed : null,
         ]}
-        onPress={() => setIsOpen(v => !v)}
+        onPress={onToggle}
       >
-        <Text bold size={18}>
-          {selectedLabel || ' '}
+        <Text
+          bold={!!selectedLabel}
+          color={selectedLabel ? colors.black : '#9A9A9A'}
+          size={18}
+          style={styles.gapPickTriggerLabel}
+        >
+          {selectedLabel || t('selectOption')}
         </Text>
+        <Animated.View
+          style={[styles.chevronWrap, { transform: [{ rotate }] }]}
+        >
+          <View style={styles.chevron} />
+        </Animated.View>
       </Pressable>
 
       {isOpen ? (
         <View style={styles.gapPickOptions}>
-          {options.map(option => {
+          {options.map((option, idx) => {
             const isSelected = option.id === value;
             return (
               <Pressable
                 key={option.id}
-                style={[
+                style={({ pressed }) => [
                   styles.gapPickOption,
+                  idx === 0 ? styles.gapPickOptionFirst : null,
                   isSelected ? styles.gapPickOptionSelected : null,
+                  pressed ? styles.gapPickOptionPressed : null,
                 ]}
                 onPress={() => {
                   onChange?.(option.id);
-                  setIsOpen(false);
                 }}
               >
                 <Text bold={isSelected} size={18}>
                   {option.label}
                 </Text>
+                {isSelected ? <View style={styles.checkDot} /> : null}
               </Pressable>
             );
           })}
@@ -118,8 +154,9 @@ export const Blocks = ({
   blocks,
   onRenderGapPickChange,
   renderGapPickOptions,
-  renderGapPickValueByBlockIndex,
+  renderGapPickValueByIndex,
 }: Props) => {
+  const [openGapPickIndex, setOpenGapPickIndex] = useState<number | null>(null);
   const renderImage = (imageData: ImageBlock) => {
     const imageRowAlignStyle =
       imageData.verticalAlign === 'left'
@@ -189,12 +226,28 @@ export const Blocks = ({
   );
 
   const renderContainer = (containerData: ContainerBlock) => {
+    const serverPadding = containerData.spacing?.padding;
+    const serverMargin = containerData.spacing?.margin;
+
+    // Wrapper/ScrollView around slides applies horizontal padding of
+    // DEFAULT_SPACE. Server-provided horizontal margins are interpreted as
+    // "distance from screen edge", so we compensate that parent padding.
+    const compensateHorizontal = (value: number | undefined) =>
+      value != null ? value - DEFAULT_SPACE : undefined;
+
     return (
       <View
         style={[
           styles.containerBlockShell,
-          getSpacingStyle(containerData.spacing),
           {
+            paddingTop: serverPadding?.top ?? DEFAULT_SPACE,
+            paddingRight: serverPadding?.right ?? DEFAULT_SPACE,
+            paddingBottom: serverPadding?.bottom ?? DEFAULT_SPACE,
+            paddingLeft: serverPadding?.left ?? DEFAULT_SPACE,
+            marginTop: serverMargin?.top,
+            marginRight: compensateHorizontal(serverMargin?.right),
+            marginBottom: serverMargin?.bottom,
+            marginLeft: compensateHorizontal(serverMargin?.left),
             backgroundColor: containerData.background,
             borderRadius: containerData.borderRadius,
           },
@@ -239,8 +292,31 @@ export const Blocks = ({
     );
   };
 
-  const renderBlocks = (blocks: Block[]) => {
+  const renderBlocks = (blocks: Array<Block | GapPickBlock>) => {
     return blocks?.map((block, index) => {
+      if (block.type === 'gap_pick') {
+        return (
+          <View key={index} style={getSpacingStyle(block.spacing)}>
+            <GapPickDropdown
+              isOpen={openGapPickIndex === index}
+              options={renderGapPickOptions ?? []}
+              value={renderGapPickValueByIndex?.[index] ?? null}
+              onChange={
+                onRenderGapPickChange
+                  ? optionId => {
+                      onRenderGapPickChange(index, optionId);
+                      setOpenGapPickIndex(null);
+                    }
+                  : undefined
+              }
+              onToggle={() =>
+                setOpenGapPickIndex(prev => (prev === index ? null : index))
+              }
+            />
+          </View>
+        );
+      }
+
       const switchBlockType = () => {
         switch (block.type) {
           case 'image':
@@ -260,24 +336,7 @@ export const Blocks = ({
         }
       };
 
-      const blockContent = switchBlockType();
-
-      return (
-        <View key={index}>
-          {blockContent}
-          {renderGapPickOptions ? (
-            <GapPickDropdown
-              options={renderGapPickOptions}
-              value={renderGapPickValueByBlockIndex?.[index] ?? null}
-              onChange={
-                onRenderGapPickChange
-                  ? optionId => onRenderGapPickChange(index, optionId)
-                  : undefined
-              }
-            />
-          ) : null}
-        </View>
-      );
+      return <View key={index}>{switchBlockType()}</View>;
     });
   };
 
@@ -296,35 +355,85 @@ const styles = StyleSheet.create({
   },
   containerBlockShell: {
     gap: DEFAULT_SPACE,
-    padding: DEFAULT_SPACE,
   },
   gapPickWrap: {
     marginTop: DEFAULT_SPACE,
   },
   gapPickTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 56,
     borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderColor: colors.black,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingLeft: 18,
+    paddingRight: 14,
+    backgroundColor: colors.white,
+  },
+  gapPickTriggerOpen: {
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    backgroundColor: colors.brightBeige,
+  },
+  gapPickTriggerPressed: {
+    opacity: 0.85,
   },
   gapPickTriggerDisabled: {
     opacity: 0.5,
   },
+  gapPickTriggerLabel: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  chevronWrap: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chevron: {
+    width: 10,
+    height: 10,
+    borderRightWidth: 2.5,
+    borderBottomWidth: 2.5,
+    borderColor: colors.black,
+    transform: [{ rotate: '45deg' }],
+    marginBottom: 3,
+  },
   gapPickOptions: {
-    marginTop: 10,
+    marginTop: 6,
     borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 12,
+    borderColor: colors.black,
+    borderRadius: 16,
     overflow: 'hidden',
+    backgroundColor: colors.white,
   },
   gapPickOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderTopWidth: 2,
-    borderTopColor: '#000',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderTopWidth: 1.5,
+    borderTopColor: colors.darkGrey,
+    backgroundColor: colors.white,
+  },
+  gapPickOptionFirst: {
+    borderTopWidth: 0,
   },
   gapPickOptionSelected: {
-    backgroundColor: '#EDEDED',
+    backgroundColor: colors.brightYellow,
+  },
+  gapPickOptionPressed: {
+    backgroundColor: colors.darkBeige,
+  },
+  checkDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.black,
+    marginLeft: 12,
   },
 });

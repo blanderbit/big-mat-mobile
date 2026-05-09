@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
+import { HomeStackNavigationProp } from '@navigation/extra/types';
 
 import { API } from '@API/index';
 import { colors } from '@extra/colors';
@@ -21,6 +23,7 @@ type Props = {
 
 export const Finish = ({ lessonId }: Props) => {
   const { t } = useTranslation();
+  const navigation = useNavigation<HomeStackNavigationProp>();
   const [points, setPoints] = useState(0);
   const setCurrentSlideIndex = useLessonsStore(
     state => state.setCurrentSlideIndex,
@@ -42,6 +45,11 @@ export const Finish = ({ lessonId }: Props) => {
 
   const handlePassAgain = () => {
     setCurrentSlideIndex(0);
+  };
+
+  const handleGoToRoutes = () => {
+    setCurrentSlideIndex(0);
+    navigation.pop(2);
   };
 
   return (
@@ -88,7 +96,10 @@ export const Finish = ({ lessonId }: Props) => {
         )}
 
         {!isLoading && (
-          <Button title={t('passAgain')} onPress={handlePassAgain} />
+          <View style={styles.buttons}>
+            <Button title={t('passAgain')} onPress={handlePassAgain} />
+            <Button title={t('backToRoutes')} onPress={handleGoToRoutes} />
+          </View>
         )}
       </View>
     </Wrapper>
@@ -115,6 +126,9 @@ const styles = StyleSheet.create({
   },
   cakeWrap: {
     alignItems: 'center',
+  },
+  buttons: {
+    gap: DEFAULT_SPACE,
   },
   loading: {
     alignItems: 'center',

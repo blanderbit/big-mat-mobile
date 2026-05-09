@@ -1,6 +1,8 @@
-import { PropsWithChildren } from 'react';
+import { forwardRef, PropsWithChildren } from 'react';
 import {
   LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   RefreshControl,
   ScrollView as RNScrollView,
   StyleProp,
@@ -16,43 +18,55 @@ type Props = PropsWithChildren<{
   scrollViewStyle?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   onLayout?: (event: LayoutChangeEvent) => void;
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  scrollEventThrottle?: number;
   scrollEnabled?: boolean;
 }>;
 
-export const ScrollView = ({
-  children,
-  refreshing,
-  onRefresh,
-  scrollViewStyle,
-  contentContainerStyle,
-  onLayout,
-  scrollEnabled,
-}: Props) => (
-  <RNScrollView
-    nestedScrollEnabled
-    // не добавлять keyboardDismissMode="on-drag"!
-    // keyboardDismissMode="on-drag"
-    keyboardShouldPersistTaps="handled"
-    scrollEnabled={scrollEnabled}
-    showsHorizontalScrollIndicator={false}
-    showsVerticalScrollIndicator={false}
-    style={[styles.container, scrollViewStyle]}
-    contentContainerStyle={[
-      styles.contentContainerStyle,
+export const ScrollView = forwardRef<RNScrollView, Props>(
+  (
+    {
+      children,
+      refreshing,
+      onRefresh,
+      scrollViewStyle,
       contentContainerStyle,
-    ]}
-    refreshControl={
-      onRefresh ? (
-        <RefreshControl
-          refreshing={refreshing ?? false}
-          onRefresh={onRefresh}
-        />
-      ) : undefined
-    }
-    onLayout={onLayout}
-  >
-    {children}
-  </RNScrollView>
+      onLayout,
+      onScroll,
+      scrollEventThrottle,
+      scrollEnabled,
+    },
+    ref,
+  ) => (
+    <RNScrollView
+      nestedScrollEnabled
+      // не добавлять keyboardDismissMode="on-drag"!
+      // keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
+      ref={ref}
+      scrollEnabled={scrollEnabled}
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      style={[styles.container, scrollViewStyle]}
+      contentContainerStyle={[
+        styles.contentContainerStyle,
+        contentContainerStyle,
+      ]}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing ?? false}
+            onRefresh={onRefresh}
+          />
+        ) : undefined
+      }
+      onLayout={onLayout}
+      onScroll={onScroll}
+      scrollEventThrottle={scrollEventThrottle}
+    >
+      {children}
+    </RNScrollView>
+  ),
 );
 
 const styles = StyleSheet.create({

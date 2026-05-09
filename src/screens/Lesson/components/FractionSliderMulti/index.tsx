@@ -6,6 +6,7 @@ import { AnswerResult } from '@components/AnswerResult';
 import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
 import { colors } from '@extra/colors';
@@ -26,6 +27,41 @@ const parseFraction = (label: string) => {
   const d = Number(dRaw);
   if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return null;
   return n / d;
+};
+
+const SliderOptionLabel = ({
+  isActive,
+  label,
+  left,
+}: {
+  isActive: boolean;
+  label: string;
+  left: number;
+}) => {
+  const color = isActive ? colors.black : colors.darkGrey;
+  const parts = label.split('/');
+
+  return (
+    <View style={[styles.optionLabel, { left }]}>
+      {parts.length === 2 ? (
+        <>
+          <Text bold={isActive} center color={color} size={14}>
+            {parts[0]}
+          </Text>
+          <View
+            style={[styles.optionLabelDivider, { borderBottomColor: color }]}
+          />
+          <Text bold={isActive} center color={color} size={14}>
+            {parts[1]}
+          </Text>
+        </>
+      ) : (
+        <Text bold={isActive} center color={color} size={14}>
+          {label}
+        </Text>
+      )}
+    </View>
+  );
 };
 
 type SlideVariantsTask =
@@ -137,6 +173,25 @@ const FractionSliderTask = ({
 
     return (
       <View style={styles.sliderOuter}>
+        <View pointerEvents="none" style={styles.labelsLayer}>
+          {trackWidth > 0
+            ? parsedOptions.map(opt => {
+                const t = (opt.value - min) / range;
+                const left =
+                  TRACK_BORDER + Math.max(0, Math.min(1, t)) * innerWidth;
+                const isActive = opt.id === chosenOptionId;
+                return (
+                  <SliderOptionLabel
+                    key={`${task.id}-label-${opt.id}`}
+                    isActive={isActive}
+                    label={opt.label}
+                    left={left}
+                  />
+                );
+              })
+            : null}
+        </View>
+
         <View
           style={styles.sliderTrack}
           onLayout={onTrackLayout}
@@ -309,6 +364,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
               ? slide.variants[0].explanation
               : slide.variants[0].wrongExplanation
           }
+          onClose={() => setIsCorrect(null)}
           onPressNext={handleGoToNextSlide}
         />
       )}
@@ -352,6 +408,24 @@ const styles = StyleSheet.create({
   sliderOuter: {
     width: '100%',
     paddingVertical: 6,
+  },
+  labelsLayer: {
+    position: 'relative',
+    width: '100%',
+    height: 40,
+    marginBottom: 4,
+  },
+  optionLabel: {
+    position: 'absolute',
+    top: 0,
+    width: 36,
+    marginLeft: -18,
+    alignItems: 'center',
+  },
+  optionLabelDivider: {
+    width: 14,
+    borderBottomWidth: 1.5,
+    marginVertical: 2,
   },
   sliderTrack: {
     position: 'relative',
