@@ -43,6 +43,7 @@ export enum SlideType {
   FRACTION_SLIDER_MULTI = 'fraction_slider_multi',
   NUMBER_ANSWER = 'number_answer',
   MATCH_JOIN = 'match_join',
+  CLOZE_PICK = 'cloze_pick',
 }
 
 export enum DragDropItemType {
@@ -135,6 +136,7 @@ export type DescriptionTextBoxBlock = {
   borderRadius?: number;
   color?: string;
   content: string; // HTML string;
+  position: number;
   type: 'description_text_box';
   spacing?: Spacing;
 };
@@ -164,6 +166,18 @@ export type Block =
   | DescriptionTextBoxBlock
   | SliderBlock
   | ContainerBlock;
+
+export type GapPickBlock = {
+  correctOptionId: string;
+  options: {
+    id: string;
+    label: string;
+  }[];
+
+  type: 'gap_pick';
+  spacing?: Spacing;
+  position: number;
+};
 
 export type SlideVariantsByType = {
   [SlideType.SINGLE_CHOICE]: {
@@ -367,6 +381,17 @@ export type SlideVariantsByType = {
     }[];
     shuffleLeft: boolean;
     shuffleRight: boolean;
+  };
+  [SlideType.CLOZE_PICK]: {
+    blocks?: (Block | GapPickBlock)[];
+    buttonText?: string;
+    explanation: string; // HTML string;
+    wrongExplanation: string; // HTML string;
+    id: string;
+    gapPickOptions: {
+      id: string;
+      label: string;
+    }[];
   };
   [SlideType.FINISH]: undefined;
 };

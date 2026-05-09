@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import { Carousel } from '@components/Carousel';
@@ -48,9 +49,77 @@ const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
 
 type Props = {
   blocks: Block[];
+  renderGapPickOptions?: Array<{ id: string; label: string }>;
+  renderGapPickValueByBlockIndex?: Record<number, string | null | undefined>;
+  onRenderGapPickChange?: (blockIndex: number, optionId: string) => void;
 };
 
-export const Blocks = ({ blocks }: Props) => {
+const GapPickDropdown = ({
+  onChange,
+  options,
+  value,
+}: {
+  options: Array<{ id: string; label: string }>;
+  value: string | null | undefined;
+  onChange: ((optionId: string) => void) | undefined;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selectedLabel = value
+    ? options.find(o => o.id === value)?.label ?? ''
+    : '';
+
+  const isDisabled = onChange == null;
+
+  return (
+    <View style={styles.gapPickWrap}>
+      <Pressable
+        disabled={isDisabled}
+        style={[
+          styles.gapPickTrigger,
+          isDisabled ? styles.gapPickTriggerDisabled : null,
+        ]}
+        onPress={() => setIsOpen(v => !v)}
+      >
+        <Text bold size={18}>
+          {selectedLabel || ' '}
+        </Text>
+      </Pressable>
+
+      {isOpen ? (
+        <View style={styles.gapPickOptions}>
+          {options.map(option => {
+            const isSelected = option.id === value;
+            return (
+              <Pressable
+                key={option.id}
+                style={[
+                  styles.gapPickOption,
+                  isSelected ? styles.gapPickOptionSelected : null,
+                ]}
+                onPress={() => {
+                  onChange?.(option.id);
+                  setIsOpen(false);
+                }}
+              >
+                <Text bold={isSelected} size={18}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+    </View>
+  );
+};
+
+export const Blocks = ({
+  blocks,
+  onRenderGapPickChange,
+  renderGapPickOptions,
+  renderGapPickValueByBlockIndex,
+}: Props) => {
   const renderImage = (imageData: ImageBlock) => {
     const imageRowAlignStyle =
       imageData.verticalAlign === 'left'
@@ -193,7 +262,22 @@ export const Blocks = ({ blocks }: Props) => {
 
       const blockContent = switchBlockType();
 
-      return <View key={index}>{blockContent}</View>;
+      return (
+        <View key={index}>
+          {blockContent}
+          {renderGapPickOptions ? (
+            <GapPickDropdown
+              options={renderGapPickOptions}
+              value={renderGapPickValueByBlockIndex?.[index] ?? null}
+              onChange={
+                onRenderGapPickChange
+                  ? optionId => onRenderGapPickChange(index, optionId)
+                  : undefined
+              }
+            />
+          ) : null}
+        </View>
+      );
     });
   };
 
@@ -213,5 +297,34 @@ const styles = StyleSheet.create({
   containerBlockShell: {
     gap: DEFAULT_SPACE,
     padding: DEFAULT_SPACE,
+  },
+  gapPickWrap: {
+    marginTop: DEFAULT_SPACE,
+  },
+  gapPickTrigger: {
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  gapPickTriggerDisabled: {
+    opacity: 0.5,
+  },
+  gapPickOptions: {
+    marginTop: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  gapPickOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderTopWidth: 2,
+    borderTopColor: '#000',
+  },
+  gapPickOptionSelected: {
+    backgroundColor: '#EDEDED',
   },
 });

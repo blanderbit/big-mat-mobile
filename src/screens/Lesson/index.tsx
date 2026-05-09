@@ -4,6 +4,7 @@ import { RouteProp } from '@react-navigation/native';
 
 import { ActivityIndicator } from '@components/ActivityIndicator';
 import { ScrollView } from '@components/ScrollView';
+import { ClozePick } from '@screens/Lesson/components/ClozePick';
 import { DragDrop } from '@screens/Lesson/components/DragDrop';
 import { Finish } from '@screens/Lesson/components/Finish';
 import { FractionInput } from '@screens/Lesson/components/FractionInput';
@@ -134,6 +135,14 @@ export const Lesson = ({ route }: Props) => {
             key={currentSlide.id}
             lessonId={lessonId}
             slide={currentSlide as Slide<SlideType.MATCH_JOIN>}
+          />
+        );
+      case SlideType.CLOZE_PICK:
+        return (
+          <ClozePick
+            key={currentSlide.id}
+            lessonId={lessonId}
+            slide={currentSlide as Slide<SlideType.CLOZE_PICK>}
           />
         );
       default:
