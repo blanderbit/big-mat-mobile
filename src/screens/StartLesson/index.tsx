@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button } from '@components/Button';
-import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
 import {
@@ -18,17 +17,16 @@ import { useLessonsStore } from '@stores/lessonsStore';
 
 import background1 from '@assets/images/background1.png';
 import Background11 from '@assets/images/background11.svg';
-import BackArrow from '@assets/images/backArrow.svg';
 
 type Props = {
   route: RouteProp<HomeStackParamList, typeof routes.home.START_LESSON>;
 };
 
 export const StartLesson = ({ route }: Props) => {
-  const { lesson } = route.params;
+  const { lesson, lessonIndex } = route.params;
   const { top, bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { navigate, goBack } = useNavigation<HomeStackNavigationProp>();
+  const { navigate } = useNavigation<HomeStackNavigationProp>();
   const setCurrentSlideIndex = useLessonsStore(
     state => state.setCurrentSlideIndex,
   );
@@ -42,30 +40,20 @@ export const StartLesson = ({ route }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        style={[styles.backButton, { top: top + DEFAULT_SPACE }]}
-        onPress={goBack}
-      >
-        <BackArrow />
-      </Pressable>
-
-      <Text
-        bold
-        center
-        color={colors.white}
-        marginBottom={lesson.subtitle ? DEFAULT_SPACE : 0}
-        marginTop={top + DEFAULT_SPACE}
-        size={30}
-      >
-        {lesson.title}
-      </Text>
-
-      {lesson.subtitle && (
-        <Text center color={colors.white} size={30}>
-          {lesson.subtitle}
+      <View style={styles.titleBlock}>
+        <Text bold center color={colors.white} size={30}>
+          {t('lesson')} {lessonIndex}
         </Text>
-      )}
+
+        <Text
+          center
+          color={colors.white}
+          marginBottom={lesson.subtitle ? DEFAULT_SPACE : 0}
+          size={30}
+        >
+          {lesson.title}
+        </Text>
+      </View>
 
       <View
         style={[styles.startButtonWrap, { bottom: bottom + DEFAULT_SPACE }]}
@@ -91,17 +79,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: DEFAULT_SPACE,
   },
-  backButton: {
+  titleBlock: {
     position: 'absolute',
-    left: DEFAULT_SPACE,
-    backgroundColor: colors.white,
-    width: 30,
-    height: 30,
-    borderRadius: 9999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingRight: 2,
-    zIndex: 3,
+    top: '18%',
+    left: 0,
+    right: 0,
   },
   startButtonWrap: {
     position: 'absolute',

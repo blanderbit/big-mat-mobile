@@ -26,6 +26,12 @@ export const HomeHeader = ({ navigation, route }: NativeStackHeaderProps) => {
     );
   };
 
+  const handlePressScore = () => {
+    (navigation as unknown as HomeStackNavigationProp).navigate(
+      routes.home.SCORE,
+    );
+  };
+
   return (
     <View style={[styles.container, { paddingTop: top + DEFAULT_SPACE }]}>
       <Pressable
@@ -35,7 +41,7 @@ export const HomeHeader = ({ navigation, route }: NativeStackHeaderProps) => {
         <Home height={38} width={33} />
       </Pressable>
 
-      <View style={styles.right}>
+      <Pressable style={styles.right} onPress={handlePressScore}>
         <BlankAvatar height={42} width={42} />
 
         <View style={styles.scorePill}>
@@ -43,7 +49,7 @@ export const HomeHeader = ({ navigation, route }: NativeStackHeaderProps) => {
             {totalScore}
           </Text>
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 };

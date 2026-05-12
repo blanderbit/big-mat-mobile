@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { Home } from '@screens/Home';
 import { Lesson } from '@screens/Lesson';
+import { Score } from '@screens/Score';
 import { StartLesson } from '@screens/StartLesson';
 import { Topic } from '@screens/Topic';
 import { HomeHeader } from '@navigation/components/HomeStack/components/HomeHeader';
@@ -61,6 +62,15 @@ export const HomeStack = () => {
           contentStyle: {
             backgroundColor: currentSlide?.backgroundColor ?? colors.pink,
           },
+        }}
+      />
+      <Stack.Screen
+        component={Score}
+        name={routes.home.SCORE}
+        options={{
+          headerShown: true,
+          header: HomeHeader,
+          contentStyle: { backgroundColor: colors.brightOrange },
         }}
       />
     </Stack.Navigator>

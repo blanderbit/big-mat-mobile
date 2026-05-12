@@ -7,5 +7,6 @@ export const routes = {
     TOPIC: 'Topic',
     START_LESSON: 'StartLesson',
     LESSON: 'Lesson',
+    SCORE: 'Score',
   },
 } as const;

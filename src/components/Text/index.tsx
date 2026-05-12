@@ -22,6 +22,11 @@ type Props = PropsWithChildren<{
   uppercase?: boolean;
   onLongPress?: ((event: GestureResponderEvent) => void) | undefined;
   style?: StyleProp<TextStyle>;
+  /** Shrink font so content fits width (one line). */
+  adjustsFontSizeToFit?: boolean;
+  /** Min scale vs `size` (0–1). Default 0.2 when adjustsFontSizeToFit is true. */
+  minimumFontScale?: number;
+  numberOfLines?: number;
 }>;
 
 export const Text = ({
@@ -37,6 +42,9 @@ export const Text = ({
   uppercase,
   onLongPress,
   style,
+  adjustsFontSizeToFit,
+  minimumFontScale,
+  numberOfLines,
 }: Props) => {
   // TODO: add real font from design
   const fontFamily = semiBold
@@ -51,6 +59,11 @@ export const Text = ({
 
   return (
     <RNText
+      adjustsFontSizeToFit={adjustsFontSizeToFit}
+      minimumFontScale={
+        adjustsFontSizeToFit ? minimumFontScale ?? 0.2 : minimumFontScale
+      }
+      numberOfLines={numberOfLines}
       style={[
         styles.text,
         {

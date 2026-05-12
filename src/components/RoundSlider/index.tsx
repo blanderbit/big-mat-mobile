@@ -14,6 +14,8 @@ type Props = {
   marginHorizontal?: number;
   tooltipText?: string;
   marginBottom?: number;
+  trackColor?: string;
+  fillColor?: string;
 };
 
 export const RoundSlider = ({
@@ -22,22 +24,37 @@ export const RoundSlider = ({
   marginHorizontal,
   tooltipText,
   marginBottom,
+  trackColor,
+  fillColor,
 }: Props) => {
   const progress = value / 100;
 
   return (
     <View
       style={[
-        marginTop != null && { marginTop },
-        marginHorizontal != null && { marginHorizontal },
-        marginBottom != null && { marginBottom },
+        marginTop != null ? { marginTop } : null,
+        marginHorizontal != null ? { marginHorizontal } : null,
+        marginBottom != null ? { marginBottom } : null,
       ]}
     >
-      <View style={styles.track} />
+      <View
+        style={[
+          styles.track,
+          { backgroundColor: trackColor ?? colors.darkBlue },
+        ]}
+      />
 
-      <View style={[styles.fill, { width: `${progress * 100}%` }]} />
+      <View
+        style={[
+          styles.fill,
+          {
+            width: `${progress * 100}%`,
+            backgroundColor: fillColor ?? colors.white,
+          },
+        ]}
+      />
 
-      {tooltipText && (
+      {tooltipText ? (
         <View pointerEvents="none" style={styles.tooltipWrapper}>
           <View style={styles.tooltipNotch} />
 
@@ -47,7 +64,7 @@ export const RoundSlider = ({
             </Text>
           </View>
         </View>
-      )}
+      ) : null}
     </View>
   );
 };
@@ -56,12 +73,10 @@ const styles = StyleSheet.create({
   track: {
     width: '100%',
     height: HEIGHT,
-    backgroundColor: colors.darkBlue,
     borderRadius: RADIUS,
   },
   fill: {
     height: HEIGHT,
-    backgroundColor: colors.white,
     borderRadius: RADIUS,
     position: 'absolute',
     top: 0,

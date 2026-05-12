@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   findNodeHandle,
@@ -18,9 +18,9 @@ import Svg, { Line } from 'react-native-svg';
 import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Button } from '@components/Button';
 import { Pressable } from '@components/Pressable';
+import { RoundSlider } from '@components/RoundSlider';
 import { ScrollView } from '@components/ScrollView';
 import { Text } from '@components/Text';
-import { RoundSlider } from '@screens/Topic/components/RoundSlider';
 import { routes } from '@navigation/extra/routes';
 import {
   HomeStackNavigationProp,
@@ -64,15 +64,19 @@ export const Topic = ({ route }: Props) => {
     null,
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [lessonButtonWidth, setLessonButtonWidth] = useState(0);
 
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [containerWidth, setContainerWidth] = useState(0);
   const [firstLockedTooltipBelow, setFirstLockedTooltipBelow] = useState(false);
   const firstLockedButtonWrapperRef = useRef<View | null>(null);
+  const setFirstLockedButtonWrapperNode = useCallback((node: View | null) => {
+    firstLockedButtonWrapperRef.current = node;
+  }, []);
   const [tooltipIndex, setTooltipIndex] = useState(-1);
   const [tooltipHeight, setTooltipHeight] = useState(0);
-  const tooltipAnim = useRef(new Animated.Value(0)).current;
+  const tooltipAnim = useMemo(() => new Animated.Value(0), []);
   const hasLoadedOnce = useRef(false);
 
   const refreshTopicData = useCallback(
@@ -249,6 +253,7 @@ export const Topic = ({ route }: Props) => {
                 handleCloseTooltip();
                 navigate(routes.home.START_LESSON, {
                   lesson,
+                  lessonIndex: index + 1,
                 });
               };
 
@@ -305,35 +310,56 @@ export const Topic = ({ route }: Props) => {
                             </Text>
                           )}
 
-                          <Button
-                            title={t('close')}
-                            onPress={handleCloseTooltip}
-                          />
+                          <View
+                            style={[
+                              styles.tooltipButtons,
+                              !lesson.locked
+                                ? styles.tooltipButtonsReverse
+                                : null,
+                              styles.tooltipButtonsFullWidth,
+                            ]}
+                          >
+                            <Button
+                              title={t('close')}
+                              onPress={handleCloseTooltip}
+                            />
 
-                          <Button
-                            title={t('start')}
-                            onPress={navigateToStartLesson}
-                          />
+                            <Button
+                              title={t('start')}
+                              onPress={navigateToStartLesson}
+                            />
+                          </View>
                         </View>
+                      </Animated.View>
 
-                        <View
+                      {isShowTooltip ? (
+                        <Animated.View
                           pointerEvents="none"
                           style={[
-                            styles.notchAttached,
+                            styles.lessonNotch,
                             firstLockedTooltipBelow
-                              ? styles.notchAttachedBelow
-                              : styles.notchAttachedAbove,
+                              ? styles.lessonNotchBelow
+                              : styles.lessonNotchAbove,
+                            isLeft
+                              ? styles.lessonNotchLeft
+                              : styles.lessonNotchRight,
+                            { width: lessonButtonWidth, opacity: tooltipAnim },
+                            firstLockedTooltipBelow
+                              ? styles.lessonNotchRotated
+                              : null,
                           ]}
                         >
                           <Tooltip1Notch />
-                        </View>
-                      </Animated.View>
+                        </Animated.View>
+                      ) : null}
                     </View>
                   )}
 
                   <View
                     ref={
-                      isShowTooltip ? firstLockedButtonWrapperRef : undefined
+                      isShowTooltip
+                        ? setFirstLockedButtonWrapperNode
+                        : undefined
                     }
                     style={[
                       styles.lessonButtonWrapper,
@@ -342,6 +368,9 @@ export const Topic = ({ route }: Props) => {
                         : styles.lessonButtonRight,
                       isShowTooltip ? styles.lessonButtonWrapperOnTop : null,
                     ]}
+                    onLayout={e =>
+                      setLessonButtonWidth(e.nativeEvent.layout.width)
+                    }
                   >
                     <Pressable onPress={handleToggleTooltip}>
                       {lesson.locked ? (
@@ -526,8 +555,8 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     alignItems: 'center',
-    zIndex: 3,
-    elevation: 10,
+    zIndex: 20,
+    elevation: 20,
   },
   firstLockedTooltipAbove: {
     bottom: 105,
@@ -541,40 +570,36 @@ const styles = StyleSheet.create({
   tooltipAnimationWrap: {
     width: '100%',
   },
-  notchAttached: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    alignItems: 'center',
+  tooltipButtons: {
+    gap: 12,
   },
-  notchAttachedAbove: {
-    bottom: -16,
-  },
-  notchAttachedBelow: {
-    top: -16,
-    transform: [{ rotate: '180deg' }],
-  },
-  notchWrapper: {
-    position: 'absolute',
-    left: 0,
+  tooltipButtonsFullWidth: {
     width: '100%',
-    alignItems: 'center',
-    zIndex: 3,
   },
-  notchWrapperAbove: {
-    top: -12,
+  tooltipButtonsReverse: {
+    flexDirection: 'column-reverse',
   },
-  notchWrapperBelow: {
-    bottom: -6,
-    transform: [{ rotate: '180deg' }],
-  },
-  notchBorderMask: {
-    height: 2,
-    width: 54,
-    backgroundColor: colors.pink,
+  lessonNotch: {
     position: 'absolute',
-    zIndex: 4,
-    top: -1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 30,
+    elevation: 30,
+  },
+  lessonNotchAbove: {
+    bottom: -23,
+  },
+  lessonNotchBelow: {
+    top: -30.5,
+  },
+  lessonNotchLeft: {
+    left: '10%',
+  },
+  lessonNotchRight: {
+    right: '10%',
+  },
+  lessonNotchRotated: {
+    transform: [{ rotate: '180deg' }],
   },
   lessonButtonLeft: {
     alignSelf: 'flex-start',
@@ -614,6 +639,7 @@ const styles = StyleSheet.create({
   },
   connectorBase: {
     position: 'absolute',
+    zIndex: 1,
     // центрируем по вертикали ровно посередине gap (gap=30 => 15)
     bottom: -15,
   },
