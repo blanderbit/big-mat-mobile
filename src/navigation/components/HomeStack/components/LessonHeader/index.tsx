@@ -5,13 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Pressable } from '@components/Pressable';
+import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
 import { DEFAULT_OPACITY, DEFAULT_SPACE } from '@extra/constants';
 import { useLessonsStore } from '@stores/lessonsStore';
 
 import BackArrow from '@assets/images/backArrow.svg';
-import Lightning from '@assets/images/lightning.svg';
+import Fish from '@assets/images/fish.svg';
 
 export const LessonHeader = () => {
   const { top } = useSafeAreaInsets();
@@ -73,9 +74,15 @@ export const LessonHeader = () => {
           <Animated.View
             style={[styles.progressIconRail, { width: progressWidth }]}
           >
-            <Lightning />
+            <Fish />
           </Animated.View>
         </View>
+      )}
+
+      {!!slides.length && (
+        <Text color={colors.brightPurple} size={12}>
+          {currentSlideIndex + 1}/{slides.length}
+        </Text>
       )}
     </View>
   );
@@ -98,6 +105,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingRight: 2,
+    marginRight: DEFAULT_SPACE * 2,
   },
   progressWrap: {
     flex: 1,
@@ -115,7 +123,7 @@ const styles = StyleSheet.create({
     borderRadius: 45,
   },
   progressFill: {
-    backgroundColor: colors.white,
+    backgroundColor: '#5454D1',
     position: 'absolute',
     left: 0,
     top: 0,
@@ -126,7 +134,7 @@ const styles = StyleSheet.create({
   progressIconRail: {
     position: 'absolute',
     left: 6,
-    top: -10,
+    top: -14,
     bottom: 0,
     height: '100%',
     alignItems: 'flex-end',

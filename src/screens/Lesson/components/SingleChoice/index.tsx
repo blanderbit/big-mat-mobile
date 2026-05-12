@@ -97,7 +97,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
 
       {cardDesign === 'block_as_button' ? (
         <View style={styles.blockAsButtonList}>
-          {slide.variants[0].options.map((option, index) => {
+          {slide.variants[0].options.map(option => {
             const isChosen = chosenOptionId === option.id;
             return (
               <Pressable
@@ -111,7 +111,6 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
                 onPress={() => chooseOption(option.id)}
               >
                 <View style={styles.optionHeader}>
-                  <AnswerVariant index={index} />
                   <Text center size={14}>
                     {option.label}
                   </Text>

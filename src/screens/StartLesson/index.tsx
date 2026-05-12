@@ -13,7 +13,6 @@ import {
 
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
-import { useLessonsStore } from '@stores/lessonsStore';
 
 import background1 from '@assets/images/background1.png';
 import Background11 from '@assets/images/background11.svg';
@@ -27,12 +26,8 @@ export const StartLesson = ({ route }: Props) => {
   const { top, bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
   const { navigate } = useNavigation<HomeStackNavigationProp>();
-  const setCurrentSlideIndex = useLessonsStore(
-    state => state.setCurrentSlideIndex,
-  );
 
   const navigateToLesson = () => {
-    setCurrentSlideIndex(0);
     navigate(routes.home.LESSON, {
       lessonId: lesson.id,
     });

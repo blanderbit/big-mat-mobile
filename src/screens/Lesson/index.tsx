@@ -36,6 +36,20 @@ export const Lesson = ({ route }: Props) => {
   const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
   const setSlides = useLessonsStore(state => state.setSlides);
   const scrollViewRef = useRef<RNScrollView | null>(null);
+  const setCurrentSlideIndex = useLessonsStore(
+    state => state.setCurrentSlideIndex,
+  );
+  const prevLessonIdRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (
+      prevLessonIdRef.current !== undefined &&
+      prevLessonIdRef.current !== lessonId
+    ) {
+      setCurrentSlideIndex(0);
+    }
+    prevLessonIdRef.current = lessonId;
+  }, [lessonId, setCurrentSlideIndex]);
 
   const scrollToEnd = useCallback(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
