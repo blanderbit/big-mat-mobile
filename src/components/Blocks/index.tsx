@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
+import { SvgUri } from 'react-native-svg';
 
 import { Carousel } from '@components/Carousel';
 import { Text } from '@components/Text';
@@ -165,16 +166,22 @@ export const Blocks = ({
         ? styles.imageRowAlignCenter
         : styles.imageRowAlignEnd;
 
+    const uri = imageData.imageUrl ?? '';
+    const isSvg = /\.svg(\?.*)?$/i.test(uri);
+    const width = imageData.width ?? '100%';
+    const height = imageData.height ?? '100%';
+
     return (
       <View style={[imageRowAlignStyle, getSpacingStyle(imageData.spacing)]}>
-        <FastImage
-          resizeMode="cover"
-          source={{ uri: imageData.imageUrl ?? '' }}
-          style={{
-            width: imageData.width ?? '100%',
-            height: imageData.height ?? '100%',
-          }}
-        />
+        {isSvg ? (
+          <SvgUri height={height} uri={uri} width={width} />
+        ) : (
+          <FastImage
+            resizeMode="cover"
+            source={{ uri }}
+            style={{ width, height }}
+          />
+        )}
       </View>
     );
   };

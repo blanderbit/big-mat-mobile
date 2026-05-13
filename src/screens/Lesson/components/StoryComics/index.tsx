@@ -41,7 +41,6 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     gap: DEFAULT_SPACE,
   },
 });
