@@ -38,6 +38,11 @@ import background9 from '@assets/images/background9.png';
 import Tooltip1Notch from '@assets/images/tooltip1Notch.svg';
 
 const TOOLTIP_OFFSET = 20;
+/** SVG notch width 56; slight overlap hides subpixel hairline at tooltip↔notch join. */
+const TOOLTIP_NOTCH_SEAM_WIDTH = 58;
+const TOOLTIP_NOTCH_SEAM_HEIGHT = 4;
+/** Half of seam height — straddles the card edge and the notch. */
+const TOOLTIP_NOTCH_SEAM_OVERLAP = TOOLTIP_NOTCH_SEAM_HEIGHT / 2;
 
 type AnchorRect = { x: number; y: number; width: number; height: number };
 
@@ -349,9 +354,7 @@ export const Home = () => {
             >
               <View
                 style={styles.tooltip}
-                onLayout={e =>
-                  setTooltipHeight(e.nativeEvent.layout.height)
-                }
+                onLayout={e => setTooltipHeight(e.nativeEvent.layout.height)}
               >
                 <Text bold size={20}>
                   {tooltipTopic.title}
@@ -368,6 +371,24 @@ export const Home = () => {
                   onPress={handlePressStartFromTooltip}
                 />
               </View>
+
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.tooltipNotchSeam,
+                  tooltipBelow
+                    ? styles.tooltipNotchSeamNotchAbove
+                    : styles.tooltipNotchSeamNotchBelow,
+                  { opacity: tooltipAnim },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.tooltipNotchSeamBar,
+                    { width: TOOLTIP_NOTCH_SEAM_WIDTH },
+                  ]}
+                />
+              </Animated.View>
 
               <Animated.View
                 pointerEvents="none"
@@ -490,10 +511,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   notchWrapperAbove: {
-    bottom: -12,
+    bottom: -31.5,
   },
   notchWrapperBelow: {
-    top: -12,
+    top: -31.5,
     transform: [{ rotate: '180deg' }],
+  },
+  tooltipNotchSeam: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    alignItems: 'center',
+    height: TOOLTIP_NOTCH_SEAM_HEIGHT,
+  },
+  /** Tooltip below anchor: notch sits on top of the card — cover join at top edge. */
+  tooltipNotchSeamNotchAbove: {
+    top: -TOOLTIP_NOTCH_SEAM_OVERLAP,
+  },
+  /** Tooltip above anchor: notch hangs under the card — cover join at bottom edge. */
+  tooltipNotchSeamNotchBelow: {
+    bottom: -TOOLTIP_NOTCH_SEAM_OVERLAP,
+  },
+  tooltipNotchSeamBar: {
+    height: TOOLTIP_NOTCH_SEAM_HEIGHT,
+    backgroundColor: colors.pink,
   },
 });
