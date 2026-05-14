@@ -49,7 +49,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
   );
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -120,7 +120,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
           return fields.every(f => (valueByFieldId[f.id] ?? '') !== '');
         })();
 
-  const inputDisabled = isCorrect != null || isLoading;
+  const inputDisabled = isCorrect != null;
 
   const middleBlock = slide.variants[0].numberAnswerMiddleBlock;
   const middleSpacing = middleBlock?.spacing;
@@ -312,7 +312,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
 
         <View style={styles.bottom}>
           <Button
-            disabled={isLoading || isCorrect != null || !allFieldsAnswered}
+            disabled={isCorrect != null || !allFieldsAnswered}
             title={t('check')}
             onPress={answer}
           />
@@ -328,9 +328,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation

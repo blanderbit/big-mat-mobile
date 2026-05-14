@@ -18,8 +18,8 @@ type Props = {
   content: string; // HTML string;
   onPressNext: () => void;
   onClose: () => void;
-  disabled: boolean;
-  isLoading: boolean;
+  disabled?: boolean;
+  isLoading?: boolean;
   buttonText: string;
 };
 
@@ -28,8 +28,8 @@ export const AnswerResult = ({
   content,
   onPressNext,
   onClose,
-  disabled,
-  isLoading,
+  disabled = false,
+  isLoading = false,
   buttonText,
 }: Props) => {
   const windowWidth = Dimensions.get('window').width;

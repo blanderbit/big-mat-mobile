@@ -297,7 +297,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
   >({});
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -356,9 +356,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation

@@ -78,7 +78,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
   const [rightColOffset, setRightColOffset] = useState({ x: 0, y: 0 });
   const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -359,7 +359,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
       </View>
 
       <Button
-        disabled={!allMatched || isCorrect != null || isLoading}
+        disabled={!allMatched || isCorrect != null}
         title={t('check')}
         onPress={answer}
       />
@@ -367,9 +367,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation

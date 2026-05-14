@@ -58,7 +58,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
     } as const;
   };
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -231,7 +231,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
       ) : null}
 
       <Button
-        disabled={chosenOptionId == null || isCorrect != null || isLoading}
+        disabled={chosenOptionId == null || isCorrect != null}
         title={t('check')}
         onPress={answer}
       />
@@ -239,9 +239,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation

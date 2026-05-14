@@ -36,7 +36,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
         )
       : 80;
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -127,7 +127,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
       </View>
 
       <Button
-        disabled={!chosenOptionsIds.length || isCorrect != null || isLoading}
+        disabled={!chosenOptionsIds.length || isCorrect != null}
         title={t('check')}
         onPress={answer}
       />
@@ -135,9 +135,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation

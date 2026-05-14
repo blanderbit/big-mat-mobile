@@ -18,7 +18,7 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
   const { bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect: true,
     lessonId,
     slideId: slide.id,
@@ -29,8 +29,6 @@ export const StoryComics = ({ slide, lessonId }: Props) => {
       <Blocks blocks={slide.variants[0].blocks ?? []} />
 
       <Button
-        disabled={isLoading}
-        isLoading={isLoading}
         marginBottom={bottom}
         title={slide.variants[0].buttonText ?? t('next')}
         onPress={handleGoToNextSlide}

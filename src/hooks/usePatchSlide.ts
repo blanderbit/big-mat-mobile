@@ -15,23 +15,19 @@ export const usePatchSlide = ({
   setIsCorrect?: (isCorrect: null) => void;
 }) => {
   const [triesCount, setTriesCount] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const slides = useLessonsStore(state => state.slides);
 
-  const handleGoToNextSlide = async () => {
+  const handleGoToNextSlide = () => {
     if (isCorrect) {
-      setIsLoading(true);
-
-      await API.patch(`/v1/progress/routes/${lessonId}`, {
+      void API.patch(`/v1/progress/routes/${lessonId}`, {
         lastSlideOrder: slides[slides.length - 2].order,
         attempt: {
           slideId: slideId,
           isCorrect: true,
           optionsCount: triesCount,
         },
-      });
-      setIsLoading(false);
+      }).catch(() => {});
       goToNextSlide();
     } else {
       setTriesCount(prev => prev + 1);
@@ -41,6 +37,5 @@ export const usePatchSlide = ({
 
   return {
     handleGoToNextSlide,
-    isLoading,
   };
 };

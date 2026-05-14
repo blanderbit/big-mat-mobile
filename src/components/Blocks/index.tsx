@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Animated,
+  Easing,
+  Image,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import FastImage from 'react-native-fast-image';
 import { SvgUri } from 'react-native-svg';
@@ -50,6 +57,83 @@ const TITLE_LEVEL_SIZE: Record<NonNullable<TitleBlock['level']>, number> = {
 
 const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
+
+/** Remote raster image: avoid height "100%" in ScrollView; optional explicit size from CMS. */
+const BlockRasterImage = ({
+  explicitHeight,
+  explicitWidth,
+  uri,
+}: {
+  uri: string;
+  explicitWidth?: number;
+  explicitHeight?: number;
+}) => {
+  const [naturalAspectRatio, setNaturalAspectRatio] = useState<
+    number | undefined
+  >();
+
+  useEffect(() => {
+    if (explicitWidth != null && explicitHeight != null) return;
+    Image.getSize(
+      uri,
+      (iw, ih) => {
+        if (iw > 0 && ih > 0) setNaturalAspectRatio(iw / ih);
+      },
+      () => {},
+    );
+  }, [uri, explicitWidth, explicitHeight]);
+
+  if (explicitWidth != null && explicitHeight != null) {
+    return (
+      <FastImage
+        resizeMode="cover"
+        source={{ uri }}
+        style={{ width: explicitWidth, height: explicitHeight }}
+      />
+    );
+  }
+
+  if (explicitWidth != null && naturalAspectRatio != null) {
+    return (
+      <FastImage
+        resizeMode="cover"
+        source={{ uri }}
+        style={{
+          width: explicitWidth,
+          height: Math.round(explicitWidth / naturalAspectRatio),
+        }}
+      />
+    );
+  }
+
+  if (explicitHeight != null && naturalAspectRatio != null) {
+    return (
+      <FastImage
+        resizeMode="cover"
+        source={{ uri }}
+        style={{
+          width: Math.round(explicitHeight * naturalAspectRatio),
+          height: explicitHeight,
+        }}
+      />
+    );
+  }
+
+  return (
+    <FastImage
+      resizeMode="cover"
+      source={{ uri }}
+      style={[
+        styles.blockRasterFullWidth,
+        naturalAspectRatio != null
+          ? { aspectRatio: naturalAspectRatio }
+          : null,
+      ]}
+    />
+  );
+};
+
+const DEFAULT_SVG_BLOCK_HEIGHT = 240;
 
 type Props = {
   blocks: Array<Block | GapPickBlock>;
@@ -168,18 +252,25 @@ export const Blocks = ({
 
     const uri = imageData.imageUrl ?? '';
     const isSvg = /\.svg(\?.*)?$/i.test(uri);
-    const width = imageData.width ?? '100%';
-    const height = imageData.height ?? '100%';
+    const explicitW = imageData.width;
+    const explicitH = imageData.height;
+    const svgWidth = explicitW ?? '100%';
+    const svgHeight =
+      explicitH ??
+      (typeof explicitW === 'number' ? explicitW : DEFAULT_SVG_BLOCK_HEIGHT);
 
     return (
-      <View style={[imageRowAlignStyle, getSpacingStyle(imageData.spacing)]}>
+      <View
+        pointerEvents="none"
+        style={[imageRowAlignStyle, getSpacingStyle(imageData.spacing)]}
+      >
         {isSvg ? (
-          <SvgUri height={height} uri={uri} width={width} />
+          <SvgUri height={svgHeight} uri={uri} width={svgWidth} />
         ) : (
-          <FastImage
-            resizeMode="cover"
-            source={{ uri }}
-            style={{ width, height }}
+          <BlockRasterImage
+            explicitHeight={explicitH}
+            explicitWidth={explicitW}
+            uri={uri}
           />
         )}
       </View>
@@ -351,6 +442,9 @@ export const Blocks = ({
 };
 
 const styles = StyleSheet.create({
+  blockRasterFullWidth: {
+    width: '100%',
+  },
   imageRowAlignStart: {
     alignItems: 'flex-start',
   },

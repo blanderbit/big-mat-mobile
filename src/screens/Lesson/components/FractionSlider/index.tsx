@@ -39,7 +39,7 @@ export const FractionSlider = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide, isLoading } = usePatchSlide({
+  const { handleGoToNextSlide } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -193,9 +193,7 @@ export const FractionSlider = ({
       {isCorrect != null && (
         <AnswerResult
           buttonText={slide.variants[0].buttonText || ''}
-          disabled={isLoading}
           isCorrect={isCorrect}
-          isLoading={isLoading}
           content={
             isCorrect
               ? slide.variants[0].explanation
