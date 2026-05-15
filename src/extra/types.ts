@@ -260,6 +260,9 @@ export type SlideVariantsByType = {
     questionText: string; // HTML string;
     wrongExplanation: string; // HTML string;
     buttonText?: string;
+    blocks?: Block[];
+    questionImageStyle?: { width?: number; height?: number; radius?: number };
+    questionImageSpacing?: Spacing;
   };
   [SlideType.FRACTION_INPUT]: {
     blocks?: Block[];

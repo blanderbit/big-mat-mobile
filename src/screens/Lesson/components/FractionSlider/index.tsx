@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useTranslation } from 'react-i18next';
+import FastImage from 'react-native-fast-image';
 
 import { AnswerResult } from '@components/AnswerResult';
+import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
-import { FullWidthFastImage } from '@components/FullWidthFastImage';
-import { SlideQuestion } from '@components/Question';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
@@ -18,10 +18,44 @@ import { usePatchSlide } from '@hooks/usePatchSlide';
 import SliderToggler from '@assets/images/sliderToggler.svg';
 import transparent48x48 from '@assets/images/transparent48x48.png';
 
+const LABEL_WIDTH = 56;
+const TOGGLER_SIZE = 48;
+
 type Props = {
   slide: Slide<SlideType.FRACTION_SLIDER>;
   setScrollEnabled?: (enabled: boolean) => void;
   lessonId: string;
+};
+
+const getQuestionImageStyle = (
+  imageStyle:
+    | Slide<SlideType.FRACTION_SLIDER>['variants'][0]['questionImageStyle']
+    | undefined,
+) => {
+  if (!imageStyle) return undefined;
+  return {
+    ...(imageStyle.width != null ? { width: imageStyle.width } : {}),
+    ...(imageStyle.height != null ? { height: imageStyle.height } : {}),
+    ...(imageStyle.radius != null ? { borderRadius: imageStyle.radius } : {}),
+  };
+};
+
+const getSpacingStyle = (
+  spacing:
+    | Slide<SlideType.FRACTION_SLIDER>['variants'][0]['questionImageSpacing']
+    | undefined,
+) => {
+  if (!spacing) return null;
+  return {
+    marginTop: spacing.margin?.top,
+    marginRight: spacing.margin?.right,
+    marginBottom: spacing.margin?.bottom,
+    marginLeft: spacing.margin?.left,
+    paddingTop: spacing.padding?.top,
+    paddingRight: spacing.padding?.right,
+    paddingBottom: spacing.padding?.bottom,
+    paddingLeft: spacing.padding?.left,
+  } as const;
 };
 
 export const FractionSlider = ({
@@ -29,7 +63,6 @@ export const FractionSlider = ({
   slide,
   lessonId,
 }: Props) => {
-  console.log('FractionSlider', slide);
   // TODO: finish after API is ready
   const options = slide.variants[0].options;
   const maxIndex = Math.max(0, options.length - 1);
@@ -61,7 +94,6 @@ export const FractionSlider = ({
   };
 
   const progress = maxIndex === 0 ? 0 : index / maxIndex;
-  const TOGGLER_SIZE = 48;
   const TRACK_HEIGHT = 16;
   const togglerLeft =
     sliderWidth > 0
@@ -98,10 +130,24 @@ export const FractionSlider = ({
 
   return (
     <Wrapper>
-      <SlideQuestion content={slide.variants[0].questionText} />
+      <Blocks blocks={slide.variants[0].blocks ?? []} />
 
       {slide.variants[0].questionImageUrl && (
-        <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />
+        <View
+          style={[
+            styles.questionImageWrap,
+            getSpacingStyle(slide.variants[0].questionImageSpacing),
+          ]}
+        >
+          <FastImage
+            resizeMode={FastImage.resizeMode.contain}
+            source={{ uri: slide.variants[0].questionImageUrl }}
+            style={[
+              styles.questionImage,
+              getQuestionImageStyle(slide.variants[0].questionImageStyle),
+            ]}
+          />
+        </View>
       )}
 
       <View pointerEvents="none" style={styles.labelsRow}>
@@ -115,24 +161,42 @@ export const FractionSlider = ({
             const color = isActive ? colors.black : colors.darkGrey;
 
             return (
-              <View key={opt.id} style={[styles.label, { left: center }]}>
+              <View
+                key={opt.id}
+                style={[styles.label, { left: center - LABEL_WIDTH / 2 }]}
+              >
                 {parsedLabel.length === 2 ? (
-                  <>
-                    <Text bold={isActive} center color={color} size={22}>
+                  <View style={styles.labelColumn}>
+                    <Text
+                      center
+                      bold={isActive}
+                      color={color}
+                      size={22}
+                      style={styles.labelText}
+                    >
                       {parsedLabel[0]}
                     </Text>
                     <View
-                      style={[
-                        styles.labelDivider,
-                        { borderBottomColor: color },
-                      ]}
+                      style={[styles.labelDivider, { backgroundColor: color }]}
                     />
-                    <Text bold={isActive} center color={color} size={22}>
+                    <Text
+                      center
+                      bold={isActive}
+                      color={color}
+                      size={22}
+                      style={styles.labelText}
+                    >
                       {parsedLabel[1]}
                     </Text>
-                  </>
+                  </View>
                 ) : (
-                  <Text bold={isActive} center color={color} size={22}>
+                  <Text
+                    center
+                    bold={isActive}
+                    color={color}
+                    size={22}
+                    style={styles.labelText}
+                  >
                     {opt.label}
                   </Text>
                 )}
@@ -208,6 +272,14 @@ export const FractionSlider = ({
 };
 
 const styles = StyleSheet.create({
+  questionImageWrap: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  questionImage: {
+    width: '100%',
+    maxWidth: '100%',
+  },
   labelsRow: {
     position: 'relative',
     width: '100%',
@@ -217,9 +289,17 @@ const styles = StyleSheet.create({
   label: {
     position: 'absolute',
     top: 0,
-    width: 56,
-    marginLeft: -28,
+    width: LABEL_WIDTH,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  labelColumn: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  labelText: {
+    width: '100%',
+    textAlign: 'center',
   },
   slider: {
     width: '100%',
@@ -245,7 +325,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   labelDivider: {
-    borderBottomWidth: 2,
+    width: 28,
+    height: 2,
+    marginVertical: 2,
+    borderRadius: 1,
   },
   toggler: {
     position: 'absolute',

@@ -7,10 +7,12 @@ import { AnswerVariant } from '@components/AnswerVariant';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Text } from '@components/Text';
+import { WebView } from '@components/WebView';
 import { Wrapper } from '@components/Wrapper';
 
 import { DEFAULT_SPACE } from '@extra/constants';
 import { getUkrLetterByIndex } from '@extra/getUkrLetterByIndex';
+import { isHtmlString } from '@extra/isHtmlString';
 import { Slide, SlideType } from '@extra/types';
 import { usePatchSlide } from '@hooks/usePatchSlide';
 
@@ -59,6 +61,29 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
     });
   };
 
+  const renderOptionLabel = (label: string, center?: boolean) => {
+    if (isHtmlString(label)) {
+      const html = center
+        ? `<div style="text-align:center;width:100%">${label}</div>`
+        : label;
+      return (
+        <View
+          style={
+            center ? styles.optionLabelWebViewCenter : styles.optionLabelWebView
+          }
+        >
+          <WebView embedded html={html} />
+        </View>
+      );
+    }
+
+    return (
+      <Text center={center} size={14}>
+        {label}
+      </Text>
+    );
+  };
+
   const answer = () => {
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = chosenOptionsIds;
@@ -98,7 +123,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
             <View style={styles.optionHeader}>
               <AnswerVariant index={index} />
 
-              <Text size={14}>{option.label}</Text>
+              {renderOptionLabel(option.label)}
             </View>
 
             {option.imageUrl && <FullWidthFastImage uri={option.imageUrl} />}
@@ -162,6 +187,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  optionLabelWebView: {
+    flex: 1,
+    minWidth: 0,
+  },
+  optionLabelWebViewCenter: {
+    width: '100%',
+    alignSelf: 'stretch',
   },
   optionsGridItem: {
     flexGrow: 0,

@@ -1,9 +1,11 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   DimensionValue,
+  LayoutChangeEvent,
   Pressable as RNPressable,
   StyleSheet,
   View,
+  ViewStyle,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -11,6 +13,11 @@ import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Text } from '@components/Text';
 
 import { colors } from '@extra/colors';
+import { DEFAULT_SPACE } from '@extra/constants';
+
+const DEFAULT_HEIGHT = 60;
+/** ~line height for title `size={22}` — content taller ⇒ multiline. */
+const SINGLE_LINE_CONTENT_HEIGHT = 30;
 
 type Props = {
   title?: string;
@@ -41,25 +48,49 @@ export const Button = ({
   children,
   width,
 }: Props) => {
-  const DEFAULT_HEIGHT = 60;
+  const [isMultiline, setIsMultiline] = useState(false);
   const radius = borderRadius ?? 40;
   const isGray = disabled;
+  const isFixedSizeButton = size != null;
+
+  const handleContentLayout = (event: LayoutChangeEvent) => {
+    if (isFixedSizeButton) return;
+    const { height } = event.nativeEvent.layout;
+    const next = height > SINGLE_LINE_CONTENT_HEIGHT;
+    setIsMultiline(prev => (prev === next ? prev : next));
+  };
+
+  const usesContentHeight = !isFixedSizeButton && isMultiline;
+
+  let clipLayoutStyle: ViewStyle;
+  if (isFixedSizeButton) {
+    clipLayoutStyle = { height: size, width: '100%' };
+  } else if (usesContentHeight) {
+    clipLayoutStyle = {
+      minHeight: DEFAULT_HEIGHT,
+      paddingVertical: DEFAULT_SPACE,
+      paddingHorizontal: DEFAULT_SPACE,
+    };
+  } else {
+    clipLayoutStyle = { height: DEFAULT_HEIGHT };
+  }
+
   const pressableStyle = [
     styles.pressable,
     {
       width: width ?? size ?? '100%',
-      height: size ?? DEFAULT_HEIGHT,
       marginTop,
       marginVertical,
       marginBottom,
     },
+    isFixedSizeButton
+      ? { height: size, width: size }
+      : usesContentHeight
+      ? { minHeight: DEFAULT_HEIGHT }
+      : { height: DEFAULT_HEIGHT },
   ];
 
   const shadowRadiusStyle = { borderRadius: radius };
-  const clipRadiusStyle = {
-    borderRadius: radius,
-    height: size ?? DEFAULT_HEIGHT,
-  };
 
   return (
     <RNPressable disabled={disabled} style={pressableStyle} onPress={onPress}>
@@ -80,7 +111,13 @@ export const Button = ({
               shadowRadiusStyle,
             ]}
           >
-            <View style={[styles.clipWrap, clipRadiusStyle]}>
+            <View
+              style={[
+                styles.clipWrap,
+                { borderRadius: radius },
+                clipLayoutStyle,
+              ]}
+            >
               <LinearGradient
                 colors={isPressed ? pressedBase : base}
                 end={{ x: 0.5, y: 1 }}
@@ -100,12 +137,21 @@ export const Button = ({
 
               {isLoading ? (
                 <ActivityIndicator color={colors.black} size="small" />
-              ) : children ? (
-                children
               ) : (
-                <Text bold size={22}>
-                  {title}
-                </Text>
+                <View
+                  style={styles.contentMeasure}
+                  onLayout={
+                    !isFixedSizeButton ? handleContentLayout : undefined
+                  }
+                >
+                  {children ? (
+                    children
+                  ) : (
+                    <Text bold center size={22} style={styles.title}>
+                      {title}
+                    </Text>
+                  )}
+                </View>
               )}
             </View>
           </View>
@@ -135,7 +181,15 @@ const grayPressedGlossColors = [
 ] satisfies string[];
 
 const styles = StyleSheet.create({
-  pressable: { height: 60 },
+  pressable: {},
+  contentMeasure: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  title: {
+    width: '100%',
+  },
   shadowWrap: {
     alignItems: 'center',
     justifyContent: 'center',

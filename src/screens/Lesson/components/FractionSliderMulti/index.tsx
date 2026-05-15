@@ -49,7 +49,7 @@ const SliderOptionLabel = ({
             {parts[0]}
           </Text>
           <View
-            style={[styles.optionLabelDivider, { borderBottomColor: color }]}
+            style={[styles.optionLabelDivider, { backgroundColor: color }]}
           />
           <Text bold={isActive} center color={color} size={14}>
             {parts[1]}
@@ -422,8 +422,9 @@ const styles = StyleSheet.create({
   },
   optionLabelDivider: {
     width: 14,
-    borderBottomWidth: 1.5,
+    height: 1.5,
     marginVertical: 2,
+    borderRadius: 0.5,
   },
   sliderTrack: {
     position: 'relative',
