@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   WebView as RNWebView,
   WebViewMessageEvent,
@@ -14,6 +20,8 @@ type Props = {
   backgroundColor?: string;
   color?: string;
   borderRadius?: number;
+  /** No extra horizontal padding — for tap_card and other tight layouts. */
+  embedded?: boolean;
 };
 
 const MAX_HEIGHT = 200;
@@ -31,14 +39,41 @@ const WEBVIEW_HEIGHT_BRIDGE_JS = `
       }
     }
   }
+  function measureEmbeddedRoot() {
+    var root = document.getElementById('__rn_embed_root');
+    if (!root) return 0;
+    return Math.ceil(root.getBoundingClientRect().height);
+  }
   function measure() {
     constrainWidth();
     var b = document.body;
     var e = document.documentElement;
-    var h = Math.max(
-      b.scrollHeight, b.offsetHeight,
-      e.clientHeight, e.scrollHeight, e.offsetHeight
-    );
+    if (e) {
+      e.style.height = 'auto';
+      e.style.minHeight = '0';
+    }
+    if (b) {
+      b.style.height = 'auto';
+      b.style.minHeight = '0';
+    }
+    var embeddedRoot = document.getElementById('__rn_embed_root');
+    var h = 0;
+    if (embeddedRoot) {
+      h = measureEmbeddedRoot();
+    } else if (b) {
+      var top = b.getBoundingClientRect().top;
+      var nodes = b.children;
+      var i = 0;
+      for (; i < nodes.length; i++) {
+        var r = nodes[i].getBoundingClientRect();
+        h = Math.max(h, r.bottom - top);
+      }
+      if (h < 1) {
+        var sh = Math.max(b.scrollHeight, b.offsetHeight);
+        var vh = window.innerHeight || 0;
+        h = vh > 0 && sh > vh * 1.15 ? measureEmbeddedRoot() || h : sh;
+      }
+    }
     if (window.ReactNativeWebView && h >= 0) {
       window.ReactNativeWebView.postMessage(String(Math.ceil(h)));
     }
@@ -67,6 +102,38 @@ const WEBVIEW_HEIGHT_BRIDGE_JS = `
 true;
 `;
 
+/** Tap-card: measure once via Range, no MutationObserver (avoids runaway height). */
+const EMBEDDED_WEBVIEW_HEIGHT_JS = `
+(function () {
+  function measure() {
+    var root = document.getElementById('__rn_embed_root');
+    if (!root || !window.ReactNativeWebView) return;
+    var nodes = root.querySelectorAll('*');
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].style.minHeight = '0';
+      nodes[i].style.maxHeight = 'none';
+    }
+    var range = document.createRange();
+    range.selectNodeContents(root);
+    var h = Math.ceil(range.getBoundingClientRect().height);
+    if (h > 0) {
+      window.ReactNativeWebView.postMessage(String(h));
+    }
+  }
+  measure();
+  setTimeout(measure, 50);
+  setTimeout(measure, 150);
+})();
+true;
+`;
+
+const sanitizeEmbeddedHtml = (html: string) =>
+  html
+    .replace(/min-height\s*:\s*100vh/gi, 'min-height:0')
+    .replace(/min-height\s*:\s*100%/gi, 'min-height:0')
+    .replace(/height\s*:\s*100vh/gi, 'height:auto')
+    .replace(/height\s*:\s*100%/gi, 'height:auto');
+
 export const WebView = ({
   html,
   autoHeight = true,
@@ -74,11 +141,18 @@ export const WebView = ({
   borderRadius,
   color,
   containerHeight,
+  embedded = false,
 }: Props) => {
   const webViewRef = useRef<RNWebView | null>(null);
   const [height, setHeight] = useState<number>(MIN_HEIGHT);
   const [isMeasured, setIsMeasured] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setHeight(MIN_HEIGHT);
+    setIsMeasured(false);
+    fadeAnim.setValue(0);
+  }, [embedded, fadeAnim, html]);
 
   useEffect(() => {
     if (!isMeasured) return;
@@ -102,17 +176,33 @@ export const WebView = ({
       ? Math.max(MIN_HEIGHT, containerHeight - paddingV * 2)
       : undefined;
 
+  const bodyMarkup = embedded
+    ? `<div id="__rn_embed_root">${sanitizeEmbeddedHtml(html)}</div>`
+    : html;
+
   const documentHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
 <style>
+ #__rn_embed_root {
+   display: block;
+   width: 100%;
+   min-height: 0 !important;
+   height: auto !important;
+ }
+ #__rn_embed_root * {
+   max-width: 100%;
+ }
+
  html, body {
    margin: 0;
    padding: 0;
    width: 100%;
    max-width: 100%;
+   min-height: 0;
+   height: auto;
    overflow-x: hidden;
    background: ${pageBackground};
    ${hasTextColor ? `color: ${color};` : ''}
@@ -188,12 +278,16 @@ export const WebView = ({
 
 </style>
 </head>
-<body>${html}</body>
+<body>${bodyMarkup}</body>
 </html>`;
 
   const handleMessage = (event: WebViewMessageEvent) => {
     const next = Number.parseFloat(event.nativeEvent.data);
     if (!Number.isFinite(next) || next < MIN_HEIGHT) return;
+    const screenH = Dimensions.get('window').height;
+    if (embedded && screenH > 0 && next > screenH * 0.85) {
+      return;
+    }
     setHeight(prev => (Math.round(prev) === Math.round(next) ? prev : next));
     if (!isMeasured) setIsMeasured(true);
   };
@@ -203,6 +297,7 @@ export const WebView = ({
       <View
         style={[
           styles.wrapper,
+          embedded ? styles.wrapperEmbedded : null,
           borderRadius != null ? { borderRadius } : undefined,
           backgroundColor ? { backgroundColor } : undefined,
           hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
@@ -236,6 +331,7 @@ export const WebView = ({
       pointerEvents="box-none"
       style={[
         styles.wrapper,
+        embedded ? styles.wrapperEmbedded : null,
         borderRadius != null ? { borderRadius } : undefined,
         backgroundColor ? { backgroundColor } : undefined,
         hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
@@ -246,7 +342,9 @@ export const WebView = ({
       <RNWebView
         injectedJavaScriptForMainFrameOnly
         javaScriptEnabled
-        injectedJavaScript={WEBVIEW_HEIGHT_BRIDGE_JS}
+        injectedJavaScript={
+          embedded ? EMBEDDED_WEBVIEW_HEIGHT_JS : WEBVIEW_HEIGHT_BRIDGE_JS
+        }
         nestedScrollEnabled={shouldEnableScroll} // ✅ Android fix
         originWhitelist={['*']}
         ref={webViewRef}
@@ -274,6 +372,9 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'hidden',
     paddingHorizontal: DEFAULT_SPACE,
+  },
+  wrapperEmbedded: {
+    paddingHorizontal: 0,
   },
   webView: {
     width: '100%',

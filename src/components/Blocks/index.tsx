@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Animated,
   Easing,
@@ -25,8 +25,10 @@ import {
   GapPickBlock,
   ImageBlock,
   SliderBlock,
+  TapCardBlock,
   TextBlock,
   TitleBlock,
+  VariantStoryBlock,
 } from '@extra/types';
 
 const getSpacingStyle = (spacing?: {
@@ -134,6 +136,140 @@ const BlockRasterImage = ({
 };
 
 const DEFAULT_SVG_BLOCK_HEIGHT = 240;
+
+const TAP_CARD_FLIP_DURATION_MS = 380;
+
+type TapCardRenderOpts = { embedded: true };
+
+const TapCard = ({
+  renderSide,
+  tapCardData,
+}: {
+  tapCardData: TapCardBlock;
+  renderSide: (
+    block: VariantStoryBlock,
+    opts: TapCardRenderOpts,
+  ) => ReactNode;
+}) => {
+  const hasFront = tapCardData.frontside != null;
+  const hasBack = tapCardData.backside != null;
+  const canFlip = hasFront && hasBack;
+  const singleSide = tapCardData.frontside ?? tapCardData.backside;
+  const embeddedOpts: TapCardRenderOpts = { embedded: true };
+
+  const [isBackVisible, setIsBackVisible] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
+  const flipAnim = useRef(new Animated.Value(0)).current;
+  const skipFlipAnimationRef = useRef(true);
+
+  const mountFront = !isBackVisible || isFlipping;
+  const mountBack = isBackVisible || isFlipping;
+  const bothMounted = mountFront && mountBack;
+  const mountFrontContent = !isBackVisible || isFlipping;
+  const mountBackContent = isBackVisible && !isFlipping;
+
+  useEffect(() => {
+    if (!canFlip) return;
+
+    if (skipFlipAnimationRef.current) {
+      skipFlipAnimationRef.current = false;
+      return;
+    }
+
+    Animated.timing(flipAnim, {
+      toValue: isBackVisible ? 1 : 0,
+      duration: TAP_CARD_FLIP_DURATION_MS,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setIsFlipping(false);
+    });
+  }, [canFlip, flipAnim, isBackVisible]);
+
+  const handlePress = () => {
+    if (!canFlip || isFlipping) return;
+    setIsFlipping(true);
+    setIsBackVisible(prev => !prev);
+  };
+
+  const frontRotateY = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  const backRotateY = flipAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['180deg', '360deg'],
+  });
+
+  if (!canFlip) {
+    return (
+      <View style={[styles.tapCard, getSpacingStyle(tapCardData.spacing)]}>
+        <View style={styles.tapCardBody}>
+          {singleSide != null ? renderSide(singleSide, embeddedOpts) : null}
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      disabled={isFlipping}
+      style={({ pressed }) => [
+        styles.tapCardPressable,
+        getSpacingStyle(tapCardData.spacing),
+        pressed && !isFlipping ? styles.tapCardPressed : null,
+      ]}
+      onPress={handlePress}
+    >
+      <View style={styles.tapCardFlipShell}>
+        <View style={styles.tapCardFlipPerspective}>
+          {mountFront && tapCardData.frontside != null ? (
+            <Animated.View
+              pointerEvents={isBackVisible && !isFlipping ? 'none' : 'auto'}
+              style={[
+                styles.tapCard,
+                styles.tapCardFace,
+                bothMounted ? styles.tapCardFaceOverlay : null,
+                {
+                  transform: [{ rotateY: frontRotateY }],
+                  backfaceVisibility: 'hidden',
+                },
+              ]}
+            >
+              <View style={styles.tapCardBody}>
+                {mountFrontContent
+                  ? renderSide(tapCardData.frontside, embeddedOpts)
+                  : null}
+              </View>
+            </Animated.View>
+          ) : null}
+
+          {mountBack && tapCardData.backside != null ? (
+            <Animated.View
+              pointerEvents={!isBackVisible && !isFlipping ? 'none' : 'auto'}
+              style={[
+                styles.tapCard,
+                styles.tapCardFace,
+                bothMounted ? styles.tapCardFaceOverlay : null,
+                {
+                  transform: [{ rotateY: backRotateY }],
+                  backfaceVisibility: 'hidden',
+                },
+              ]}
+            >
+              <View style={styles.tapCardBody}>
+                {mountBackContent
+                  ? renderSide(tapCardData.backside, embeddedOpts)
+                  : null}
+              </View>
+            </Animated.View>
+          ) : null}
+        </View>
+      </View>
+    </Pressable>
+  );
+};
 
 type Props = {
   blocks: Array<Block | GapPickBlock>;
@@ -277,9 +413,19 @@ export const Blocks = ({
     );
   };
 
-  const renderText = (textData: TextBlock, containerHeight?: number) => (
+  type BlockRenderOpts = { embedded?: boolean };
+
+  const renderText = (
+    textData: TextBlock,
+    containerHeight?: number,
+    opts?: BlockRenderOpts,
+  ) => (
     <View style={getSpacingStyle(textData.spacing)}>
-      <WebView containerHeight={containerHeight} html={textData.content} />
+      <WebView
+        containerHeight={containerHeight}
+        embedded={opts?.embedded}
+        html={textData.content}
+      />
     </View>
   );
 
@@ -299,11 +445,13 @@ export const Blocks = ({
   const renderDescriptionText = (
     descriptionTextData: DescriptionTextBlock,
     containerHeight?: number,
+    opts?: BlockRenderOpts,
   ) => (
     <View style={getSpacingStyle(descriptionTextData.spacing)}>
       <WebView
         color={descriptionTextData.color}
         containerHeight={containerHeight}
+        embedded={opts?.embedded}
         html={descriptionTextData.content}
       />
     </View>
@@ -312,12 +460,14 @@ export const Blocks = ({
   const renderDescriptionTextBox = (
     descriptionTextBoxData: DescriptionTextBoxBlock,
     containerHeight?: number,
+    opts?: BlockRenderOpts,
   ) => (
     <View style={getSpacingStyle(descriptionTextBoxData.spacing)}>
       <WebView
         backgroundColor={descriptionTextBoxData.background}
         borderRadius={descriptionTextBoxData.borderRadius}
         containerHeight={containerHeight}
+        embedded={opts?.embedded}
         html={descriptionTextBoxData.content}
       />
     </View>
@@ -356,6 +506,83 @@ export const Blocks = ({
     );
   };
 
+  const renderVariantStoryBlock = (block: VariantStoryBlock) => {
+    switch (block.type) {
+      case 'image':
+        return renderImage(block);
+      case 'text':
+        return renderText(block);
+      case 'title':
+        return renderTitle(block);
+      case 'description_text':
+        return renderDescriptionText(block);
+      case 'description_text_box':
+        return renderDescriptionTextBox(block);
+      case 'container':
+        return renderContainer(block);
+      default:
+        return null;
+    }
+  };
+
+  const renderTapCardContainer = (
+    containerData: ContainerBlock,
+    opts: TapCardRenderOpts,
+  ) => {
+    const serverPadding = containerData.spacing?.padding;
+
+    return (
+      <View
+        style={[
+          styles.tapCardContainerShell,
+          {
+            paddingTop: serverPadding?.top,
+            paddingRight: serverPadding?.right,
+            paddingBottom: serverPadding?.bottom,
+            paddingLeft: serverPadding?.left,
+            backgroundColor: containerData.background,
+            borderRadius: containerData.borderRadius,
+          },
+        ]}
+      >
+        {(containerData.blocks ?? []).map((child, index) => (
+          <View key={index}>
+            {renderTapCardSide(child as VariantStoryBlock, opts)}
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderTapCardSide = (
+    block: VariantStoryBlock,
+    opts: TapCardRenderOpts,
+  ) => {
+    switch (block.type) {
+      case 'image':
+        return renderImage(block);
+      case 'text':
+        return renderText(block, undefined, opts);
+      case 'title':
+        return renderTitle(block);
+      case 'description_text':
+        return renderDescriptionText(block, undefined, opts);
+      case 'description_text_box':
+        return renderDescriptionTextBox(block, undefined, opts);
+      case 'container':
+        return renderTapCardContainer(block, opts);
+      default:
+        if ('imageUrl' in block) {
+          return renderImage(block as ImageBlock);
+        }
+        return null;
+    }
+  };
+
+  const renderTapCard = (tapCardData: TapCardBlock) => (
+    <TapCard renderSide={renderTapCardSide} tapCardData={tapCardData} />
+  );
+
   const renderSlider = (sliderData: SliderBlock) => {
     return (
       <View style={getSpacingStyle(sliderData.spacing)}>
@@ -381,6 +608,8 @@ export const Blocks = ({
                 );
               case 'container':
                 return renderContainer(slide as ContainerBlock);
+              case 'tap_card':
+                return renderTapCard(slide as TapCardBlock);
               default:
                 return null;
             }
@@ -431,6 +660,8 @@ export const Blocks = ({
             return renderSlider(block as SliderBlock);
           case 'container':
             return renderContainer(block as ContainerBlock);
+          case 'tap_card':
+            return renderTapCard(block as TapCardBlock);
         }
       };
 
@@ -456,6 +687,44 @@ const styles = StyleSheet.create({
   },
   containerBlockShell: {
     gap: DEFAULT_SPACE,
+  },
+  tapCardPressable: {
+    width: '100%',
+  },
+  tapCard: {
+    borderWidth: 2,
+    borderColor: colors.black,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: colors.white,
+    padding: DEFAULT_SPACE,
+  },
+  tapCardFlipShell: {
+    width: '100%',
+    alignSelf: 'flex-start',
+  },
+  tapCardContainerShell: {
+    width: '100%',
+    gap: DEFAULT_SPACE,
+  },
+  tapCardBody: {
+    width: '100%',
+  },
+  tapCardFlipPerspective: {
+    width: '100%',
+    transform: [{ perspective: 1200 }],
+  },
+  tapCardFace: {
+    width: '100%',
+  },
+  tapCardFaceOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  tapCardPressed: {
+    opacity: 0.92,
   },
   gapPickWrap: {
     marginTop: DEFAULT_SPACE,

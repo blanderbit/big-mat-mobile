@@ -158,6 +158,23 @@ export type ContainerBlock = {
   spacing?: Spacing;
 };
 
+/** Single content block used on story variant sides (e.g. tap_card front/back). */
+export type VariantStoryBlock =
+  | ImageBlock
+  | TextBlock
+  | TitleBlock
+  | DescriptionTextBlock
+  | DescriptionTextBoxBlock
+  | ContainerBlock;
+
+export type TapCardBlock = {
+  type: 'tap_card';
+  frontside?: VariantStoryBlock;
+  backside?: VariantStoryBlock;
+  spacing?: Spacing;
+  position?: number;
+};
+
 export type Block =
   | ImageBlock
   | TextBlock
@@ -165,7 +182,8 @@ export type Block =
   | DescriptionTextBlock
   | DescriptionTextBoxBlock
   | SliderBlock
-  | ContainerBlock;
+  | ContainerBlock
+  | TapCardBlock;
 
 export type GapPickBlock = {
   correctOptionId: string;
