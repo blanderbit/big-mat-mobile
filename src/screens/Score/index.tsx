@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -17,9 +18,9 @@ import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackNavigationProp } from '@navigation/extra/types';
 
+import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
-import { useUserStore } from '@stores/userStore';
 
 import background4 from '@assets/images/background4.png';
 import Background11 from '@assets/images/background11.svg';
@@ -28,12 +29,25 @@ import Background33 from '@assets/images/background33.svg';
 const MAX_SCORE_FONT = 116;
 
 export const Score = () => {
-  const totalScore = useUserStore(s => s.totalScore);
   const { width: screenWidth } = useWindowDimensions();
   const maxTextWidth = screenWidth - DEFAULT_SPACE * 2;
   const { t } = useTranslation();
   const { width: windowWidth } = Dimensions.get('window');
   const { navigate } = useNavigation<HomeStackNavigationProp>();
+  const [globalScore, setGlobalScore] = useState(0);
+
+  useEffect(() => {
+    const getGlobalScore = async () => {
+      const response = await API.get('/v1/content/topics/progress');
+      const { completedTopics, totalTopics } = response.data.data.summary;
+      const percent =
+        totalTopics > 0
+          ? Math.min(100, Math.max(0, (completedTopics / totalTopics) * 100))
+          : 0;
+      setGlobalScore(Math.round(percent));
+    };
+    getGlobalScore();
+  }, []);
 
   const handleShare = () => {};
 
@@ -55,7 +69,7 @@ export const Score = () => {
           numberOfLines={1}
           size={MAX_SCORE_FONT}
         >
-          {totalScore}
+          {globalScore}
         </Text>
       </View>
 
@@ -75,10 +89,10 @@ export const Score = () => {
           marginBottom={DEFAULT_SPACE * 2}
           size={26}
         >
-          {t('topicTitle.middle')}
+          {globalScore === 0 ? t('topicTitle.empty') : t('topicTitle.middle')}
         </Text>
 
-        <RoundSlider fillColor={colors.brightPurple} value={50} />
+        <RoundSlider fillColor={colors.brightPurple} value={globalScore} />
 
         <View style={styles.shareShadowWrap}>
           <Pressable

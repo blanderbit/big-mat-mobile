@@ -67,10 +67,28 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
     setIsCorrect,
   });
 
+  const isOptionsGrid = optionsLayout === 'grid';
+
   const gridItemWidth =
     optionsGridWidth > 0
       ? Math.floor((optionsGridWidth - DEFAULT_SPACE) / 2)
       : undefined;
+
+  const gridItemStyle =
+    isOptionsGrid && gridItemWidth != null
+      ? [styles.optionsGridItem, { width: gridItemWidth }]
+      : isOptionsGrid
+      ? [styles.optionsGridItem, styles.optionsGridItemFallback]
+      : undefined;
+
+  const optionsContainerStyle = isOptionsGrid
+    ? styles.optionsGrid
+    : styles.optionsList;
+
+  const onOptionsContainerLayout = isOptionsGrid
+    ? (e: { nativeEvent: { layout: { width: number } } }) =>
+        setOptionsGridWidth(e.nativeEvent.layout.width)
+    : undefined;
 
   const chooseOption = (
     optionId: Slide<SlideType.SINGLE_CHOICE>['variants'][0]['options'][number]['id'],
@@ -119,7 +137,12 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
       ) : null}
 
       {cardDesign === 'block_as_button' ? (
-        <View style={styles.blockAsButtonList}>
+        <View
+          style={
+            isOptionsGrid ? styles.blockAsButtonGrid : styles.blockAsButtonList
+          }
+          onLayout={onOptionsContainerLayout}
+        >
           {slide.variants[0].options.map(option => {
             const isChosen = chosenOptionId === option.id;
             return (
@@ -130,6 +153,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
                   styles.blockAsButtonItem,
                   { backgroundColor: optionBlockBackground },
                   isChosen ? styles.blockAsButtonItemChosen : null,
+                  gridItemStyle,
                 ]}
                 onPress={() => chooseOption(option.id)}
               >
@@ -200,24 +224,11 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
         </View>
       ) : (
         <View
-          style={
-            optionsLayout === 'grid' ? styles.optionsGrid : styles.optionsList
-          }
-          onLayout={
-            optionsLayout === 'grid'
-              ? e => setOptionsGridWidth(e.nativeEvent.layout.width)
-              : undefined
-          }
+          style={optionsContainerStyle}
+          onLayout={onOptionsContainerLayout}
         >
           {slide.variants[0].options.map((option, index) => (
-            <View
-              key={option.id}
-              style={
-                optionsLayout === 'grid' && gridItemWidth != null
-                  ? [styles.optionsGridItem, { width: gridItemWidth }]
-                  : undefined
-              }
-            >
+            <View key={option.id} style={gridItemStyle}>
               <View style={styles.optionHeader}>
                 <AnswerVariant index={index} />
 
@@ -233,18 +244,23 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
       {cardDesign !== 'image_and_button_combined' &&
       cardDesign !== 'block_as_button' ? (
         <View
-          style={styles.buttonsRow}
-          onLayout={e => setButtonsRowWidth(e.nativeEvent.layout.width)}
+          style={isOptionsGrid ? styles.buttonsGrid : styles.buttonsRow}
+          onLayout={
+            isOptionsGrid
+              ? undefined
+              : e => setButtonsRowWidth(e.nativeEvent.layout.width)
+          }
         >
           {slide.variants[0].options.map((option, index) => (
-            <Button
-              disabled={isCorrect != null}
-              key={option.id}
-              pressed={chosenOptionId === option.id}
-              title={getUkrLetterByIndex(index)}
-              width={optionButtonSize}
-              onPress={() => chooseOption(option.id)}
-            />
+            <View key={option.id} style={isOptionsGrid ? gridItemStyle : undefined}>
+              <Button
+                disabled={isCorrect != null}
+                pressed={chosenOptionId === option.id}
+                title={getUkrLetterByIndex(index)}
+                width={isOptionsGrid ? '100%' : optionButtonSize}
+                onPress={() => chooseOption(option.id)}
+              />
+            </View>
           ))}
         </View>
       ) : null}
@@ -286,6 +302,12 @@ const styles = StyleSheet.create({
   blockAsButtonList: {
     gap: DEFAULT_SPACE,
   },
+  blockAsButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: DEFAULT_SPACE,
+  },
   imageTopButtonsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -312,7 +334,11 @@ const styles = StyleSheet.create({
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: DEFAULT_SPACE,
+  },
+  optionsGridItemFallback: {
+    width: '47%',
   },
   optionHeader: {
     flexDirection: 'row',
@@ -335,5 +361,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: DEFAULT_SPACE,
     justifyContent: 'space-between',
+  },
+  buttonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: DEFAULT_SPACE,
   },
 });
