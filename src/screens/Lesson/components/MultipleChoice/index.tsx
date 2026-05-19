@@ -6,6 +6,7 @@ import { AnswerResult } from '@components/AnswerResult';
 import { AnswerVariant } from '@components/AnswerVariant';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { SizedFastImage } from '@components/SizedFastImage';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 import { Wrapper } from '@components/Wrapper';
@@ -126,7 +127,14 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
               {renderOptionLabel(option.label)}
             </View>
 
-            {option.imageUrl && <FullWidthFastImage uri={option.imageUrl} />}
+            {option.imageUrl ? (
+              <SizedFastImage
+                borderRadius={option.imageStyle?.radius}
+                height={option.imageStyle?.height}
+                uri={option.imageUrl}
+                width={option.imageStyle?.width}
+              />
+            ) : null}
           </View>
         ))}
       </View>

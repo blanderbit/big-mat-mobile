@@ -1,8 +1,15 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   Animated,
   Easing,
   Image,
+  LayoutChangeEvent,
   Pressable,
   StyleSheet,
   View,
@@ -127,9 +134,7 @@ const BlockRasterImage = ({
       source={{ uri }}
       style={[
         styles.blockRasterFullWidth,
-        naturalAspectRatio != null
-          ? { aspectRatio: naturalAspectRatio }
-          : null,
+        naturalAspectRatio != null ? { aspectRatio: naturalAspectRatio } : null,
       ]}
     />
   );
@@ -146,10 +151,7 @@ const TapCard = ({
   tapCardData,
 }: {
   tapCardData: TapCardBlock;
-  renderSide: (
-    block: VariantStoryBlock,
-    opts: TapCardRenderOpts,
-  ) => ReactNode;
+  renderSide: (block: VariantStoryBlock, opts: TapCardRenderOpts) => ReactNode;
 }) => {
   const hasFront = tapCardData.frontside != null;
   const hasBack = tapCardData.backside != null;
@@ -159,14 +161,24 @@ const TapCard = ({
 
   const [isBackVisible, setIsBackVisible] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
+  const [flipShellHeight, setFlipShellHeight] = useState(0);
+  const [baselineHeight, setBaselineHeight] = useState(0);
   const flipAnim = useRef(new Animated.Value(0)).current;
   const skipFlipAnimationRef = useRef(true);
 
   const mountFront = !isBackVisible || isFlipping;
   const mountBack = isBackVisible || isFlipping;
   const bothMounted = mountFront && mountBack;
-  const mountFrontContent = !isBackVisible || isFlipping;
-  const mountBackContent = isBackVisible && !isFlipping;
+
+  const onFaceLayout = useCallback((e: LayoutChangeEvent) => {
+    const { height } = e.nativeEvent.layout;
+    if (height <= 0) return;
+
+    setBaselineHeight(prev => (prev === 0 ? height : prev));
+    setFlipShellHeight(prev => Math.max(prev, height));
+  }, []);
+
+  const flipMinHeight = Math.max(flipShellHeight, baselineHeight);
 
   useEffect(() => {
     if (!canFlip) return;
@@ -222,8 +234,18 @@ const TapCard = ({
       ]}
       onPress={handlePress}
     >
-      <View style={styles.tapCardFlipShell}>
-        <View style={styles.tapCardFlipPerspective}>
+      <View
+        style={[
+          styles.tapCardFlipShell,
+          flipMinHeight > 0 ? { minHeight: flipMinHeight } : null,
+        ]}
+      >
+        <View
+          style={[
+            styles.tapCardFlipPerspective,
+            flipMinHeight > 0 ? { minHeight: flipMinHeight } : null,
+          ]}
+        >
           {mountFront && tapCardData.frontside != null ? (
             <Animated.View
               pointerEvents={isBackVisible && !isFlipping ? 'none' : 'auto'}
@@ -237,10 +259,8 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody}>
-                {mountFrontContent
-                  ? renderSide(tapCardData.frontside, embeddedOpts)
-                  : null}
+              <View style={styles.tapCardBody} onLayout={onFaceLayout}>
+                {renderSide(tapCardData.frontside, embeddedOpts)}
               </View>
             </Animated.View>
           ) : null}
@@ -258,14 +278,25 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody}>
-                {mountBackContent
-                  ? renderSide(tapCardData.backside, embeddedOpts)
-                  : null}
+              <View style={styles.tapCardBody} onLayout={onFaceLayout}>
+                {renderSide(tapCardData.backside, embeddedOpts)}
               </View>
             </Animated.View>
           ) : null}
         </View>
+
+        {tapCardData.backside != null && !mountBack ? (
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            pointerEvents="none"
+            style={styles.tapCardHiddenMeasure}
+          >
+            <View style={[styles.tapCard, styles.tapCardBody]} onLayout={onFaceLayout}>
+              {renderSide(tapCardData.backside, embeddedOpts)}
+            </View>
+          </View>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -436,6 +467,7 @@ export const Blocks = ({
         color={titleData.color}
         size={titleSizeFromLevel(titleData.level)}
         style={{ lineHeight: titleSizeFromLevel(titleData.level) }}
+        textAlign={titleData.textAlign ?? 'left'}
       >
         {titleData.value}
       </Text>
@@ -702,6 +734,15 @@ const styles = StyleSheet.create({
   tapCardFlipShell: {
     width: '100%',
     alignSelf: 'flex-start',
+    position: 'relative',
+  },
+  tapCardHiddenMeasure: {
+    left: 0,
+    opacity: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: -1,
   },
   tapCardContainerShell: {
     width: '100%',

@@ -27,6 +27,7 @@ type Props = PropsWithChildren<{
   /** Min scale vs `size` (0–1). Default 0.2 when adjustsFontSizeToFit is true. */
   minimumFontScale?: number;
   numberOfLines?: number;
+  textAlign?: 'center' | 'left' | 'right';
 }>;
 
 export const Text = ({
@@ -45,6 +46,7 @@ export const Text = ({
   adjustsFontSizeToFit,
   minimumFontScale,
   numberOfLines,
+  textAlign,
 }: Props) => {
   // TODO: add real font from design
   const fontFamily = semiBold
@@ -53,17 +55,17 @@ export const Text = ({
     ? 'Unbounded-Bold'
     : DEFAULT_FONT_FAMILY;
 
-  const textAlign = center ? 'center' : 'left';
+  const _textAlign = textAlign ?? center ? 'center' : 'left';
   const textDecorationLine = onPress ? 'underline' : 'none';
   const textTransform = uppercase ? 'uppercase' : 'none';
 
   return (
     <RNText
       adjustsFontSizeToFit={adjustsFontSizeToFit}
+      numberOfLines={numberOfLines}
       minimumFontScale={
         adjustsFontSizeToFit ? minimumFontScale ?? 0.2 : minimumFontScale
       }
-      numberOfLines={numberOfLines}
       style={[
         styles.text,
         {
@@ -72,7 +74,7 @@ export const Text = ({
           fontFamily,
           marginBottom: marginBottom || 0,
           marginTop: marginTop || 0,
-          textAlign,
+          textAlign: _textAlign,
           textDecorationLine,
           textTransform,
         },

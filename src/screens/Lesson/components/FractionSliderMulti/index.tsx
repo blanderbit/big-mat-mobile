@@ -10,6 +10,7 @@ import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
 import { colors } from '@extra/colors';
+import { DEFAULT_SPACE } from '@extra/constants';
 import { Slide, SlideType } from '@extra/types';
 import { usePatchSlide } from '@hooks/usePatchSlide';
 
@@ -45,18 +46,18 @@ const SliderOptionLabel = ({
     <View style={[styles.optionLabel, { left }]}>
       {parts.length === 2 ? (
         <>
-          <Text bold={isActive} center color={color} size={14}>
+          <Text center bold={isActive} color={color} size={14}>
             {parts[0]}
           </Text>
           <View
             style={[styles.optionLabelDivider, { backgroundColor: color }]}
           />
-          <Text bold={isActive} center color={color} size={14}>
+          <Text center bold={isActive} color={color} size={14}>
             {parts[1]}
           </Text>
         </>
       ) : (
-        <Text bold={isActive} center color={color} size={14}>
+        <Text center bold={isActive} color={color} size={14}>
           {label}
         </Text>
       )}
@@ -74,6 +75,20 @@ const getTaskImageStyle = (imageStyle: SlideVariantsTask['imageStyle']) => {
     height: imageStyle.height,
     width: imageStyle.width,
   };
+};
+
+const getImageSpacingStyle = (imageSpacing: SlideVariantsTask['imageSpacing']) => {
+  if (!imageSpacing) return null;
+  return {
+    marginTop: imageSpacing.margin?.top,
+    marginRight: imageSpacing.margin?.right,
+    marginBottom: imageSpacing.margin?.bottom,
+    marginLeft: imageSpacing.margin?.left,
+    paddingTop: imageSpacing.padding?.top,
+    paddingRight: imageSpacing.padding?.right,
+    paddingBottom: imageSpacing.padding?.bottom,
+    paddingLeft: imageSpacing.padding?.left,
+  } as const;
 };
 
 const FractionSliderTask = ({
@@ -182,8 +197,8 @@ const FractionSliderTask = ({
                 const isActive = opt.id === chosenOptionId;
                 return (
                   <SliderOptionLabel
-                    key={`${task.id}-label-${opt.id}`}
                     isActive={isActive}
+                    key={`${task.id}-label-${opt.id}`}
                     label={opt.label}
                     left={left}
                   />
@@ -249,7 +264,12 @@ const FractionSliderTask = ({
       return (
         <View style={styles.row}>
           {task.imageUrl ? (
-            <View style={styles.imageCol}>
+            <View
+              style={[
+                styles.imageCol,
+                getImageSpacingStyle(task.imageSpacing),
+              ]}
+            >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
                 uri={task.imageUrl}
@@ -264,7 +284,12 @@ const FractionSliderTask = ({
         <View style={styles.row}>
           <View style={styles.sliderCol}>{renderSlider()}</View>
           {task.imageUrl ? (
-            <View style={styles.imageCol}>
+            <View
+              style={[
+                styles.imageCol,
+                getImageSpacingStyle(task.imageSpacing),
+              ]}
+            >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
                 uri={task.imageUrl}
@@ -277,7 +302,12 @@ const FractionSliderTask = ({
       return (
         <View style={styles.col}>
           {task.imageUrl ? (
-            <View style={styles.imageTop}>
+            <View
+              style={[
+                styles.imageTop,
+                getImageSpacingStyle(task.imageSpacing),
+              ]}
+            >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
                 uri={task.imageUrl}
@@ -411,7 +441,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     height: 40,
-    marginBottom: 4,
+    marginBottom: DEFAULT_SPACE,
   },
   optionLabel: {
     position: 'absolute',

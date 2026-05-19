@@ -35,21 +35,8 @@ export const Lesson = ({ route }: Props) => {
   const slides = useLessonsStore(state => state.slides);
   const currentSlideIndex = useLessonsStore(state => state.currentSlideIndex);
   const setSlides = useLessonsStore(state => state.setSlides);
+  const prepareLesson = useLessonsStore(state => state.prepareLesson);
   const scrollViewRef = useRef<RNScrollView | null>(null);
-  const setCurrentSlideIndex = useLessonsStore(
-    state => state.setCurrentSlideIndex,
-  );
-  const prevLessonIdRef = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (
-      prevLessonIdRef.current !== undefined &&
-      prevLessonIdRef.current !== lessonId
-    ) {
-      setCurrentSlideIndex(0);
-    }
-    prevLessonIdRef.current = lessonId;
-  }, [lessonId, setCurrentSlideIndex]);
 
   const scrollToEnd = useCallback(() => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -60,6 +47,10 @@ export const Lesson = ({ route }: Props) => {
   console.log('currentSlide', currentSlide);
 
   useEffect(() => {
+    prepareLesson(lessonId);
+
+    let cancelled = false;
+
     (async () => {
       setIsLoading(true);
 
@@ -68,16 +59,24 @@ export const Lesson = ({ route }: Props) => {
           routeId: lessonId,
         });
         const response = await API.get(`/v1/content/routes/${lessonId}/slides`);
-        const slides = response.data.data.slides;
-        slides.push({
+        const nextSlides = response.data.data.slides;
+        nextSlides.push({
           type: SlideType.FINISH,
         });
-        setSlides(slides);
+        if (!cancelled) {
+          setSlides(nextSlides, lessonId);
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     })();
-  }, [lessonId, setSlides]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId, prepareLesson, setSlides]);
 
   const getSlideComponent = () => {
     switch (currentSlide?.type) {

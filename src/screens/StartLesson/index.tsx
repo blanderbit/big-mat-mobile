@@ -1,4 +1,5 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Image, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +27,11 @@ export const StartLesson = ({ route }: Props) => {
   const { top, bottom } = useSafeAreaInsets();
   const { t } = useTranslation();
   const { navigate } = useNavigation<HomeStackNavigationProp>();
+  const [bottomBackgroundHeight, setBottomBackgroundHeight] = useState(0);
+
+  const handleBottomBackgroundLayout = (e: LayoutChangeEvent) => {
+    setBottomBackgroundHeight(e.nativeEvent.layout.height);
+  };
 
   const navigateToLesson = () => {
     navigate(routes.home.LESSON, {
@@ -35,7 +41,15 @@ export const StartLesson = ({ route }: Props) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.titleBlock}>
+      <View
+        style={[
+          styles.titleBlock,
+          { marginTop: top },
+          bottomBackgroundHeight > 0
+            ? { bottom: bottomBackgroundHeight }
+            : null,
+        ]}
+      >
         <Text bold center color={colors.white} size={30}>
           {t('lesson')} {lessonIndex}
         </Text>
@@ -62,7 +76,10 @@ export const StartLesson = ({ route }: Props) => {
         style={[styles.background1, { marginTop: top + DEFAULT_SPACE }]}
       />
 
-      <View style={styles.bottomBackground}>
+      <View
+        style={styles.bottomBackground}
+        onLayout={handleBottomBackgroundLayout}
+      >
         <Background11 width="100%" />
       </View>
     </View>
@@ -76,9 +93,11 @@ const styles = StyleSheet.create({
   },
   titleBlock: {
     position: 'absolute',
-    top: '18%',
+    top: 0,
     left: 0,
     right: 0,
+    justifyContent: 'center',
+    zIndex: 1,
   },
   startButtonWrap: {
     position: 'absolute',

@@ -121,6 +121,7 @@ export type TitleBlock = {
   type: 'title';
   value?: string;
   spacing?: Spacing;
+  textAlign?: 'center' | 'left' | 'right';
 };
 
 export type DescriptionTextBlock = {
@@ -243,6 +244,7 @@ export type SlideVariantsByType = {
       id: string;
       imageUrl?: string;
       label: string;
+      imageStyle?: { width?: number; height?: number; radius?: number };
     }[];
     explanation: string; // HTML string;
     wrongExplanation: string; // HTML string;
@@ -306,6 +308,7 @@ export type SlideVariantsByType = {
         radius: number;
         width: number;
       };
+      imageSpacing?: Spacing;
       correctOptionIds: string[];
       id: string;
       imageUrl?: string;
