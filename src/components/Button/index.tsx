@@ -15,7 +15,7 @@ import { Text } from '@components/Text';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 
-const DEFAULT_HEIGHT = 60;
+export const DEFAULT_HEIGHT = 60;
 /** ~line height for title `size={22}` — content taller ⇒ multiline. */
 const SINGLE_LINE_CONTENT_HEIGHT = 30;
 

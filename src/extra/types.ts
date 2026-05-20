@@ -277,13 +277,13 @@ export type SlideVariantsByType = {
     wrongExplanation: string; // HTML string;
   };
   [SlideType.DRAG_DROP]: {
+    blocks?: Block[];
     buttonText?: string;
     explanation: string; // HTML string;
     wrongExplanation: string; // HTML string;
     id: string;
     itemZoneMap: Record<string, string>;
     items: DragDropItem[];
-    questionText: string; // HTML string;
     zones: {
       id: string;
       label: string;
@@ -298,11 +298,13 @@ export type SlideVariantsByType = {
     }[];
   };
   [SlideType.FRACTION_SLIDER_MULTI]: {
+    hideFractionLabels: boolean;
     buttonText?: string;
     explanation: string; // HTML string;
     id: string;
     introBlocks?: Block[];
     tasks: {
+      disabled: boolean;
       imageStyle?: {
         height: number;
         radius: number;

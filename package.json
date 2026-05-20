@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@invertase/react-native-apple-authentication": "2.5.1",
     "@react-native-async-storage/async-storage": "3.0.2",
     "@react-native-community/netinfo": "12.0.1",
     "@react-native-community/slider": "5.2.0",
@@ -21,10 +22,12 @@
     "@react-navigation/native-stack": "7.14.11",
     "axios": "1.15.2",
     "i18next": "26.0.6",
+    "js-sha256": "^0.11.1",
     "react": "19.2.3",
     "react-i18next": "17.0.4",
     "react-native": "0.85.2",
     "react-native-fast-image": "8.6.3",
+    "react-native-get-random-values": "1.11.0",
     "react-native-keychain": "10.0.0",
     "react-native-linear-gradient": "2.8.3",
     "react-native-reanimated": "4.3.0",
@@ -35,6 +38,7 @@
     "react-native-vector-icons": "10.3.0",
     "react-native-webview": "13.16.1",
     "react-native-worklets": "0.8.0",
+    "uuid": "14.0.0",
     "zustand": "5.0.12"
   },
   "devDependencies": {

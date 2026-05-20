@@ -146,6 +146,27 @@ const TAP_CARD_FLIP_DURATION_MS = 380;
 
 type TapCardRenderOpts = { embedded: true };
 
+const getTapCardFaceBackgroundColor = (
+  side: VariantStoryBlock | undefined,
+): string | undefined => {
+  if (!side || side.type !== 'container') return undefined;
+
+  const firstChildContainer = (side.blocks ?? []).find(
+    (block): block is ContainerBlock => block.type === 'container',
+  );
+
+  if (firstChildContainer?.background) {
+    return firstChildContainer.background;
+  }
+
+  return side.background;
+};
+
+const getTapCardFaceStyle = (side: VariantStoryBlock | undefined) => {
+  const backgroundColor = getTapCardFaceBackgroundColor(side);
+  return [styles.tapCard, backgroundColor ? { backgroundColor } : null];
+};
+
 const TapCard = ({
   renderSide,
   tapCardData,
@@ -216,7 +237,12 @@ const TapCard = ({
 
   if (!canFlip) {
     return (
-      <View style={[styles.tapCard, getSpacingStyle(tapCardData.spacing)]}>
+      <View
+        style={[
+          ...getTapCardFaceStyle(singleSide ?? undefined),
+          getSpacingStyle(tapCardData.spacing),
+        ]}
+      >
         <View style={styles.tapCardBody}>
           {singleSide != null ? renderSide(singleSide, embeddedOpts) : null}
         </View>
@@ -250,7 +276,7 @@ const TapCard = ({
             <Animated.View
               pointerEvents={isBackVisible && !isFlipping ? 'none' : 'auto'}
               style={[
-                styles.tapCard,
+                ...getTapCardFaceStyle(tapCardData.frontside),
                 styles.tapCardFace,
                 bothMounted ? styles.tapCardFaceOverlay : null,
                 {
@@ -269,7 +295,7 @@ const TapCard = ({
             <Animated.View
               pointerEvents={!isBackVisible && !isFlipping ? 'none' : 'auto'}
               style={[
-                styles.tapCard,
+                ...getTapCardFaceStyle(tapCardData.backside),
                 styles.tapCardFace,
                 bothMounted ? styles.tapCardFaceOverlay : null,
                 {
@@ -292,7 +318,10 @@ const TapCard = ({
             pointerEvents="none"
             style={styles.tapCardHiddenMeasure}
           >
-            <View style={[styles.tapCard, styles.tapCardBody]} onLayout={onFaceLayout}>
+            <View
+              style={[...getTapCardFaceStyle(tapCardData.backside), styles.tapCardBody]}
+              onLayout={onFaceLayout}
+            >
               {renderSide(tapCardData.backside, embeddedOpts)}
             </View>
           </View>

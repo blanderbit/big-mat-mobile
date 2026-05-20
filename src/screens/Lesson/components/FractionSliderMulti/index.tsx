@@ -77,7 +77,9 @@ const getTaskImageStyle = (imageStyle: SlideVariantsTask['imageStyle']) => {
   };
 };
 
-const getImageSpacingStyle = (imageSpacing: SlideVariantsTask['imageSpacing']) => {
+const getImageSpacingStyle = (
+  imageSpacing: SlideVariantsTask['imageSpacing'],
+) => {
   if (!imageSpacing) return null;
   return {
     marginTop: imageSpacing.margin?.top,
@@ -92,14 +94,17 @@ const getImageSpacingStyle = (imageSpacing: SlideVariantsTask['imageSpacing']) =
 };
 
 const FractionSliderTask = ({
+  hideFractionLabels,
   onChangeOptionId,
   task,
   chosenOptionId,
 }: {
   task: SlideVariantsTask;
+  hideFractionLabels?: boolean;
   chosenOptionId: string | undefined;
   onChangeOptionId: (optionId: string) => void;
 }) => {
+  const isDisabled = task.disabled;
   const [trackWidth, setTrackWidth] = useState(0);
 
   const parsedOptions = useMemo(() => {
@@ -161,7 +166,7 @@ const FractionSliderTask = ({
   };
 
   const setValueByX = (x: number) => {
-    if (trackWidth <= 0) return;
+    if (isDisabled || trackWidth <= 0) return;
     const t = Math.max(0, Math.min(1, x / trackWidth));
     const v = min + t * range;
     onChangeOptionId(getNearestOption(v).id);
@@ -187,36 +192,39 @@ const FractionSliderTask = ({
         : minTogglerLeft;
 
     return (
-      <View style={styles.sliderOuter}>
-        <View pointerEvents="none" style={styles.labelsLayer}>
-          {trackWidth > 0
-            ? parsedOptions.map(opt => {
-                const t = (opt.value - min) / range;
-                const left =
-                  TRACK_BORDER + Math.max(0, Math.min(1, t)) * innerWidth;
-                const isActive = opt.id === chosenOptionId;
-                return (
-                  <SliderOptionLabel
-                    isActive={isActive}
-                    key={`${task.id}-label-${opt.id}`}
-                    label={opt.label}
-                    left={left}
-                  />
-                );
-              })
-            : null}
-        </View>
+      <View style={[styles.sliderOuter, isDisabled && styles.sliderDisabled]}>
+        {!hideFractionLabels ? (
+          <View pointerEvents="none" style={styles.labelsLayer}>
+            {trackWidth > 0
+              ? parsedOptions.map(opt => {
+                  const t = (opt.value - min) / range;
+                  const left =
+                    TRACK_BORDER + Math.max(0, Math.min(1, t)) * innerWidth;
+                  const isActive = opt.id === chosenOptionId;
+                  return (
+                    <SliderOptionLabel
+                      isActive={isActive}
+                      key={`${task.id}-label-${opt.id}`}
+                      label={opt.label}
+                      left={left}
+                    />
+                  );
+                })
+              : null}
+          </View>
+        ) : null}
 
         <View
+          pointerEvents={isDisabled ? 'none' : 'auto'}
           style={styles.sliderTrack}
           onLayout={onTrackLayout}
-          onMoveShouldSetResponderCapture={() => true}
+          onMoveShouldSetResponderCapture={() => !isDisabled}
           onResponderGrant={e => setValueByX(e.nativeEvent.locationX)}
           onResponderMove={e => setValueByX(e.nativeEvent.locationX)}
           onResponderRelease={endDrag}
           onResponderTerminate={endDrag}
-          onStartShouldSetResponder={() => true}
-          onStartShouldSetResponderCapture={() => true}
+          onStartShouldSetResponder={() => !isDisabled}
+          onStartShouldSetResponderCapture={() => !isDisabled}
         >
           <View pointerEvents="none" style={styles.fillClip}>
             <View
@@ -265,10 +273,7 @@ const FractionSliderTask = ({
         <View style={styles.row}>
           {task.imageUrl ? (
             <View
-              style={[
-                styles.imageCol,
-                getImageSpacingStyle(task.imageSpacing),
-              ]}
+              style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
             >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
@@ -285,10 +290,7 @@ const FractionSliderTask = ({
           <View style={styles.sliderCol}>{renderSlider()}</View>
           {task.imageUrl ? (
             <View
-              style={[
-                styles.imageCol,
-                getImageSpacingStyle(task.imageSpacing),
-              ]}
+              style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
             >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
@@ -303,10 +305,7 @@ const FractionSliderTask = ({
         <View style={styles.col}>
           {task.imageUrl ? (
             <View
-              style={[
-                styles.imageTop,
-                getImageSpacingStyle(task.imageSpacing),
-              ]}
+              style={[styles.imageTop, getImageSpacingStyle(task.imageSpacing)]}
             >
               <FullWidthFastImage
                 style={getTaskImageStyle(task.imageStyle)}
@@ -365,6 +364,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
           <View key={task.id} style={styles.taskCard}>
             <FractionSliderTask
               chosenOptionId={chosenOptionIdByTaskId[task.id]}
+              hideFractionLabels={slide.variants[0].hideFractionLabels}
               task={task}
               onChangeOptionId={optionId =>
                 setChosenOptionIdByTaskId(prev => ({
@@ -436,6 +436,9 @@ const styles = StyleSheet.create({
   sliderOuter: {
     width: '100%',
     paddingVertical: 6,
+  },
+  sliderDisabled: {
+    opacity: 0.5,
   },
   labelsLayer: {
     position: 'relative',

@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>922387615875-kmb9e51dabhgjl1skl29f2sql97bc644.apps.googleusercontent.com</string>
+	<string>675435048875-vjkpm856vedj8f0qnkmpv314fl6530ob.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.922387615875-kmb9e51dabhgjl1skl29f2sql97bc644</string>
+	<string>com.googleusercontent.apps.675435048875-vjkpm856vedj8f0qnkmpv314fl6530ob</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>675435048875-im8thqp74f23qejmniv0js3mj7l5qbc8.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyALPsuB6j_nL0L1fds-b89qoLKZjTdMHjQ</string>
+	<string>AIzaSyBaKw2-mxwj15XrDD1ZMsQSDYipiym2zv4</string>
 	<key>GCM_SENDER_ID</key>
-	<string>922387615875</string>
+	<string>675435048875</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>org.reactjs.native.example.BigMat</string>
 	<key>PROJECT_ID</key>
-	<string>bigmat-main</string>
+	<string>bigmat-bdd63</string>
 	<key>STORAGE_BUCKET</key>
-	<string>bigmat-main.firebasestorage.app</string>
+	<string>bigmat-bdd63.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,6 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:922387615875:ios:86c468dc3b07001cd08bb6</string>
+	<string>1:675435048875:ios:cea27a074850ce7c392cee</string>
+	<key>DATABASE_URL</key>
+	<string>https://bigmat-bdd63-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

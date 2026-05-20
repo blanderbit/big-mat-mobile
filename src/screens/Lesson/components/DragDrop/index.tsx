@@ -11,6 +11,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
+import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Icon } from '@components/Icon';
@@ -171,10 +172,16 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
       const textStyle = item.style
         ? {
-            fontStyle: item.style.italic ? ('italic' as const) : ('normal' as const),
+            fontStyle: item.style.italic
+              ? ('italic' as const)
+              : ('normal' as const),
             textDecorationLine: (decoration.length
               ? decoration.join(' ')
-              : 'none') as 'none' | 'underline' | 'line-through' | 'underline line-through',
+              : 'none') as
+              | 'none'
+              | 'underline'
+              | 'line-through'
+              | 'underline line-through',
           }
         : undefined;
 
@@ -208,7 +215,9 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
             item.style?.height != null
               ? { height: item.style.height, minHeight: item.style.height }
               : null,
-            item.style?.radius != null ? { borderRadius: item.style.radius } : null,
+            item.style?.radius != null
+              ? { borderRadius: item.style.radius }
+              : null,
           ]}
         >
           <FullWidthFastImage
@@ -269,7 +278,7 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
-      <SlideQuestion content={slide.variants[0].questionText} />
+      <Blocks blocks={variant.blocks} />
 
       <View
         ref={containerRef}
@@ -397,7 +406,9 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
 
                   <Text
                     bold
-                    color={z.style?.textColor ? z.style.textColor : colors.black}
+                    color={
+                      z.style?.textColor ? z.style.textColor : colors.black
+                    }
                     size={14}
                   >
                     {z.label}

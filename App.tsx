@@ -18,6 +18,7 @@ import { useUserStore } from '@stores/userStore';
 import '@API/extra/interceptors';
 import '@extra/hideLogs';
 import '@extra/firebaseInitialize';
+import 'react-native-get-random-values';
 
 const App = () => (
   <SafeAreaProvider>
