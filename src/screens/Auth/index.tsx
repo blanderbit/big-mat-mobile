@@ -58,7 +58,6 @@ export const Auth = () => {
 
       GoogleSignin.configure({
         webClientId: GOOGLE_WEB_CLIENT_ID,
-        offlineAccess: true,
       });
 
       if (Platform.OS === 'android') {
