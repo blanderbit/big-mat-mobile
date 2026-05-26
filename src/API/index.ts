@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-import { BASE_URL } from '@env';
+import {
+  PROD_BASE_URL,
+  // STG_BASE_URL
+} from '@env';
 
 export const API = axios.create({
-  baseURL: BASE_URL,
+  baseURL: PROD_BASE_URL,
 });

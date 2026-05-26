@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
 import { AnswerVariant } from '@components/AnswerVariant';
+import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { SizedFastImage } from '@components/SizedFastImage';
@@ -98,6 +99,8 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
+      {slide.variants[0].blocks && <Blocks blocks={slide.variants[0].blocks} />}
+
       {slide.variants[0].questionImageUrl && (
         <FullWidthFastImage uri={slide.variants[0].questionImageUrl} />
       )}

@@ -13,19 +13,31 @@ import {
   FIREBASE_STORAGE_BUCKET,
 } from '@env';
 
+const trim = (v: string | undefined) => (v || '').trim();
+
 const firebaseConfig = {
   apiKey:
-    Platform.OS === 'android' ? FIREBASE_API_KEY_ANDROID : FIREBASE_API_KEY,
-  authDomain: FIREBASE_AUTH_DOMAIN,
-  projectId: FIREBASE_PROJECT_ID,
-  storageBucket: FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-  appId: Platform.OS === 'android' ? FIREBASE_APP_ID_ANDROID : FIREBASE_APP_ID,
-  databaseURL: FIREBASE_DATABASE_URL,
+    Platform.OS === 'android'
+      ? trim(FIREBASE_API_KEY_ANDROID)
+      : trim(FIREBASE_API_KEY),
+  authDomain: trim(FIREBASE_AUTH_DOMAIN),
+  projectId: trim(FIREBASE_PROJECT_ID),
+  storageBucket: trim(FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: trim(FIREBASE_MESSAGING_SENDER_ID),
+  appId:
+    Platform.OS === 'android'
+      ? trim(FIREBASE_APP_ID_ANDROID)
+      : trim(FIREBASE_APP_ID),
+  databaseURL: trim(FIREBASE_DATABASE_URL),
 };
+
+const hasValidAndroidEnv =
+  Boolean(firebaseConfig.apiKey) && Boolean(firebaseConfig.appId);
 
 try {
   if (firebase.apps.length === 0) {
-    firebase.initializeApp(firebaseConfig);
+    if (Platform.OS === 'ios' || hasValidAndroidEnv) {
+      firebase.initializeApp(firebaseConfig);
+    }
   }
 } catch (e) {}

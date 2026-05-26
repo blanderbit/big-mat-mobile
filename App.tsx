@@ -9,6 +9,7 @@ import { ActivityIndicator } from '@components/ActivityIndicator';
 import { Toast } from '@components/Toast';
 import { Navigation } from '@navigation/index';
 
+import { configureGoogleSignIn } from '@extra/configureGoogleSignIn';
 import { initializeI18nLocalization } from '@localization/index';
 import { useUserStore } from '@stores/userStore';
 
@@ -16,9 +17,11 @@ import { useUserStore } from '@stores/userStore';
 // import { initializeI18nLocalization } from '@localization/index';
 // import 'dayjs/locale/uk';
 import '@API/extra/interceptors';
-import '@extra/hideLogs';
 import '@extra/firebaseInitialize';
+import '@extra/hideLogs';
 import 'react-native-get-random-values';
+
+configureGoogleSignIn();
 
 const App = () => (
   <SafeAreaProvider>

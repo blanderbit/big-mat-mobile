@@ -235,6 +235,7 @@ export type SlideVariantsByType = {
     blocks?: Block[];
   };
   [SlideType.MULTIPLE_CHOICE]: {
+    blocks?: Block[];
     buttonText?: string;
     correctOptionIds: string[];
     questionImageUrl?: string;

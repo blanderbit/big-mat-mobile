@@ -13,6 +13,7 @@ import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { v4 as uuid } from 'uuid';
 
 import { Button, DEFAULT_HEIGHT } from '@components/Button';
@@ -20,6 +21,7 @@ import { Text } from '@components/Text';
 
 import { API } from '@API/index';
 import { colors } from '@extra/colors';
+import { configureGoogleSignIn } from '@extra/configureGoogleSignIn';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { useUserStore } from '@stores/userStore';
 import { ACCESS_TOKEN } from '@keychain/extra/constants';
@@ -30,8 +32,6 @@ import background2 from '@assets/images/background2.png';
 import background3 from '@assets/images/background3.png';
 import background4 from '@assets/images/background4.png';
 import background5 from '@assets/images/background5.png';
-
-import { GOOGLE_WEB_CLIENT_ID } from '@env';
 
 import 'react-native-get-random-values';
 
@@ -55,10 +55,7 @@ export const Auth = () => {
 
     try {
       setIsGoogleSignInLoading(true);
-
-      GoogleSignin.configure({
-        webClientId: GOOGLE_WEB_CLIENT_ID,
-      });
+      configureGoogleSignIn();
 
       if (Platform.OS === 'android') {
         await GoogleSignin.hasPlayServices({
@@ -67,10 +64,15 @@ export const Auth = () => {
       }
 
       const userInfo = await GoogleSignin.signIn();
+      const idToken = userInfo.data?.idToken;
 
-      const googleCredential = auth.GoogleAuthProvider.credential(
-        userInfo.data?.idToken ?? '',
-      );
+      if (!idToken) {
+        throw new Error(
+          'Google Sign-In: missing idToken. Add SHA-1 in Firebase for package edera.bigmat (run: npm run android:sha).',
+        );
+      }
+
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
       const firebaseCredential = await auth().signInWithCredential(
         googleCredential,
@@ -106,38 +108,27 @@ export const Auth = () => {
     try {
       setIsAppleSignInLoading(true);
 
-      // IMPORTANT:
-      // raw nonce only
-      const rawNonce = uuid();
-
-      // optional state
       const state = uuid();
 
-      console.log('RAW NONCE:', rawNonce);
-
-      // Apple Sign In
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
-
-        requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
-
-        // IMPORTANT:
-        // DO NOT SHA256 MANUALLY
-        nonce: rawNonce,
-
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
         state,
       });
 
-      const { identityToken } = appleAuthRequestResponse;
+      const { identityToken, nonce } = appleAuthRequestResponse;
 
       if (!identityToken) {
         throw new Error('Apple Sign-In failed - no identity token returned');
       }
 
-      // Firebase credential
+      if (!nonce) {
+        throw new Error('Apple Sign-In failed - no nonce returned');
+      }
+
       const appleCredential = auth.AppleAuthProvider.credential(
         identityToken,
-        rawNonce,
+        nonce,
       );
 
       // Firebase sign in
@@ -165,6 +156,13 @@ export const Auth = () => {
         await getUser();
       }
     } catch (e) {
+      const error = e as { code?: string; message?: string };
+      if (error.code === 'auth/operation-not-allowed') {
+        Toast.show({
+          type: 'error',
+          text1: t('anUnexpectedErrorOccurredPleaseTryAgainLater'),
+        });
+      }
       console.error('APPLE SIGN IN ERROR:', e);
     } finally {
       setIsAppleSignInLoading(false);
