@@ -300,6 +300,7 @@ export type SlideVariantsByType = {
   };
   [SlideType.FRACTION_SLIDER_MULTI]: {
     hideFractionLabels: boolean;
+    defaultOptionIndex?: number;
     buttonText?: string;
     explanation: string; // HTML string;
     id: string;

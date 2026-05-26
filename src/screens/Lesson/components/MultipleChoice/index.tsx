@@ -31,6 +31,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
   const [buttonsRowWidth, setButtonsRowWidth] = useState(0);
   const [optionsGridWidth, setOptionsGridWidth] = useState(0);
   const optionsLayout = slide.variants[0].optionsLayout || 'list';
+  const isOptionsGrid = optionsLayout === 'grid';
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const optionsCount = slide.variants[0].options.length;
   const optionButtonSize =
@@ -106,11 +107,9 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
       )}
 
       <View
-        style={
-          optionsLayout === 'grid' ? styles.optionsGrid : styles.optionsList
-        }
+        style={isOptionsGrid ? styles.optionsGrid : styles.optionsList}
         onLayout={
-          optionsLayout === 'grid'
+          isOptionsGrid
             ? e => setOptionsGridWidth(e.nativeEvent.layout.width)
             : undefined
         }
@@ -119,15 +118,19 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
           <View
             key={option.id}
             style={
-              optionsLayout === 'grid' && gridItemWidth != null
+              isOptionsGrid && gridItemWidth != null
                 ? [styles.optionsGridItem, { width: gridItemWidth }]
-                : undefined
+                : isOptionsGrid
+                  ? styles.optionsGridItem
+                  : undefined
             }
           >
-            <View style={styles.optionHeader}>
+            <View
+              style={isOptionsGrid ? styles.optionHeaderGrid : styles.optionHeader}
+            >
               <AnswerVariant index={index} />
 
-              {renderOptionLabel(option.label)}
+              {renderOptionLabel(option.label, isOptionsGrid)}
             </View>
 
             {option.imageUrl ? (
@@ -192,12 +195,20 @@ const styles = StyleSheet.create({
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
     gap: DEFAULT_SPACE,
   },
   optionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  optionHeaderGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    width: '100%',
   },
   optionLabelWebView: {
     flex: 1,
@@ -210,6 +221,7 @@ const styles = StyleSheet.create({
   optionsGridItem: {
     flexGrow: 0,
     flexShrink: 0,
+    alignItems: 'center',
   },
   buttonsRow: {
     flexDirection: 'row',

@@ -93,13 +93,29 @@ const getImageSpacingStyle = (
   } as const;
 };
 
+const getDefaultOptionId = (
+  task: SlideVariantsTask,
+  defaultOptionIndex?: number,
+) => {
+  if (
+    defaultOptionIndex == null ||
+    defaultOptionIndex < 0 ||
+    defaultOptionIndex >= task.options.length
+  ) {
+    return undefined;
+  }
+  return task.options[defaultOptionIndex].id;
+};
+
 const FractionSliderTask = ({
+  defaultOptionIndex,
   hideFractionLabels,
   onChangeOptionId,
   task,
   chosenOptionId,
 }: {
   task: SlideVariantsTask;
+  defaultOptionIndex?: number;
   hideFractionLabels?: boolean;
   chosenOptionId: string | undefined;
   onChangeOptionId: (optionId: string) => void;
@@ -134,10 +150,22 @@ const FractionSliderTask = ({
   const range = max - min || 1;
 
   useEffect(() => {
-    if (chosenOptionId == null && parsedOptions.length) {
-      onChangeOptionId(parsedOptions[0].id);
-    }
-  }, [chosenOptionId, onChangeOptionId, parsedOptions]);
+    if (chosenOptionId != null || !parsedOptions.length) return;
+
+    const defaultId = getDefaultOptionId(task, defaultOptionIndex);
+    const initialId =
+      defaultId != null && parsedOptions.some(o => o.id === defaultId)
+        ? defaultId
+        : parsedOptions[0].id;
+
+    onChangeOptionId(initialId);
+  }, [
+    chosenOptionId,
+    defaultOptionIndex,
+    onChangeOptionId,
+    parsedOptions,
+    task,
+  ]);
 
   const chosenValue =
     chosenOptionId != null
@@ -191,6 +219,11 @@ const FractionSliderTask = ({
           )
         : minTogglerLeft;
 
+    const fillWidth =
+      trackWidth > 0
+        ? Math.max(0, Math.min(trackWidth, togglerLeft + TOGGLER_WIDTH))
+        : 0;
+
     return (
       <View style={[styles.sliderOuter, isDisabled && styles.sliderDisabled]}>
         {!hideFractionLabels ? (
@@ -227,14 +260,7 @@ const FractionSliderTask = ({
           onStartShouldSetResponderCapture={() => !isDisabled}
         >
           <View pointerEvents="none" style={styles.fillClip}>
-            <View
-              style={[
-                styles.trackFill,
-                {
-                  width: progress * innerWidth,
-                },
-              ]}
-            />
+            <View style={[styles.trackFill, { width: fillWidth }]} />
           </View>
 
           <View pointerEvents="none" style={styles.ticksLayer}>
@@ -276,7 +302,7 @@ const FractionSliderTask = ({
               style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
             >
               <FullWidthFastImage
-                style={getTaskImageStyle(task.imageStyle)}
+                // style={getTaskImageStyle(task.imageStyle)}
                 uri={task.imageUrl}
               />
             </View>
@@ -293,7 +319,7 @@ const FractionSliderTask = ({
               style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
             >
               <FullWidthFastImage
-                style={getTaskImageStyle(task.imageStyle)}
+                // style={getTaskImageStyle(task.imageStyle)}
                 uri={task.imageUrl}
               />
             </View>
@@ -319,11 +345,26 @@ const FractionSliderTask = ({
   }
 };
 
+const buildInitialChoices = (
+  tasks: Slide<SlideType.FRACTION_SLIDER_MULTI>['variants'][number]['tasks'],
+  defaultOptionIndex?: number,
+) => {
+  const initial: Record<string, string> = {};
+  if (defaultOptionIndex == null) return initial;
+
+  for (const task of tasks) {
+    const optionId = getDefaultOptionId(task, defaultOptionIndex);
+    if (optionId) initial[task.id] = optionId;
+  }
+  return initial;
+};
+
 export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
+  const variant = slide.variants[0];
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [chosenOptionIdByTaskId, setChosenOptionIdByTaskId] = useState<
-    Record<string, string>
-  >({});
+  const [chosenOptionIdByTaskId, setChosenOptionIdByTaskId] = useState(() =>
+    buildInitialChoices(variant.tasks, variant.defaultOptionIndex),
+  );
   const { t } = useTranslation();
 
   const { handleGoToNextSlide } = usePatchSlide({
@@ -364,7 +405,8 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
           <View key={task.id} style={styles.taskCard}>
             <FractionSliderTask
               chosenOptionId={chosenOptionIdByTaskId[task.id]}
-              hideFractionLabels={slide.variants[0].hideFractionLabels}
+              defaultOptionIndex={variant.defaultOptionIndex}
+              hideFractionLabels={variant.hideFractionLabels}
               task={task}
               onChangeOptionId={optionId =>
                 setChosenOptionIdByTaskId(prev => ({
@@ -415,7 +457,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   imageCol: {
-    // width: '30%',
+    width: '30%',
   },
   sliderCol: {
     flex: 1,
@@ -469,12 +511,11 @@ const styles = StyleSheet.create({
   },
   fillClip: {
     position: 'absolute',
-    left: TRACK_BORDER,
-    right: TRACK_BORDER,
-    top: TRACK_BORDER,
-    bottom: TRACK_BORDER,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     overflow: 'hidden',
-    borderRadius: 2,
   },
   trackFill: {
     height: '100%',
