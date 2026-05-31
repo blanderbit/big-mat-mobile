@@ -116,17 +116,6 @@ export const Topic = ({ route }: Props) => {
     return unsubscribe;
   }, [navigation, refreshTopicData]);
 
-  const sortedLessons = lessons.slice().sort((a, b) => {
-    const aLocked = a.locked === true;
-    const bLocked = b.locked === true;
-
-    if (aLocked !== bLocked) {
-      return aLocked ? 1 : -1;
-    }
-
-    return a.order - b.order;
-  });
-
   const handleSetContainerWidth = (event: LayoutChangeEvent) => {
     setContainerWidth(event.nativeEvent.layout.width);
   };
@@ -195,7 +184,7 @@ export const Topic = ({ route }: Props) => {
   const completedRoutes = topicProgress?.completedRoutes ?? 0;
   const totalRoutes =
     topicProgress?.totalRoutes ??
-    (sortedLessons.length > 0 ? sortedLessons.length : 0);
+    (lessons.length > 0 ? lessons.length : 0);
   const progressPercent =
     totalRoutes > 0 ? (completedRoutes / totalRoutes) * 100 : 0;
 
@@ -244,9 +233,9 @@ export const Topic = ({ route }: Props) => {
           </Text>
 
           <View style={styles.lessonsContainer}>
-            {sortedLessons.map((lesson, index) => {
+            {lessons.map((lesson, index) => {
               const isLeft = (index + 1) % 2 === 1;
-              const isLast = index === sortedLessons.length - 1;
+              const isLast = index === lessons.length - 1;
               const isShowTooltip = index === tooltipIndex;
 
               const navigateToStartLesson = () => {
