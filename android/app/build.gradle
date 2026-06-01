@@ -83,8 +83,8 @@ android {
         applicationId "edera.bigmat"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 7
+        versionName "1.0.6"
         resValue "string", "google_web_client_id", "922387615875-0l4li57e92fdbmvr37577fh9gcg18rcv.apps.googleusercontent.com"
     }
     signingConfigs {

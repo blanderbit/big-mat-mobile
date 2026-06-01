@@ -1,11 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
-import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  LayoutChangeEvent,
+  PanResponder,
+  StyleSheet,
+  View,
+  type View as ViewType,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
 import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
 import { FullWidthFastImage } from '@components/FullWidthFastImage';
+import { SizedFastImage } from '@components/SizedFastImage';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
@@ -93,6 +100,24 @@ const getImageSpacingStyle = (
   } as const;
 };
 
+const renderSideImage = (task: SlideVariantsTask) => {
+  if (!task.imageUrl) return null;
+
+  const spacingStyle = getImageSpacingStyle(task.imageSpacing);
+  const content = (
+    <View style={styles.sideImageBox}>
+      <SizedFastImage
+        height={50}
+        resizeMode="contain"
+        uri={task.imageUrl}
+        width={40}
+      />
+    </View>
+  );
+
+  return spacingStyle ? <View style={spacingStyle}>{content}</View> : content;
+};
+
 const getDefaultOptionId = (
   task: SlideVariantsTask,
   defaultOptionIndex?: number,
@@ -121,7 +146,9 @@ const FractionSliderTask = ({
   onChangeOptionId: (optionId: string) => void;
 }) => {
   const isDisabled = task.disabled;
+  const trackRef = useRef<ViewType | null>(null);
   const [trackWidth, setTrackWidth] = useState(0);
+  const [trackPageX, setTrackPageX] = useState(0);
 
   const parsedOptions = useMemo(() => {
     const parsed = task.options
@@ -152,7 +179,9 @@ const FractionSliderTask = ({
   useEffect(() => {
     if (chosenOptionId != null || !parsedOptions.length) return;
 
-    const defaultId = getDefaultOptionId(task, defaultOptionIndex);
+    const effectiveDefaultOptionIndex =
+      task.defaultOptionIndex ?? defaultOptionIndex;
+    const defaultId = getDefaultOptionId(task, effectiveDefaultOptionIndex);
     const initialId =
       defaultId != null && parsedOptions.some(o => o.id === defaultId)
         ? defaultId
@@ -176,33 +205,55 @@ const FractionSliderTask = ({
   const progress = (Math.max(min, Math.min(max, resolvedValue)) - min) / range;
   const innerWidth = Math.max(0, trackWidth - TRACK_BORDER * 2);
 
-  const getNearestOption = (v: number) => {
-    let best = parsedOptions[0];
-    let bestDist = Math.abs(v - best.value);
-    for (const opt of parsedOptions) {
-      const dist = Math.abs(v - opt.value);
-      if (dist < bestDist) {
-        best = opt;
-        bestDist = dist;
+  const getNearestOption = useCallback(
+    (v: number) => {
+      let best = parsedOptions[0];
+      let bestDist = Math.abs(v - best.value);
+      for (const opt of parsedOptions) {
+        const dist = Math.abs(v - opt.value);
+        if (dist < bestDist) {
+          best = opt;
+          bestDist = dist;
+        }
       }
-    }
-    return best;
-  };
+      return best;
+    },
+    [parsedOptions],
+  );
 
   const onTrackLayout = (e: LayoutChangeEvent) => {
     setTrackWidth(e.nativeEvent.layout.width);
+    trackRef.current?.measureInWindow(x => setTrackPageX(x));
   };
 
-  const setValueByX = (x: number) => {
-    if (isDisabled || trackWidth <= 0) return;
-    const t = Math.max(0, Math.min(1, x / trackWidth));
-    const v = min + t * range;
-    onChangeOptionId(getNearestOption(v).id);
-  };
+  const setValueByX = useCallback(
+    (x: number) => {
+      if (isDisabled || trackWidth <= 0) return;
+      const t = Math.max(0, Math.min(1, x / trackWidth));
+      const v = min + t * range;
+      onChangeOptionId(getNearestOption(v).id);
+    },
+    [getNearestOption, isDisabled, min, onChangeOptionId, range, trackWidth],
+  );
 
-  const endDrag = () => {
-    // No-op: we already snap while dragging (nearest option).
-  };
+  const panResponder = useMemo(() => {
+    if (isDisabled) return null;
+
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: e => {
+        setValueByX(e.nativeEvent.pageX - trackPageX);
+      },
+      onPanResponderMove: (_e, gestureState) => {
+        setValueByX(gestureState.moveX - trackPageX);
+      },
+    });
+  }, [isDisabled, setValueByX, trackPageX]);
 
   const renderSlider = () => {
     const minTogglerLeft = -TRACK_BORDER;
@@ -249,15 +300,10 @@ const FractionSliderTask = ({
 
         <View
           pointerEvents={isDisabled ? 'none' : 'auto'}
+          ref={trackRef}
           style={styles.sliderTrack}
           onLayout={onTrackLayout}
-          onMoveShouldSetResponderCapture={() => !isDisabled}
-          onResponderGrant={e => setValueByX(e.nativeEvent.locationX)}
-          onResponderMove={e => setValueByX(e.nativeEvent.locationX)}
-          onResponderRelease={endDrag}
-          onResponderTerminate={endDrag}
-          onStartShouldSetResponder={() => !isDisabled}
-          onStartShouldSetResponderCapture={() => !isDisabled}
+          {...(panResponder?.panHandlers ?? {})}
         >
           <View pointerEvents="none" style={styles.fillClip}>
             <View style={[styles.trackFill, { width: fillWidth }]} />
@@ -297,16 +343,7 @@ const FractionSliderTask = ({
     case 'image_left_slider_right':
       return (
         <View style={styles.row}>
-          {task.imageUrl ? (
-            <View
-              style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
-            >
-              <FullWidthFastImage
-                // style={getTaskImageStyle(task.imageStyle)}
-                uri={task.imageUrl}
-              />
-            </View>
-          ) : null}
+          {renderSideImage(task)}
           <View style={styles.sliderCol}>{renderSlider()}</View>
         </View>
       );
@@ -314,16 +351,7 @@ const FractionSliderTask = ({
       return (
         <View style={styles.row}>
           <View style={styles.sliderCol}>{renderSlider()}</View>
-          {task.imageUrl ? (
-            <View
-              style={[styles.imageCol, getImageSpacingStyle(task.imageSpacing)]}
-            >
-              <FullWidthFastImage
-                // style={getTaskImageStyle(task.imageStyle)}
-                uri={task.imageUrl}
-              />
-            </View>
-          ) : null}
+          {renderSideImage(task)}
         </View>
       );
     case 'image_top_slider_bottom':
@@ -347,13 +375,15 @@ const FractionSliderTask = ({
 
 const buildInitialChoices = (
   tasks: Slide<SlideType.FRACTION_SLIDER_MULTI>['variants'][number]['tasks'],
-  defaultOptionIndex?: number,
+  fallbackDefaultOptionIndex?: number,
 ) => {
   const initial: Record<string, string> = {};
-  if (defaultOptionIndex == null) return initial;
 
   for (const task of tasks) {
-    const optionId = getDefaultOptionId(task, defaultOptionIndex);
+    const optionId = getDefaultOptionId(
+      task,
+      task.defaultOptionIndex ?? fallbackDefaultOptionIndex,
+    );
     if (optionId) initial[task.id] = optionId;
   }
   return initial;
@@ -456,8 +486,13 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     gap: 12,
   },
-  imageCol: {
-    width: '30%',
+  sideImageBox: {
+    width: 40,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexGrow: 0,
+    flexShrink: 0,
   },
   sliderCol: {
     flex: 1,
