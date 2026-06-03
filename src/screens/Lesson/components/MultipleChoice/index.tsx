@@ -12,6 +12,7 @@ import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 import { Wrapper } from '@components/Wrapper';
 
+import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { getUkrLetterByIndex } from '@extra/getUkrLetterByIndex';
 import { isHtmlString } from '@extra/isHtmlString';
@@ -149,20 +150,28 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
         style={styles.buttonsRow}
         onLayout={e => setButtonsRowWidth(e.nativeEvent.layout.width)}
       >
-        {slide.variants[0].options.map((option, index) => (
-          // size: чтобы все кнопки влезали в 1 строку
-          // width = rowWidth - gaps
-          // size = floor(width / count)
-          <Button
-            borderRadius={25}
-            disabled={isCorrect != null}
-            key={option.id}
-            pressed={chosenOptionsIds.includes(option.id)}
-            size={optionButtonSize}
-            title={getUkrLetterByIndex(index)}
-            onPress={() => toggleChooseOption(option.id)}
-          />
-        ))}
+        {slide.variants[0].options.map((option, index) => {
+          const isChosen = chosenOptionsIds.includes(option.id);
+
+          return (
+            <View
+              key={option.id}
+              style={[
+                styles.optionButtonWrap,
+                isChosen ? styles.optionButtonWrapChosen : null,
+              ]}
+            >
+              <Button
+                borderRadius={25}
+                disabled={isCorrect != null}
+                pressed={isChosen}
+                size={optionButtonSize}
+                title={getUkrLetterByIndex(index)}
+                onPress={() => toggleChooseOption(option.id)}
+              />
+            </View>
+          );
+        })}
       </View>
 
       <Button
@@ -228,5 +237,13 @@ const styles = StyleSheet.create({
     gap: DEFAULT_SPACE,
     justifyContent: 'space-between',
     flexWrap: 'wrap',
+  },
+  optionButtonWrap: {
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  optionButtonWrapChosen: {
+    borderColor: colors.brightPurple,
   },
 });
