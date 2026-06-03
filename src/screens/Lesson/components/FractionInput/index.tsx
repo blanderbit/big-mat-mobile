@@ -48,7 +48,7 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
     setDenominator(prev => `${prev}${digit}`);
   };
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -60,9 +60,9 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
       slide.variants[0].correctNumerator === Number(numerator) &&
       slide.variants[0].correctDenominator === Number(denominator)
     ) {
-      setIsCorrect(true);
+      setAnswerResult(true);
     } else {
-      setIsCorrect(false);
+      setAnswerResult(false);
     }
   };
 

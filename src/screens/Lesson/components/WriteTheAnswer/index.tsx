@@ -49,7 +49,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
   );
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -84,7 +84,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
 
   const answer = () => {
     if (slide.variants[0].numberAnswerLayout === 'blocks_below') {
-      setIsCorrect(Number(value) === slide.variants[0].correctNumber);
+      setAnswerResult(Number(value) === slide.variants[0].correctNumber);
       return;
     }
 
@@ -96,7 +96,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
         const v = valueByFieldId[field.id];
         return v != null && v !== '' && Number(v) === field.correctNumber;
       });
-      setIsCorrect(allCorrect);
+      setAnswerResult(allCorrect);
       return;
     }
 
@@ -107,7 +107,7 @@ export const WriteTheAnswer = ({ slide, lessonId }: Props) => {
         const v = valueByFieldId[field.id];
         return v != null && v !== '' && Number(v) === field.correctNumber;
       });
-      setIsCorrect(allCorrect);
+      setAnswerResult(allCorrect);
     }
   };
 

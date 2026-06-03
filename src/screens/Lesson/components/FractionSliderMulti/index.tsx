@@ -397,7 +397,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
   );
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -421,7 +421,7 @@ export const FractionSliderMulti = ({ slide, lessonId }: Props) => {
       );
     });
 
-    setIsCorrect(allCorrect);
+    setAnswerResult(allCorrect);
   };
 
   return (

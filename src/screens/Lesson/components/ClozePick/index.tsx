@@ -19,7 +19,7 @@ export const ClozePick = ({ slide, lessonId }: Props) => {
   const { t } = useTranslation();
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -68,7 +68,7 @@ export const ClozePick = ({ slide, lessonId }: Props) => {
       );
     });
 
-    setIsCorrect(ok);
+    setAnswerResult(ok);
   };
 
   return (

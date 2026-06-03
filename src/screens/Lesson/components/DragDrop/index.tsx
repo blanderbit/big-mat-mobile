@@ -56,7 +56,7 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
       return initial;
     },
   );
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -273,7 +273,7 @@ export const DragDrop = ({ setScrollEnabled, slide, lessonId }: Props) => {
     });
 
     const isCorrect = mismatches.length === 0;
-    setIsCorrect(isCorrect);
+    setAnswerResult(isCorrect);
   };
 
   return (

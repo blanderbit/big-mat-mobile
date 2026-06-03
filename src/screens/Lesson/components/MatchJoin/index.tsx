@@ -78,7 +78,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
   const [rightColOffset, setRightColOffset] = useState({ x: 0, y: 0 });
   const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -111,7 +111,7 @@ export const MatchJoin = ({ slide, lessonId }: Props) => {
     const allCorrect = rightItems.every(
       r => matchedLeftIdByRightId[r.id] === r.matchesLeftId,
     );
-    setIsCorrect(allCorrect);
+    setAnswerResult(allCorrect);
   };
 
   const getRightIdByLeftId = (leftId: string) => {

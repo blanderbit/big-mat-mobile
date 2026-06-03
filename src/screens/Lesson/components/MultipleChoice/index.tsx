@@ -41,7 +41,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
         )
       : 80;
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -91,7 +91,7 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = chosenOptionsIds;
 
-    setIsCorrect(
+    setAnswerResult(
       chosenIds.length === correctIds.length &&
         chosenIds.every(id => correctIds.includes(id)) &&
         correctIds?.every(id => chosenIds.includes(id)),

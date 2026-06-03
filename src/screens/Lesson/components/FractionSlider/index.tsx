@@ -72,7 +72,7 @@ export const FractionSlider = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const { t } = useTranslation();
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -86,7 +86,7 @@ export const FractionSlider = ({
     const correctIds = slide.variants[0].correctOptionIds;
     const chosenIds = [answerId];
 
-    setIsCorrect(
+    setAnswerResult(
       chosenIds.length === correctIds.length &&
         chosenIds.every(id => correctIds.includes(id)) &&
         correctIds.every(id => chosenIds.includes(id)),

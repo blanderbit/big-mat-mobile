@@ -60,7 +60,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
     } as const;
   };
 
-  const { handleGoToNextSlide } = usePatchSlide({
+  const { handleGoToNextSlide, setAnswerResult } = usePatchSlide({
     isCorrect,
     lessonId,
     slideId: slide.id,
@@ -120,7 +120,9 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
   const answer = () => {
     const correctIds = slide.variants[0].correctOptionIds;
     if (chosenOptionId == null) return;
-    setIsCorrect(correctIds.length === 1 && correctIds[0] === chosenOptionId);
+    setAnswerResult(
+      correctIds.length === 1 && correctIds[0] === chosenOptionId,
+    );
   };
 
   return (

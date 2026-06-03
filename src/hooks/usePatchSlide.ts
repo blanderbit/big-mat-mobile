@@ -12,11 +12,18 @@ export const usePatchSlide = ({
   lessonId: string;
   slideId: string;
   isCorrect: boolean | null;
-  setIsCorrect?: (isCorrect: null) => void;
+  setIsCorrect?: (isCorrect: boolean | null) => void;
 }) => {
   const [triesCount, setTriesCount] = useState(1);
   const goToNextSlide = useLessonsStore(state => state.goToNextSlide);
   const slides = useLessonsStore(state => state.slides);
+
+  const setAnswerResult = (correct: boolean) => {
+    if (!correct) {
+      setTriesCount(prev => prev + 1);
+    }
+    setIsCorrect?.(correct);
+  };
 
   const handleGoToNextSlide = () => {
     if (isCorrect) {
@@ -30,12 +37,12 @@ export const usePatchSlide = ({
       }).catch(() => {});
       goToNextSlide();
     } else {
-      setTriesCount(prev => prev + 1);
       setIsCorrect?.(null);
     }
   };
 
   return {
     handleGoToNextSlide,
+    setAnswerResult,
   };
 };
