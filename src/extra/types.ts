@@ -238,6 +238,7 @@ export type SlideVariantsByType = {
     blocks?: Block[];
     buttonText?: string;
     correctOptionIds: string[];
+    optionBlockBackground?: string;
     questionImageUrl?: string;
     // questionText: string; // HTML string;
     optionsLayout?: 'grid' | 'list';
