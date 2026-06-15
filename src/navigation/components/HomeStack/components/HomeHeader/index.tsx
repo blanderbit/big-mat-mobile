@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { useUserStore } from '@stores/userStore';
 
-import BlankAvatar from '@assets/images/blankAvatar.svg';
+import appLogo from '@assets/images/appLogo.png';
 import Home from '@assets/images/home.svg';
 
 export const HomeHeader = ({ navigation, route }: NativeStackHeaderProps) => {
@@ -42,7 +42,7 @@ export const HomeHeader = ({ navigation, route }: NativeStackHeaderProps) => {
       </Pressable>
 
       <Pressable style={styles.right} onPress={handlePressScore}>
-        <BlankAvatar height={42} width={42} />
+        <Image resizeMode="contain" source={appLogo} style={styles.avatar} />
 
         <View style={styles.scorePill}>
           <Text bold color={colors.brightPurple} size={20}>
@@ -65,6 +65,11 @@ const styles = StyleSheet.create({
   right: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
   },
   scorePill: {
     backgroundColor: colors.white,

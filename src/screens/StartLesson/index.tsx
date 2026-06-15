@@ -59,6 +59,7 @@ export const StartLesson = ({ route }: Props) => {
           color={colors.white}
           marginBottom={lesson.subtitle ? DEFAULT_SPACE : 0}
           size={30}
+          style={styles.lessonTitle}
         >
           {lesson.title}
         </Text>
@@ -96,8 +97,12 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+    paddingHorizontal: DEFAULT_SPACE,
     justifyContent: 'center',
     zIndex: 1,
+  },
+  lessonTitle: {
+    width: '100%',
   },
   startButtonWrap: {
     position: 'absolute',

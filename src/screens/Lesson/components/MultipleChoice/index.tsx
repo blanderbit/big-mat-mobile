@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { AnswerResult } from '@components/AnswerResult';
@@ -12,7 +12,6 @@ import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 import { Wrapper } from '@components/Wrapper';
 
-import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { getUkrLetterByIndex } from '@extra/getUkrLetterByIndex';
 import { isHtmlString } from '@extra/isHtmlString';
@@ -22,6 +21,19 @@ import { usePatchSlide } from '@hooks/usePatchSlide';
 type Props = {
   slide: Slide<SlideType.MULTIPLE_CHOICE>;
   lessonId: string;
+};
+
+type OptionImageStyle =
+  Slide<SlideType.MULTIPLE_CHOICE>['variants'][0]['options'][number]['imageStyle'];
+
+const getOptionImageAlignItems = (
+  align: OptionImageStyle['align'],
+  isGrid: boolean,
+): NonNullable<ViewStyle['alignItems']> => {
+  if (align === 'center') return 'center';
+  if (align === 'right') return 'flex-end';
+  if (align === 'left') return 'flex-start';
+  return isGrid ? 'center' : 'flex-start';
 };
 
 export const MultipleChoice = ({ slide, lessonId }: Props) => {
@@ -135,12 +147,24 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
             </View>
 
             {option.imageUrl ? (
-              <SizedFastImage
-                borderRadius={option.imageStyle?.radius}
-                height={option.imageStyle?.height}
-                uri={option.imageUrl}
-                width={option.imageStyle?.width}
-              />
+              <View
+                style={[
+                  styles.optionImageWrap,
+                  {
+                    alignItems: getOptionImageAlignItems(
+                      option.imageStyle?.align,
+                      isOptionsGrid,
+                    ),
+                  },
+                ]}
+              >
+                <SizedFastImage
+                  borderRadius={option.imageStyle?.radius}
+                  height={option.imageStyle?.height}
+                  uri={option.imageUrl}
+                  width={option.imageStyle?.width}
+                />
+              </View>
             ) : null}
           </View>
         ))}
@@ -150,28 +174,18 @@ export const MultipleChoice = ({ slide, lessonId }: Props) => {
         style={styles.buttonsRow}
         onLayout={e => setButtonsRowWidth(e.nativeEvent.layout.width)}
       >
-        {slide.variants[0].options.map((option, index) => {
-          const isChosen = chosenOptionsIds.includes(option.id);
-
-          return (
-            <View
-              key={option.id}
-              style={[
-                styles.optionButtonWrap,
-                isChosen ? styles.optionButtonWrapChosen : null,
-              ]}
-            >
-              <Button
-                borderRadius={25}
-                disabled={isCorrect != null}
-                pressed={isChosen}
-                size={optionButtonSize}
-                title={getUkrLetterByIndex(index)}
-                onPress={() => toggleChooseOption(option.id)}
-              />
-            </View>
-          );
-        })}
+        {slide.variants[0].options.map((option, index) => (
+          <Button
+            borderRadius={25}
+            disabled={isCorrect != null}
+            key={option.id}
+            pressed={chosenOptionsIds.includes(option.id)}
+            size={optionButtonSize}
+            title={getUkrLetterByIndex(index)}
+            variant="answer"
+            onPress={() => toggleChooseOption(option.id)}
+          />
+        ))}
       </View>
 
       <Button
@@ -230,20 +244,13 @@ const styles = StyleSheet.create({
   optionsGridItem: {
     flexGrow: 0,
     flexShrink: 0,
-    alignItems: 'center',
+  },
+  optionImageWrap: {
+    width: '100%',
   },
   buttonsRow: {
     flexDirection: 'row',
     gap: DEFAULT_SPACE,
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-  },
-  optionButtonWrap: {
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  optionButtonWrapChosen: {
-    borderColor: colors.brightPurple,
   },
 });

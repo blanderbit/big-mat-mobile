@@ -68,9 +68,11 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
 
   return (
     <Wrapper>
-      {slide.variants[0].blocks && <Blocks blocks={slide.variants[0].blocks} />}
-
       <View style={styles.root}>
+        {slide.variants[0].blocks && (
+          <Blocks blocks={slide.variants[0].blocks} />
+        )}
+
         <View style={styles.questionStack}>
           <View style={styles.row}>
             <View style={styles.leftCol}>
@@ -103,19 +105,19 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
           </View>
         </View>
 
-        <View>
+        <View style={styles.bottom}>
           <Button
             disabled={isCorrect != null || !numerator || !denominator}
             title={t('check')}
             onPress={answer}
           />
-        </View>
 
-        <Keyboard
-          disabled={isCorrect != null}
-          onBackspace={handleBackspace}
-          onDigit={handleDigit}
-        />
+          <Keyboard
+            disabled={isCorrect != null}
+            onBackspace={handleBackspace}
+            onDigit={handleDigit}
+          />
+        </View>
       </View>
 
       {isCorrect != null && (
@@ -136,6 +138,10 @@ export const FractionInput = ({ slide, lessonId }: Props) => {
 };
 
 const styles = StyleSheet.create({
+  bottom: {
+    gap: DEFAULT_SPACE,
+    marginTop: 'auto',
+  },
   questionStack: {
     gap: DEFAULT_SPACE,
   },
@@ -155,7 +161,7 @@ const styles = StyleSheet.create({
   },
   root: {
     flex: 1,
-    justifyContent: 'space-between',
+    gap: DEFAULT_SPACE,
   },
   rightCol: {
     width: '50%',

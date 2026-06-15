@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Image, StyleProp, StyleSheet } from 'react-native';
+import { StyleProp, StyleSheet } from 'react-native';
 import FastImage, {
   ImageStyle as FastImageStyle,
   ResizeMode,
 } from 'react-native-fast-image';
+
+import { useRemoteImageAspectRatio } from '@hooks/useRemoteImageAspectRatio';
 
 type Props = {
   uri: string;
@@ -22,25 +23,16 @@ export const SizedFastImage = ({
   style,
   resizeMode = FastImage.resizeMode.cover,
 }: Props) => {
-  const [naturalAspectRatio, setNaturalAspectRatio] = useState<
-    number | undefined
-  >();
-
-  useEffect(() => {
-    if (explicitWidth != null && explicitHeight != null) return;
-    Image.getSize(
-      uri,
-      (iw, ih) => {
-        if (iw > 0 && ih > 0) setNaturalAspectRatio(iw / ih);
-      },
-      () => {},
-    );
-  }, [uri, explicitWidth, explicitHeight]);
+  const hasFixedSize =
+    explicitWidth != null && explicitHeight != null;
+  const aspectRatio = useRemoteImageAspectRatio(uri, undefined, !hasFixedSize);
 
   const radiusStyle =
     borderRadius != null ? { borderRadius, overflow: 'hidden' as const } : null;
 
-  if (explicitWidth != null && explicitHeight != null) {
+  if (!uri) return null;
+
+  if (hasFixedSize) {
     return (
       <FastImage
         resizeMode={resizeMode}
@@ -54,7 +46,7 @@ export const SizedFastImage = ({
     );
   }
 
-  if (explicitWidth != null && naturalAspectRatio != null) {
+  if (explicitWidth != null) {
     return (
       <FastImage
         resizeMode={resizeMode}
@@ -62,7 +54,7 @@ export const SizedFastImage = ({
         style={[
           {
             width: explicitWidth,
-            height: Math.round(explicitWidth / naturalAspectRatio),
+            height: Math.round(explicitWidth / aspectRatio),
           },
           radiusStyle,
           style,
@@ -71,14 +63,14 @@ export const SizedFastImage = ({
     );
   }
 
-  if (explicitHeight != null && naturalAspectRatio != null) {
+  if (explicitHeight != null) {
     return (
       <FastImage
         resizeMode={resizeMode}
         source={{ uri }}
         style={[
           {
-            width: Math.round(explicitHeight * naturalAspectRatio),
+            width: Math.round(explicitHeight * aspectRatio),
             height: explicitHeight,
           },
           radiusStyle,
@@ -94,7 +86,7 @@ export const SizedFastImage = ({
       source={{ uri }}
       style={[
         styles.fullWidth,
-        naturalAspectRatio != null ? { aspectRatio: naturalAspectRatio } : null,
+        { aspectRatio },
         radiusStyle,
         style,
       ]}

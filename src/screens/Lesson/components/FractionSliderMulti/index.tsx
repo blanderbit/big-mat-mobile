@@ -276,7 +276,7 @@ const FractionSliderTask = ({
         : 0;
 
     return (
-      <View style={[styles.sliderOuter, isDisabled && styles.sliderDisabled]}>
+      <View style={styles.sliderOuter}>
         {!hideFractionLabels ? (
           <View pointerEvents="none" style={styles.labelsLayer}>
             {trackWidth > 0
@@ -335,6 +335,10 @@ const FractionSliderTask = ({
             <View style={styles.togglerPill} />
           </View>
         </View>
+
+        {isDisabled ? (
+          <View pointerEvents="none" style={styles.sliderDisabledOverlay} />
+        ) : null}
       </View>
     );
   };
@@ -513,9 +517,16 @@ const styles = StyleSheet.create({
   sliderOuter: {
     width: '100%',
     paddingVertical: 6,
+    position: 'relative',
   },
-  sliderDisabled: {
-    opacity: 0.5,
+  sliderDisabledOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    zIndex: 10,
   },
   labelsLayer: {
     position: 'relative',

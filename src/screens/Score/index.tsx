@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Dimensions,
   Image,
@@ -18,9 +18,9 @@ import { Text } from '@components/Text';
 import { routes } from '@navigation/extra/routes';
 import { HomeStackNavigationProp } from '@navigation/extra/types';
 
-import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
+import { useUserStore } from '@stores/userStore';
 
 import background4 from '@assets/images/background4.png';
 import Background11 from '@assets/images/background11.svg';
@@ -33,21 +33,20 @@ export const Score = () => {
   const maxTextWidth = screenWidth - DEFAULT_SPACE * 2;
   const { t } = useTranslation();
   const { width: windowWidth } = Dimensions.get('window');
-  const { navigate } = useNavigation<HomeStackNavigationProp>();
-  const [globalScore, setGlobalScore] = useState(0);
+  const navigation = useNavigation<HomeStackNavigationProp>();
+  const { navigate } = navigation;
+  const totalScore = useUserStore(s => s.totalScore);
+  const getTotalScore = useUserStore(s => s.getTotalScore);
 
   useEffect(() => {
-    const getGlobalScore = async () => {
-      const response = await API.get('/v1/content/topics/progress');
-      const { completedTopics, totalTopics } = response.data.data.summary;
-      const percent =
-        totalTopics > 0
-          ? Math.min(100, Math.max(0, (completedTopics / totalTopics) * 100))
-          : 0;
-      setGlobalScore(Math.round(percent));
-    };
-    getGlobalScore();
-  }, []);
+    void getTotalScore();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      void getTotalScore();
+    });
+
+    return unsubscribe;
+  }, [navigation, getTotalScore]);
 
   const handleShare = () => {};
 
@@ -69,7 +68,7 @@ export const Score = () => {
           numberOfLines={1}
           size={MAX_SCORE_FONT}
         >
-          {globalScore}
+          {totalScore}
         </Text>
       </View>
 
@@ -89,10 +88,13 @@ export const Score = () => {
           marginBottom={DEFAULT_SPACE * 2}
           size={26}
         >
-          {globalScore === 0 ? t('topicTitle.empty') : t('topicTitle.middle')}
+          {totalScore === 0 ? t('topicTitle.empty') : t('topicTitle.middle')}
         </Text>
 
-        <RoundSlider fillColor={colors.brightPurple} value={globalScore} />
+        <RoundSlider
+          fillColor={colors.brightPurple}
+          value={Math.min(totalScore, 100)}
+        />
 
         <View style={styles.shareShadowWrap}>
           <Pressable

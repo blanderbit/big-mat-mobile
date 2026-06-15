@@ -218,6 +218,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
                 disabled={isCorrect != null}
                 pressed={chosenOptionId === option.id}
                 title={getUkrLetterByIndex(index)}
+                variant="answer"
                 width="100%"
                 onPress={() => chooseOption(option.id)}
               />
@@ -259,6 +260,7 @@ export const SingleChoice = ({ slide, lessonId }: Props) => {
                 disabled={isCorrect != null}
                 pressed={chosenOptionId === option.id}
                 title={getUkrLetterByIndex(index)}
+                variant="answer"
                 width={isOptionsGrid ? '100%' : optionButtonSize}
                 onPress={() => chooseOption(option.id)}
               />

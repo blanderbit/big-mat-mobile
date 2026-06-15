@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useTranslation } from 'react-i18next';
-import FastImage from 'react-native-fast-image';
 
 import { AnswerResult } from '@components/AnswerResult';
 import { Blocks } from '@components/Blocks';
 import { Button } from '@components/Button';
+import { FullWidthFastImage } from '@components/FullWidthFastImage';
 import { Text } from '@components/Text';
 import { Wrapper } from '@components/Wrapper';
 
@@ -139,9 +139,8 @@ export const FractionSlider = ({
             getSpacingStyle(slide.variants[0].questionImageSpacing),
           ]}
         >
-          <FastImage
-            resizeMode={FastImage.resizeMode.contain}
-            source={{ uri: slide.variants[0].questionImageUrl }}
+          <FullWidthFastImage
+            uri={slide.variants[0].questionImageUrl}
             style={[
               styles.questionImage,
               getQuestionImageStyle(slide.variants[0].questionImageStyle),

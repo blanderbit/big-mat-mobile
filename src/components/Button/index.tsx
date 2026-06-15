@@ -32,6 +32,8 @@ type Props = {
   isLoading?: boolean;
   children?: ReactNode;
   width?: DimensionValue;
+  /** Flat yellow answer option: pink border when pressed/selected. */
+  variant?: 'default' | 'answer';
 };
 
 export const Button = ({
@@ -47,10 +49,13 @@ export const Button = ({
   isLoading,
   children,
   width,
+  variant = 'default',
 }: Props) => {
   const [isMultiline, setIsMultiline] = useState(false);
   const radius = borderRadius ?? 40;
   const isGray = disabled;
+  const isAnswer = variant === 'answer';
+  const isSelected = forcedPressed === true;
   const isFixedSizeButton = size != null;
 
   const handleContentLayout = (event: LayoutChangeEvent) => {
@@ -95,13 +100,16 @@ export const Button = ({
   return (
     <RNPressable disabled={disabled} style={pressableStyle} onPress={onPress}>
       {({ pressed }) => {
-        const isPressed = forcedPressed === true || pressed;
+        const isPressed = isAnswer ? false : forcedPressed === true || pressed;
         const base = isGray ? grayBaseColors : baseColors;
         const pressedBase = isGray ? grayPressedBaseColors : pressedBaseColors;
         const gloss = isGray ? grayGlossColors : glossColors;
         const pressedGloss = isGray
           ? grayPressedGlossColors
           : pressedGlossColors;
+        const answerBorderWidth = isAnswer && isSelected ? 2 : 1;
+        const answerBorderColor =
+          isAnswer && isSelected ? colors.pink : colors.black;
 
         return (
           <View
@@ -115,25 +123,43 @@ export const Button = ({
               style={[
                 styles.clipWrap,
                 { borderRadius: radius },
+                isAnswer
+                  ? {
+                      borderWidth: answerBorderWidth,
+                      borderColor: answerBorderColor,
+                    }
+                  : null,
                 clipLayoutStyle,
               ]}
             >
-              <LinearGradient
-                colors={isPressed ? pressedBase : base}
-                end={{ x: 0.5, y: 1 }}
-                locations={[0, 0.55, 1]}
-                pointerEvents="none"
-                start={{ x: 0.5, y: 0 }}
-                style={styles.baseGradient}
-              />
+              {isAnswer && !isGray ? (
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.baseGradient,
+                    { backgroundColor: colors.brightYellow },
+                  ]}
+                />
+              ) : (
+                <>
+                  <LinearGradient
+                    colors={isPressed ? pressedBase : base}
+                    end={{ x: 0.5, y: 1 }}
+                    locations={[0, 0.55, 1]}
+                    pointerEvents="none"
+                    start={{ x: 0.5, y: 0 }}
+                    style={styles.baseGradient}
+                  />
 
-              <LinearGradient
-                colors={isPressed ? pressedGloss : gloss}
-                end={{ x: 0.5, y: 1 }}
-                pointerEvents="none"
-                start={{ x: 0.5, y: 0 }}
-                style={styles.glossGradient}
-              />
+                  <LinearGradient
+                    colors={isPressed ? pressedGloss : gloss}
+                    end={{ x: 0.5, y: 1 }}
+                    pointerEvents="none"
+                    start={{ x: 0.5, y: 0 }}
+                    style={styles.glossGradient}
+                  />
+                </>
+              )}
 
               {isLoading ? (
                 <ActivityIndicator color={colors.black} size="small" />

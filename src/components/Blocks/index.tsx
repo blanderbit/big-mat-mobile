@@ -8,22 +8,21 @@ import {
 import {
   Animated,
   Easing,
-  Image,
   LayoutChangeEvent,
   Pressable,
   StyleSheet,
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import FastImage from 'react-native-fast-image';
-import { SvgUri } from 'react-native-svg';
 
 import { Carousel } from '@components/Carousel';
+import { RemoteSvgImage } from '@components/RemoteSvgImage';
+import { SizedFastImage } from '@components/SizedFastImage';
 import { Text } from '@components/Text';
 import { WebView } from '@components/WebView';
 
 import { colors } from '@extra/colors';
-import { CAROUSEL_MAX_HEIGHT, DEFAULT_SPACE } from '@extra/constants';
+import { CAROUSEL_MAX_HEIGHT, DEFAULT_REMOTE_SVG_HEIGHT, DEFAULT_SPACE } from '@extra/constants';
 import {
   Block,
   ContainerBlock,
@@ -67,81 +66,6 @@ const TITLE_LEVEL_SIZE: Record<NonNullable<TitleBlock['level']>, number> = {
 const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
 
-/** Remote raster image: avoid height "100%" in ScrollView; optional explicit size from CMS. */
-const BlockRasterImage = ({
-  explicitHeight,
-  explicitWidth,
-  uri,
-}: {
-  uri: string;
-  explicitWidth?: number;
-  explicitHeight?: number;
-}) => {
-  const [naturalAspectRatio, setNaturalAspectRatio] = useState<
-    number | undefined
-  >();
-
-  useEffect(() => {
-    if (explicitWidth != null && explicitHeight != null) return;
-    Image.getSize(
-      uri,
-      (iw, ih) => {
-        if (iw > 0 && ih > 0) setNaturalAspectRatio(iw / ih);
-      },
-      () => {},
-    );
-  }, [uri, explicitWidth, explicitHeight]);
-
-  if (explicitWidth != null && explicitHeight != null) {
-    return (
-      <FastImage
-        resizeMode="cover"
-        source={{ uri }}
-        style={{ width: explicitWidth, height: explicitHeight }}
-      />
-    );
-  }
-
-  if (explicitWidth != null && naturalAspectRatio != null) {
-    return (
-      <FastImage
-        resizeMode="cover"
-        source={{ uri }}
-        style={{
-          width: explicitWidth,
-          height: Math.round(explicitWidth / naturalAspectRatio),
-        }}
-      />
-    );
-  }
-
-  if (explicitHeight != null && naturalAspectRatio != null) {
-    return (
-      <FastImage
-        resizeMode="cover"
-        source={{ uri }}
-        style={{
-          width: Math.round(explicitHeight * naturalAspectRatio),
-          height: explicitHeight,
-        }}
-      />
-    );
-  }
-
-  return (
-    <FastImage
-      resizeMode="cover"
-      source={{ uri }}
-      style={[
-        styles.blockRasterFullWidth,
-        naturalAspectRatio != null ? { aspectRatio: naturalAspectRatio } : null,
-      ]}
-    />
-  );
-};
-
-const DEFAULT_SVG_BLOCK_HEIGHT = 240;
-
 const TAP_CARD_FLIP_DURATION_MS = 380;
 
 type TapCardRenderOpts = { embedded: true };
@@ -182,8 +106,8 @@ const TapCard = ({
 
   const [isBackVisible, setIsBackVisible] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
-  const [flipShellHeight, setFlipShellHeight] = useState(0);
-  const [baselineHeight, setBaselineHeight] = useState(0);
+  const [frontHeight, setFrontHeight] = useState(0);
+  const [backHeight, setBackHeight] = useState(0);
   const flipAnim = useRef(new Animated.Value(0)).current;
   const skipFlipAnimationRef = useRef(true);
 
@@ -191,15 +115,21 @@ const TapCard = ({
   const mountBack = isBackVisible || isFlipping;
   const bothMounted = mountFront && mountBack;
 
-  const onFaceLayout = useCallback((e: LayoutChangeEvent) => {
+  const onFrontLayout = useCallback((e: LayoutChangeEvent) => {
     const { height } = e.nativeEvent.layout;
-    if (height <= 0) return;
-
-    setBaselineHeight(prev => (prev === 0 ? height : prev));
-    setFlipShellHeight(prev => Math.max(prev, height));
+    if (height > 0) setFrontHeight(height);
   }, []);
 
-  const flipMinHeight = Math.max(flipShellHeight, baselineHeight);
+  const onBackLayout = useCallback((e: LayoutChangeEvent) => {
+    const { height } = e.nativeEvent.layout;
+    if (height > 0) setBackHeight(height);
+  }, []);
+
+  const flipMinHeight = isFlipping
+    ? Math.max(frontHeight, backHeight)
+    : isBackVisible
+      ? backHeight || frontHeight
+      : frontHeight || backHeight;
 
   useEffect(() => {
     if (!canFlip) return;
@@ -285,7 +215,7 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody} onLayout={onFaceLayout}>
+              <View style={styles.tapCardBody} onLayout={onFrontLayout}>
                 {renderSide(tapCardData.frontside, embeddedOpts)}
               </View>
             </Animated.View>
@@ -304,7 +234,7 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody} onLayout={onFaceLayout}>
+              <View style={styles.tapCardBody} onLayout={onBackLayout}>
                 {renderSide(tapCardData.backside, embeddedOpts)}
               </View>
             </Animated.View>
@@ -320,7 +250,7 @@ const TapCard = ({
           >
             <View
               style={[...getTapCardFaceStyle(tapCardData.backside), styles.tapCardBody]}
-              onLayout={onFaceLayout}
+              onLayout={onBackLayout}
             >
               {renderSide(tapCardData.backside, embeddedOpts)}
             </View>
@@ -453,7 +383,7 @@ export const Blocks = ({
     const svgWidth = explicitW ?? '100%';
     const svgHeight =
       explicitH ??
-      (typeof explicitW === 'number' ? explicitW : DEFAULT_SVG_BLOCK_HEIGHT);
+      (typeof explicitW === 'number' ? explicitW : DEFAULT_REMOTE_SVG_HEIGHT);
 
     return (
       <View
@@ -461,12 +391,12 @@ export const Blocks = ({
         style={[imageRowAlignStyle, getSpacingStyle(imageData.spacing)]}
       >
         {isSvg ? (
-          <SvgUri height={svgHeight} uri={uri} width={svgWidth} />
+          <RemoteSvgImage height={svgHeight} uri={uri} width={svgWidth} />
         ) : (
-          <BlockRasterImage
-            explicitHeight={explicitH}
-            explicitWidth={explicitW}
+          <SizedFastImage
+            height={explicitH}
             uri={uri}
+            width={explicitW}
           />
         )}
       </View>
@@ -734,9 +664,6 @@ export const Blocks = ({
 };
 
 const styles = StyleSheet.create({
-  blockRasterFullWidth: {
-    width: '100%',
-  },
   imageRowAlignStart: {
     alignItems: 'flex-start',
   },

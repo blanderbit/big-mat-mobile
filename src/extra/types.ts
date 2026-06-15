@@ -245,7 +245,12 @@ export type SlideVariantsByType = {
       id: string;
       imageUrl?: string;
       label: string;
-      imageStyle?: { width?: number; height?: number; radius?: number };
+      imageStyle?: {
+        width?: number;
+        height?: number;
+        radius?: number;
+        align?: 'left' | 'center' | 'right';
+      };
     }[];
     explanation: string; // HTML string;
     wrongExplanation: string; // HTML string;
