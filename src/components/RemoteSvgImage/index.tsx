@@ -12,35 +12,46 @@ type Props = {
   height: number | `${number}%`;
 };
 
-const buildSvgFallbackHtml = (uri: string) => {
-  const escapedUri = uri
+const escapeSvgUri = (uri: string) =>
+  uri
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;padding:0;background:transparent;overflow:hidden;height:100%}#wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}img{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}</style></head><body><div id="wrap"><img src="${escapedUri}" alt="" /></div></body></html>`;
+/** Fragment for embedded WebView — avoids nested full HTML docs and img baseline clipping on Android. */
+const buildSvgEmbeddedHtml = (uri: string, maxHeight?: number) => {
+  const escapedUri = escapeSvgUri(uri);
+  const maxHeightStyle =
+    maxHeight != null ? `max-height:${maxHeight}px;` : '';
+
+  return `<div style="width:100%;line-height:0;font-size:0"><img src="${escapedUri}" alt="" style="display:block;width:100%;height:auto;max-width:100%;${maxHeightStyle}object-fit:contain;vertical-align:top" /></div>`;
 };
 
 const resolveContainerHeight = (height: number | `${number}%`) =>
   typeof height === 'number' ? height : DEFAULT_REMOTE_SVG_HEIGHT;
 
 export const RemoteSvgImage = ({ uri, width, height }: Props) => {
-  const [useWebViewFallback, setUseWebViewFallback] = useState(
-    Platform.OS === 'android',
-  );
+  const [useWebViewFallback, setUseWebViewFallback] = useState(false);
+  const resolvedHeight = resolveContainerHeight(height);
 
   if (!uri) return null;
 
   if (useWebViewFallback) {
     return (
-      <View style={[styles.container, { width, height: resolveContainerHeight(height) }]}>
+      <View
+        style={[
+          styles.container,
+          { width, minHeight: resolvedHeight },
+          Platform.OS === 'android' ? styles.containerAndroid : null,
+        ]}
+      >
         <WebView
+          allowOverflow
           backgroundColor="transparent"
-          containerHeight={resolveContainerHeight(height)}
           embedded
-          html={buildSvgFallbackHtml(uri)}
+          html={buildSvgEmbeddedHtml(uri, resolvedHeight)}
         />
       </View>
     );
@@ -58,6 +69,9 @@ export const RemoteSvgImage = ({ uri, width, height }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    overflow: 'hidden',
+    overflow: 'visible',
+  },
+  containerAndroid: {
+    paddingBottom: 2,
   },
 });

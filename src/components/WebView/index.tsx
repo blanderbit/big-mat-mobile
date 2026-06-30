@@ -22,6 +22,8 @@ type Props = {
   borderRadius?: number;
   /** No extra horizontal padding — for tap_card and other tight layouts. */
   embedded?: boolean;
+  /** Keep content visible when it exceeds the measured box (e.g. remote SVG on Android). */
+  allowOverflow?: boolean;
 };
 
 const MAX_HEIGHT = 200;
@@ -142,6 +144,7 @@ export const WebView = ({
   color,
   containerHeight,
   embedded = false,
+  allowOverflow = false,
 }: Props) => {
   const webViewRef = useRef<RNWebView | null>(null);
   const [height, setHeight] = useState<number>(MIN_HEIGHT);
@@ -191,9 +194,16 @@ export const WebView = ({
    width: 100%;
    min-height: 0 !important;
    height: auto !important;
+   line-height: 0;
+   font-size: 0;
  }
  #__rn_embed_root * {
    max-width: 100%;
+ }
+ #__rn_embed_root img {
+   display: block;
+   height: auto !important;
+   vertical-align: top;
  }
 
  html, body {
@@ -332,6 +342,7 @@ export const WebView = ({
       style={[
         styles.wrapper,
         embedded ? styles.wrapperEmbedded : null,
+        allowOverflow ? styles.wrapperAllowOverflow : null,
         borderRadius != null ? { borderRadius } : undefined,
         backgroundColor ? { backgroundColor } : undefined,
         hasBackground ? { paddingVertical: DEFAULT_SPACE } : undefined,
@@ -375,6 +386,9 @@ const styles = StyleSheet.create({
   },
   wrapperEmbedded: {
     paddingHorizontal: 0,
+  },
+  wrapperAllowOverflow: {
+    overflow: 'visible',
   },
   webView: {
     width: '100%',
