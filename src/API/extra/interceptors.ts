@@ -3,6 +3,12 @@ import i18n from 'i18next';
 import Toast from 'react-native-toast-message';
 
 import { API } from '@API/index';
+import {
+  createApiErrorFromResponse,
+  isApiErrorResponse,
+  isPublicAuthRequest,
+  showApiErrorToast,
+} from '@API/extra/getApiErrorMessage';
 import { hasInternetConnection } from '@extra/hasInternetConnection';
 import { useUserStore } from '@stores/userStore';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '@keychain/extra/constants';
@@ -54,8 +60,13 @@ API.interceptors.request.use(
     const accessToken = await keychain.getItem(ACCESS_TOKEN);
     const existingAuthHeader = (config.headers as Record<string, unknown>)
       ?.Authorization;
+    const requestUrl = config.url;
 
-    if (accessToken && typeof existingAuthHeader !== 'string') {
+    if (
+      accessToken &&
+      !isPublicAuthRequest(requestUrl) &&
+      typeof existingAuthHeader !== 'string'
+    ) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
@@ -78,13 +89,12 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   response => {
-    // console.log(
-    //   '[API] response:',
-    //   response.config.method?.toUpperCase(),
-    //   response.status,
-    //   response.config.url,
-    //   response.data && response.data,
-    // );
+    if (isApiErrorResponse(response.data)) {
+      return Promise.reject(
+        createApiErrorFromResponse(response, response.config),
+      );
+    }
+
     return response;
   },
   async error => {
@@ -121,11 +131,28 @@ API.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalConfig?._retry) {
+      const requestUrl = originalConfig?.url;
+
+      if (isPublicAuthRequest(requestUrl)) {
+        if (!toastWasShown) {
+          showApiErrorToast(error);
+        }
+
+        return Promise.reject(error);
+      }
+
       originalConfig._retry = true;
 
       const refreshToken = await keychain.getItem(REFRESH_TOKEN);
+
       if (!refreshToken) {
         useUserStore.getState().logout();
+
+        if (!toastWasShown) {
+          showApiErrorToast(error);
+          toastWasShown = true;
+        }
+
         return Promise.reject(error);
       }
 
@@ -159,11 +186,8 @@ API.interceptors.response.use(
     }
 
     // Все остальные ошибки
-    if (!toastWasShown && status !== 401) {
-      Toast.show({
-        type: 'error',
-        text1: i18n.t('somethingWentWrong'),
-      });
+    if (!toastWasShown) {
+      showApiErrorToast(error);
     }
 
     return Promise.reject(error);

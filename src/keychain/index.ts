@@ -2,6 +2,10 @@ import * as Keychain from 'react-native-keychain';
 
 export const keychain = {
   setItem: async (key: string, value: string) => {
+    if (!value) {
+      throw new Error('Keychain: cannot store empty value');
+    }
+
     await Keychain.setGenericPassword(key, value, { service: key });
   },
   getItem: async (key: string) => {

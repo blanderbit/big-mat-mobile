@@ -29,7 +29,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     set({ totalScore: totalScoreResponse.data.data.totalScore });
   },
   logout: async () => {
-    set({ user: null });
+    set({ user: null, totalScore: 0 });
     await keychain.removeItem(ACCESS_TOKEN);
     await keychain.removeItem(REFRESH_TOKEN);
   },

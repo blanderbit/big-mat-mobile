@@ -37,6 +37,7 @@ export const Score = () => {
   const { navigate } = navigation;
   const totalScore = useUserStore(s => s.totalScore);
   const getTotalScore = useUserStore(s => s.getTotalScore);
+  const logout = useUserStore(s => s.logout);
 
   useEffect(() => {
     void getTotalScore();
@@ -52,6 +53,10 @@ export const Score = () => {
 
   const navigateToLesson = () => {
     navigate(routes.home.HOME);
+  };
+
+  const handleLogout = () => {
+    void logout();
   };
 
   const fullBleedWidth = { width: windowWidth } as const;
@@ -121,6 +126,19 @@ export const Score = () => {
             </View>
           </Pressable>
         </View>
+
+        <Pressable
+          accessibilityRole="button"
+          style={({ pressed }) => [
+            styles.logoutButton,
+            pressed ? styles.logoutButtonPressed : null,
+          ]}
+          onPress={handleLogout}
+        >
+          <Text bold center size={18}>
+            {t('logout')}
+          </Text>
+        </Pressable>
       </View>
 
       <Text center color={colors.white} marginTop={60} size={18}>
@@ -234,5 +252,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logoutButton: {
+    marginTop: DEFAULT_SPACE * 2,
+    alignSelf: 'center',
+    minWidth: 160,
+    height: 48,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.black,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 28,
+  },
+  logoutButtonPressed: {
+    opacity: 0.85,
   },
 });

@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
   },
   title: {
     width: '100%',
+    lineHeight: 30,
   },
   shadowWrap: {
     alignItems: 'center',

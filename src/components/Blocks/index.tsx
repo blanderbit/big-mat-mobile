@@ -1,15 +1,9 @@
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
-  LayoutChangeEvent,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -67,6 +61,8 @@ const titleSizeFromLevel = (level: TitleBlock['level'] | undefined): number =>
   level != null ? TITLE_LEVEL_SIZE[level] : TITLE_LEVEL_SIZE.h3;
 
 const TAP_CARD_FLIP_DURATION_MS = 380;
+/** Uniform tap-card height; content taller than this scrolls inside the card. */
+const TAP_CARD_HEIGHT = 240;
 
 type TapCardRenderOpts = { embedded: true };
 
@@ -106,30 +102,12 @@ const TapCard = ({
 
   const [isBackVisible, setIsBackVisible] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
-  const [frontHeight, setFrontHeight] = useState(0);
-  const [backHeight, setBackHeight] = useState(0);
   const flipAnim = useRef(new Animated.Value(0)).current;
   const skipFlipAnimationRef = useRef(true);
 
   const mountFront = !isBackVisible || isFlipping;
   const mountBack = isBackVisible || isFlipping;
   const bothMounted = mountFront && mountBack;
-
-  const onFrontLayout = useCallback((e: LayoutChangeEvent) => {
-    const { height } = e.nativeEvent.layout;
-    if (height > 0) setFrontHeight(height);
-  }, []);
-
-  const onBackLayout = useCallback((e: LayoutChangeEvent) => {
-    const { height } = e.nativeEvent.layout;
-    if (height > 0) setBackHeight(height);
-  }, []);
-
-  const flipMinHeight = isFlipping
-    ? Math.max(frontHeight, backHeight)
-    : isBackVisible
-      ? backHeight || frontHeight
-      : frontHeight || backHeight;
 
   useEffect(() => {
     if (!canFlip) return;
@@ -165,17 +143,27 @@ const TapCard = ({
     outputRange: ['180deg', '360deg'],
   });
 
+  const renderFaceContent = (side: VariantStoryBlock) => (
+    <ScrollView
+      contentContainerStyle={styles.tapCardScrollContent}
+      nestedScrollEnabled
+      showsVerticalScrollIndicator
+      style={styles.tapCardScroll}
+    >
+      {renderSide(side, embeddedOpts)}
+    </ScrollView>
+  );
+
   if (!canFlip) {
     return (
       <View
         style={[
           ...getTapCardFaceStyle(singleSide ?? undefined),
+          styles.tapCardFixed,
           getSpacingStyle(tapCardData.spacing),
         ]}
       >
-        <View style={styles.tapCardBody}>
-          {singleSide != null ? renderSide(singleSide, embeddedOpts) : null}
-        </View>
+        {singleSide != null ? renderFaceContent(singleSide) : null}
       </View>
     );
   }
@@ -190,24 +178,15 @@ const TapCard = ({
       ]}
       onPress={handlePress}
     >
-      <View
-        style={[
-          styles.tapCardFlipShell,
-          flipMinHeight > 0 ? { minHeight: flipMinHeight } : null,
-        ]}
-      >
-        <View
-          style={[
-            styles.tapCardFlipPerspective,
-            flipMinHeight > 0 ? { minHeight: flipMinHeight } : null,
-          ]}
-        >
+      <View style={[styles.tapCardFlipShell, styles.tapCardFixed]}>
+        <View style={[styles.tapCardFlipPerspective, styles.tapCardFixed]}>
           {mountFront && tapCardData.frontside != null ? (
             <Animated.View
               pointerEvents={isBackVisible && !isFlipping ? 'none' : 'auto'}
               style={[
                 ...getTapCardFaceStyle(tapCardData.frontside),
                 styles.tapCardFace,
+                styles.tapCardFixed,
                 bothMounted ? styles.tapCardFaceOverlay : null,
                 {
                   transform: [{ rotateY: frontRotateY }],
@@ -215,9 +194,7 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody} onLayout={onFrontLayout}>
-                {renderSide(tapCardData.frontside, embeddedOpts)}
-              </View>
+              {renderFaceContent(tapCardData.frontside)}
             </Animated.View>
           ) : null}
 
@@ -227,6 +204,7 @@ const TapCard = ({
               style={[
                 ...getTapCardFaceStyle(tapCardData.backside),
                 styles.tapCardFace,
+                styles.tapCardFixed,
                 bothMounted ? styles.tapCardFaceOverlay : null,
                 {
                   transform: [{ rotateY: backRotateY }],
@@ -234,28 +212,10 @@ const TapCard = ({
                 },
               ]}
             >
-              <View style={styles.tapCardBody} onLayout={onBackLayout}>
-                {renderSide(tapCardData.backside, embeddedOpts)}
-              </View>
+              {renderFaceContent(tapCardData.backside)}
             </Animated.View>
           ) : null}
         </View>
-
-        {tapCardData.backside != null && !mountBack ? (
-          <View
-            accessibilityElementsHidden
-            importantForAccessibility="no-hide-descendants"
-            pointerEvents="none"
-            style={styles.tapCardHiddenMeasure}
-          >
-            <View
-              style={[...getTapCardFaceStyle(tapCardData.backside), styles.tapCardBody]}
-              onLayout={onBackLayout}
-            >
-              {renderSide(tapCardData.backside, embeddedOpts)}
-            </View>
-          </View>
-        ) : null}
       </View>
     </Pressable>
   );
@@ -692,13 +652,15 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     position: 'relative',
   },
-  tapCardHiddenMeasure: {
-    left: 0,
-    opacity: 0,
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: -1,
+  tapCardFixed: {
+    height: TAP_CARD_HEIGHT,
+  },
+  tapCardScroll: {
+    flex: 1,
+    width: '100%',
+  },
+  tapCardScrollContent: {
+    flexGrow: 1,
   },
   tapCardContainerShell: {
     width: '100%',

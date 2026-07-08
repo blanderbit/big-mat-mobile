@@ -17,12 +17,14 @@ import Toast from 'react-native-toast-message';
 import { v4 as uuid } from 'uuid';
 
 import { Button, DEFAULT_HEIGHT } from '@components/Button';
+import { Pressable } from '@components/Pressable';
 import { Text } from '@components/Text';
 
 import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { configureGoogleSignIn } from '@extra/configureGoogleSignIn';
 import { DEFAULT_SPACE } from '@extra/constants';
+import { EmailAuthForm } from '@screens/Auth/components/EmailAuthForm';
 import { useUserStore } from '@stores/userStore';
 import { ACCESS_TOKEN } from '@keychain/extra/constants';
 import { keychain } from '@keychain/index';
@@ -41,10 +43,16 @@ export const Auth = () => {
   const [footerHeight, setFooterHeight] = useState(0);
   const [isGoogleSignInLoading, setIsGoogleSignInLoading] = useState(false);
   const [isAppleSignInLoading, setIsAppleSignInLoading] = useState(false);
+  const [isEmailAuthOpen, setIsEmailAuthOpen] = useState(false);
 
   const { t } = useTranslation();
 
   const getUser = useUserStore(s => s.getUser);
+  const isSocialSignInLoading = isGoogleSignInLoading || isAppleSignInLoading;
+
+  const handleEmailSignIn = () => {
+    setIsEmailAuthOpen(true);
+  };
 
   const handleSetFooterHeight = (e: LayoutChangeEvent) => {
     setFooterHeight(e.nativeEvent.layout.height);
@@ -227,21 +235,39 @@ export const Auth = () => {
         onLayout={handleSetFooterHeight}
       >
         <Button
-          disabled={isGoogleSignInLoading || isAppleSignInLoading}
+          disabled={isSocialSignInLoading}
           isLoading={isGoogleSignInLoading}
           title={t('signIn')}
           onPress={handleGoogleSignIn}
         />
 
         {Platform.OS === 'ios' && (
-          <AppleButton
-            buttonStyle={AppleButton.Style.BLACK}
-            buttonType={AppleButton.Type.SIGN_IN}
-            style={styles.appleButton}
-            onPress={onAppleButtonPress}
-          />
+          <View style={styles.appleButtonWrap}>
+            <AppleButton
+              buttonStyle={AppleButton.Style.BLACK}
+              buttonType={AppleButton.Type.SIGN_IN}
+              style={styles.appleButton}
+              onPress={onAppleButtonPress}
+            />
+          </View>
         )}
+
+        <Pressable
+          disabled={isSocialSignInLoading}
+          style={styles.emailButton}
+          onPress={handleEmailSignIn}
+        >
+          <Text bold center size={22}>
+            {t('signInWithEmail')}
+          </Text>
+        </Pressable>
       </View>
+
+      {isEmailAuthOpen ? (
+        <View style={styles.emailAuthOverlay}>
+          <EmailAuthForm onClose={() => setIsEmailAuthOpen(false)} />
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -309,6 +335,28 @@ const styles = StyleSheet.create({
   appleButton: {
     width: '100%',
     height: DEFAULT_HEIGHT,
+  },
+
+  appleButtonWrap: {
+    width: '100%',
+    height: DEFAULT_HEIGHT,
     borderRadius: 40,
+    overflow: 'hidden',
+  },
+
+  emailButton: {
+    width: '100%',
+    height: DEFAULT_HEIGHT,
+    borderRadius: 40,
+    borderWidth: 1,
+    borderColor: colors.black,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+
+  emailAuthOverlay: {
+    ...StyleSheet.absoluteFill,
+    zIndex: 10,
   },
 });

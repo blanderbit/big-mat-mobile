@@ -199,6 +199,8 @@ export const WebView = ({
  }
  #__rn_embed_root * {
    max-width: 100%;
+   font-size: revert;
+   line-height: normal;
  }
  #__rn_embed_root img {
    display: block;

@@ -26,15 +26,16 @@ export const usePatchSlide = ({
   };
 
   const handleGoToNextSlide = () => {
+    void API.patch(`/v1/progress/routes/${lessonId}`, {
+      lastSlideOrder: slides[slides.length - 2].order,
+      attempt: {
+        slideId: slideId,
+        isCorrect: !!isCorrect,
+        optionsCount: triesCount,
+      },
+    }).catch(() => {});
+
     if (isCorrect) {
-      void API.patch(`/v1/progress/routes/${lessonId}`, {
-        lastSlideOrder: slides[slides.length - 2].order,
-        attempt: {
-          slideId: slideId,
-          isCorrect: true,
-          optionsCount: triesCount,
-        },
-      }).catch(() => {});
       goToNextSlide();
     } else {
       setIsCorrect?.(null);
