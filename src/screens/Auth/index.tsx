@@ -24,6 +24,7 @@ import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { configureGoogleSignIn } from '@extra/configureGoogleSignIn';
 import { DEFAULT_SPACE } from '@extra/constants';
+import { getAuthPlatform } from '@extra/getAuthPlatform';
 import { EmailAuthForm } from '@screens/Auth/components/EmailAuthForm';
 import { useUserStore } from '@stores/userStore';
 import { ACCESS_TOKEN } from '@keychain/extra/constants';
@@ -90,7 +91,7 @@ export const Auth = () => {
 
       const authResponse = await API.post(
         '/v1/auth',
-        {},
+        { platform: getAuthPlatform() },
         {
           headers: {
             Authorization: `Bearer ${firebaseIdToken}`,
@@ -150,7 +151,7 @@ export const Auth = () => {
       // Backend auth
       const authResponse = await API.post(
         '/v1/auth',
-        {},
+        { platform: getAuthPlatform() },
         {
           headers: {
             Authorization: `Bearer ${firebaseIdToken}`,

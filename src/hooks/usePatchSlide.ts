@@ -25,15 +25,27 @@ export const usePatchSlide = ({
     setIsCorrect?.(correct);
   };
 
-  const handleGoToNextSlide = () => {
-    void API.patch(`/v1/progress/routes/${lessonId}`, {
-      lastSlideOrder: slides[slides.length - 2].order,
-      attempt: {
-        slideId: slideId,
-        isCorrect: !!isCorrect,
-        optionsCount: triesCount,
-      },
-    }).catch(() => {});
+  const handleGoToNextSlide = async () => {
+    const currentSlide = slides.find(slide => slide.id === slideId);
+    const lastContentSlide = slides
+      .slice()
+      .reverse()
+      .find(slide => slide.type !== 'finish' && slide.order != null);
+    const lastSlideOrder =
+      currentSlide?.order ?? lastContentSlide?.order ?? undefined;
+
+    try {
+      await API.patch(`/v1/progress/routes/${lessonId}`, {
+        ...(lastSlideOrder != null ? { lastSlideOrder } : {}),
+        attempt: {
+          slideId: slideId,
+          isCorrect: !!isCorrect,
+          optionsCount: triesCount,
+        },
+      });
+    } catch {
+      // Keep UX moving; progress sync is best-effort.
+    }
 
     if (isCorrect) {
       goToNextSlide();

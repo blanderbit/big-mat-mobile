@@ -1,6 +1,7 @@
 import { AxiosResponse } from 'axios';
 
 import { API } from '@API/index';
+import { getAuthPlatform } from '@extra/getAuthPlatform';
 import { User } from '@extra/types';
 
 export type LocalAuthResponse = {
@@ -37,10 +38,16 @@ export function extractLocalAuthResponse(
 
 export const authApi = {
   register: (payload: { email: string; password: string; name?: string }) =>
-    API.post<LocalAuthResponse>('/v1/auth/register', payload),
+    API.post<LocalAuthResponse>('/v1/auth/register', {
+      ...payload,
+      platform: getAuthPlatform(),
+    }),
 
   login: (payload: { email: string; password: string }) =>
-    API.post<LocalAuthResponse>('/v1/auth/login', payload),
+    API.post<LocalAuthResponse>('/v1/auth/login', {
+      ...payload,
+      platform: getAuthPlatform(),
+    }),
 
   forgotPassword: (payload: { email: string }) =>
     API.post<ForgotPasswordResponse>('/v1/auth/forgot-password', payload),

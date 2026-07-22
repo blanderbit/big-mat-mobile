@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { API } from '@API/index';
 import { colors } from '@extra/colors';
 import { DEFAULT_SPACE } from '@extra/constants';
 import { useLessonsStore } from '@stores/lessonsStore';
+import { useUserStore } from '@stores/userStore';
 
 import background7 from '@assets/images/background7.png';
 import finishCake from '@assets/images/finishCake.png';
@@ -28,22 +29,43 @@ export const Finish = ({ lessonId }: Props) => {
   const setCurrentSlideIndex = useLessonsStore(
     state => state.setCurrentSlideIndex,
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const getTotalScore = useUserStore(s => s.getTotalScore);
+  const [isLoading, setIsLoading] = useState(true);
+  const hasCompletedRef = useRef(false);
 
   useEffect(() => {
-    const getPoints = async () => {
+    if (hasCompletedRef.current) return;
+    hasCompletedRef.current = true;
+
+    const completeRoute = async () => {
       setIsLoading(true);
-      const res = await API.post(`/v1/progress/routes/${lessonId}/complete`, {
-        routeId: lessonId,
-      });
-      setPoints(res.data.data.progress.score);
-      setIsLoading(false);
+
+      try {
+        const res = await API.post(
+          `/v1/progress/routes/${lessonId}/complete`,
+          { routeId: lessonId },
+        );
+
+        const score = res.data?.data?.progress?.score;
+        if (typeof score === 'number') {
+          setPoints(score);
+        }
+
+        // Persist score in app state as soon as the result screen is shown,
+        // so leaving without pressing a button still keeps completion + points.
+        await getTotalScore();
+      } catch {
+        hasCompletedRef.current = false;
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    getPoints();
-  }, [lessonId]);
+    void completeRoute();
+  }, [getTotalScore, lessonId]);
 
   const handlePassAgain = () => {
+    hasCompletedRef.current = false;
     setCurrentSlideIndex(0);
   };
 
